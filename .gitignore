@@ -1,0 +1,6 @@
+#Singularity
+*.simg
+
+# GiBUU
+*.dat
+output/

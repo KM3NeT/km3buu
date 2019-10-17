@@ -1,0 +1,56 @@
+&neutrino_induced
+	process_ID = -2 		! 2:CC, 3:NC, -2:antiCC, -3:antiNC
+	flavor_ID = 2 		! 1:electron, 2:muon, 3:tau
+	nuXsectionMode = 6 	! 6: dSigmaMC
+	includeDIS = .true. 	! enables DIS events
+	printAbsorptionXS = T
+/
+
+&target
+	target_Z=1
+	target_A=1
+/
+
+&input
+	numEnsembles = 1000	! for H: 100000,
+				! for O: 6400
+				! decrease it if there are
+				! problems with memory or
+				! for heavier nuclei
+	eventtype = 5 		! 5=neutrino
+				! of a given particle
+	numTimeSteps = 0	! the distance numTimeSteps*delta_T
+				! should significantly
+				! exceed the radius
+				! of the target nucleus
+				! for H this must be 0
+				! numTimeSteps=0 gives inclusive
+				! X-sections
+	delta_T = 0.2		! timestep for hadron propagation
+	localEnsemble = .true.	! sets fullEnsemble = True
+	num_runs_SameEnergy = 1	! increase these if you want to 
+				! increase statistics 
+				! (= number of generated events)
+	LRF_equals_CALC_frame = .true.	! if .false.: 
+					! no offshelltransport
+					! possible
+	path_to_input = '/opt/buuinput2019' 	! needs to be
+					! changed to actual path
+/
+
+&nl_SigmaMC
+	enu = 4.0		!energy of the initial neutrino
+/
+
+
+&neutrinoAnalysis
+	outputEvents = .true	! output list of events and
+				! all outgoing particles in
+				! each event to the file 
+				! FinalEvents.dat
+/
+
+&pythia
+	PARP(91)=0.44
+/
+
