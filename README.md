@@ -7,7 +7,7 @@ The project is based on images using `singularity`, for which version 3 or highe
 easily reproducible. The main project control is based on `make`.
 In order to apply installation commands presented within this section, clone this repository and change to the project directory:
 ```
-git clone https://git.km3net.de/jschumann/km3buu
+git clone https://git.km3net.de/simulation/km3buu
 cd km3buu
 ```
 
