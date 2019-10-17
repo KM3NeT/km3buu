@@ -1,6 +1,6 @@
 # KM3BUU
 
-The KM3BUU project is an integrated environment for the GiBUU studies within the KM3NeT experiment. The execution is mainly based on 
+The KM3BUU project is an integrated environment for the GiBUU studies within the KM3NeT experiment.
 
 ## Installation
 The project is based on images using `singularity`, for which version 3 or higher (e.g. [v3.4](https://sylabs.io/guides/3.4/user-guide/)) is required. This is done due to the intention to provide a comparable installation on all systems and thus make the results 
