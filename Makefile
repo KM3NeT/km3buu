@@ -27,8 +27,8 @@ run: GiBUU.simg
 			 GiBUU.simg\
 			 /bin/sh run.sh $$CONTAINER_JOBCARD_DIR $$CONTAINER_OUTPUT_DIR 
 
-lyon:
-	singularity build GiBUU.simg docker.km3net.de
+buildremote:
+	singularity build GiBUU.simg docker://docker.km3net.de/simulation/km3buu:latest
 
 clean:
 	@rm -rf output
