@@ -28,7 +28,7 @@ run: GiBUU.simg
 			 /bin/sh run.sh $$CONTAINER_JOBCARD_DIR $$CONTAINER_OUTPUT_DIR 
 
 lyon:
-	@echo "TO DO"
+	singularity build GiBUU.simg docker.km3net.de
 
 clean:
 	@rm -rf output
