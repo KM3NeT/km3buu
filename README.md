@@ -14,16 +14,18 @@ cd km3buu
 
 ### Local Machine
 By "Local Machine" a computer where are root (administrative) privileges are available is 
-meant. These root privileges are required to build the singularity image by yourself. To start the build run following `make` command:
+meant. These root privileges are required to build the singularity image by yourself. In order to start the build, run the following `make` command:
 ```
 make build
 ```
 
 ### Compute Cluster
-In order to make this project also usable in a non-root environment, binaries will be provided. Within KM3NeT computing infrastructure this is the case for the lyon compute cluster, thus this case is customised for this environment.
+In order to make this project also usable in a non-root environment, the Image is also provided via the KM3NeT Docker-Server. Within KM3NeT computing infrastructure this is the case for the lyon compute cluster, thus this case is customised for this environment.
 
-This part is currently under development, so it is time to say: Coming soon ... ;-)
-
+In order to build the singularity image based on the remote image, run the following `make` command:
+```
+make buildremote
+```
 
 ## Structure & Usage
 
