@@ -1,0 +1,7 @@
+name = "GiBUU"
+uuid = "a3afb885-db20-4b35-9fee-c4ca4a6c79ab"
+authors = ["Johannes Schumann <johannes.schumann@fau.de>"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
