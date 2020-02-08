@@ -1,0 +1,4 @@
+Contributing
+------------
+
+Do it!
