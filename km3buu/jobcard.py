@@ -14,8 +14,26 @@ __status__ = "Development"
 
 INPUT_PATH = "/opt/buuinput2019/"
 
-_PROCESS_LOOKUP = {"cc": 2, "nc": 3, "anticc": -2, "antinc": -3}
-_FLAVOUR_LOOKUP = {"electron": 1, "muon": 2, "tau": 3}
+PROCESS_LOOKUP = {"cc": 2, "nc": 3, "anticc": -2, "antinc": -3}
+FLAVOUR_LOOKUP = {"electron": 1, "muon": 2, "tau": 3}
+XSECTIONMODE_LOOKUP = {
+    "integratedSigma": 0,
+    "dSigmadCosThetadElepton": 1,
+    "dSigmadQsdElepton": 2,
+    "dSigmadQs": 3,
+    "dSigmadCosTheta": 4,
+    "dSigmadElepton": 5,
+    "dSigmaMC": 6,
+    "dSigmadW": 7,
+    "EXP_dSigmadEnu": 10,
+    "EXP_dSigmadCosThetadElepton": 11,
+    "EXP_dSigmadQsdElepton": 12,
+    "EXP_dSigmadQs": 13,
+    "EXP_dSigmadCosTheta": 14,
+    "EXP_dSigmadElepton": 15,
+    "EXP_dSigmaMC": 16,
+    "EXP_dSigmadW": 17
+}
 
 
 class Jobcard(object):
@@ -97,6 +115,7 @@ def generate_neutrino_jobcard(process,
     jc.set_property("neutrino_inducted", "nuXsectionMode", 6)
     jc.set_property("neutrino_inducted", "includeDIS", True)
     jc.set_property("neutrino_inducted", "printAbsorptionXS", "T")
+
     # INPUT
     jc.set_property("input", "numTimeSteps", 0)
     jc.set_property("input", "eventtype", 5)
