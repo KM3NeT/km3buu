@@ -2,8 +2,10 @@ from .__version__ import version
 
 from os.path import isfile, abspath, join, dirname
 
-image_path = abspath(join(dirname(__file__), "..", "GiBUU.simg"))
-if not isfile(image_path):
+MODULE_PATH = abspath(join(dirname(__file__), ".."))
+IMAGE_PATH = join(MODULE_PATH, "GiBUU.simg")
+
+if not isfile(IMAGE_PATH):
     raise EnvironmentError(
         "GiBUU image was not found at %s; please run `make build` or `make buildremote`"
-        % image_path)
+        % IMAGE_PATH)
