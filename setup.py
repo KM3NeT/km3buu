@@ -6,18 +6,17 @@ KM3BUU setup script.
 
 """
 
-PACKAGE_NAME = 'km3buu'
-URL = 'https://git.km3net.de/simulation/km3buu'
-DESCRIPTION = 'GiBUU tools for KM3NeT'
-__author__ = 'Johannes Schumann'
-__email__ = 'jschumann@km3net.de'
-
-import os
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
 from spython.main import Client
+
+PACKAGE_NAME = 'km3buu'
+URL = 'https://git.km3net.de/simulation/km3buu'
+DESCRIPTION = 'GiBUU tools for KM3NeT'
+__author__ = 'Johannes Schumann'
+__email__ = 'jschumann@km3net.de'
 
 with open('requirements.txt') as fobj:
     REQUIREMENTS = [l.strip() for l in fobj.readlines()]

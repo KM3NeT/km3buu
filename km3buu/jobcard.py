@@ -58,10 +58,10 @@ class Jobcard(object):
             The parameter group where the property is incorporated
         name: str
             The property name
-        value: 
+        value:
             The property value
         """
-        if not group in self._groups.keys():
+        if group not in self._groups.keys():
             self._groups[group] = {}
         self._groups[group][name] = value
 
@@ -91,16 +91,16 @@ def generate_neutrino_jobcard(process,
                               target,
                               input_path=INPUT_PATH):
     """
-    Generate a jobcard for neutrino interaction 
+    Generate a jobcard for neutrino interaction
 
     Parameters
     ----------
-    process: str 
+    process: str
         Interaction channel ["CC", "NC", "antiCC", "antiNC"]
     flavour: str
         Flavour ["electron", "muon", "tau"]
-    energy: float 
-        Initial energy of the neutrino in GeV 
+    energy: float
+        Initial energy of the neutrino in GeV
     target: (int, int)
         (Z, A) describing the target nukleon
     input_path: str
@@ -109,9 +109,9 @@ def generate_neutrino_jobcard(process,
     jc = Jobcard(input_path)
     # NEUTRINO
     jc.set_property("neutrino_inducted", "process_ID",
-                    _PROCESS_LOOKUP[process.lower()])
+                    PROCESS_LOOKUP[process.lower()])
     jc.set_property("neutrino_inducted", "flavour_ID",
-                    _FLAVOUR_LOOKUP[flavour.lower()])
+                    FLAVOUR_LOOKUP[flavour.lower()])
     jc.set_property("neutrino_inducted", "nuXsectionMode", 6)
     jc.set_property("neutrino_inducted", "includeDIS", True)
     jc.set_property("neutrino_inducted", "printAbsorptionXS", "T")

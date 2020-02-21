@@ -26,10 +26,10 @@ INPUT_PATH = "/opt/buuinput2019/"
 GIBUU_SHELL = """
 #!/bin/bash
 
-if [ -z "$CONTAINER_GIBUU_EXEC+x" ];                                            
-then                                                                            
-    echo "No GIBUU executable provided via CONTAINER_GIBUU_EXEC";               
-    exit 1                                                                      
+if [ -z "$CONTAINER_GIBUU_EXEC+x" ];
+then
+    echo "No GIBUU executable provided via CONTAINER_GIBUU_EXEC";
+    exit 1
 fi;
 
 cd {0};
@@ -40,7 +40,7 @@ $CONTAINER_GIBUU_EXEC < {1};
 
 def run_jobcard(jobcard, outdir):
     """
-    method for run 
+    method for run
 
     Parameters
     ----------
