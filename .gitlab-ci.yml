@@ -11,7 +11,7 @@ variables:
 cache:
   paths:
    - .cache/pip
-   - venv/
+   - pyenv/
   key: "$CI_COMMIT_REF_SLUG"
 
 
@@ -22,10 +22,11 @@ stages:
     - release
 
 .virtualenv_template: &virtualenv_definition |
-  python -V
-  pip install virtualenv
-  virtualenv venv
-  source venv/bin/activate
+  git clone https://github.com/pyenv/pyenv.git pyenv
+  export PYENV_ROOT=`pwd`/pyenv
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  pyenv init
+  pyenv install 3.8.0
   pip install -U pip setuptools
   make install
 
