@@ -5,12 +5,13 @@
 KM3BUU setup script.
 
 """
-
+import os
+import tempfile
+from os.path import dirname
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
-from spython.main import Client
 
 PACKAGE_NAME = 'km3buu'
 URL = 'https://git.km3net.de/simulation/km3buu'
@@ -23,9 +24,13 @@ with open('requirements.txt') as fobj:
 
 
 def _build_image():
-    docker_url = "docker://docker.km3net.de/simulation/km3buu"
-    image_name = "GiBUU.simg"
-    Client.pull(docker_url, name=image_name)
+    ofile = tempfile.TemporaryFile()
+    retval = os.system("cd %s; make buildremote > %s" %
+                       (dirname(__file__), ofile.name))
+    if retval != 0:
+        with open(ofile.name, 'r') as f:
+            msg = f.read()
+            raise EnvironmentError(msg)
 
 
 class CustomInstallCmd(install):
