@@ -1,4 +1,4 @@
-image: docker.km3net.de/base/singularity:3.1
+image: docker.km3net.de/base/singularity-py3:3.5.3
 
 variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -37,7 +37,7 @@ stages:
 
 
 test:
-    image: docker.km3net.de/base/singularity:3.1
+    image: docker.km3net.de/base/singularity-py3:3.5.3
     stage: test
     script:
         - *virtualenv_definition
@@ -46,7 +46,7 @@ test:
     <<: *junit_definition
 
 code-style:
-    image: docker.km3net.de/base/singularity:3.1
+    image: docker.km3net.de/base/singularity-py3:3.5.3
     stage: test
     script:
         - *virtualenv_definition
@@ -54,7 +54,7 @@ code-style:
     allow_failure: true
 
 coverage:
-    image: docker.km3net.de/base/singularity:3.1
+    image: docker.km3net.de/base/singularity-py3:3.5.3
     stage: coverage
     script:
         - *virtualenv_definition
