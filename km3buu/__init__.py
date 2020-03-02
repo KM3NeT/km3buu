@@ -1,9 +1,10 @@
-from os.path import isfile, abspath, join, dirname
+__author__ = "Johannes Schumann"
+__copyright__ = "Copyright 2020, Johannes Schumann and the KM3NeT collaboration."
+__credits__ = []
+__license__ = "MIT"
+__maintainer__ = "Johannes Schumann"
+__email__ = "jschumann@km3net.de"
+__status__ = "Development"
 
-MODULE_PATH = abspath(join(dirname(__file__), ".."))
-IMAGE_PATH = join(MODULE_PATH, "GiBUU.simg")
-
-if not isfile(IMAGE_PATH):
-    errmsg = "GiBUU image not found at %s;"
-    errmsg += "please run `make build` or `make buildremote`"
-    raise EnvironmentError(errmsg % IMAGE_PATH)
+IMAGE_NAME = "GiBUU.simg"
+DOCKER_URL = "docker://docker.km3net.de/simulation/km3buu:latest"

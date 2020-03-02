@@ -14,15 +14,16 @@ __status__ = "Development"
 
 import os
 from spython.main import Client
-from os.path import join, abspath
-from tempfile import NamedTemporaryFile
-from . import MODULE_PATH, IMAGE_PATH
+from os.path import join, abspath, basename, isdir
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from thepipe.logger import get_logger
 
-log = get_logger(__file__)
+from . import IMAGE_NAME
+from .config import Config
+
+log = get_logger(basename(__file__))
 
 INPUT_PATH = "/opt/buuinput2019/"
-
 GIBUU_SHELL = """
 #!/bin/bash
 
@@ -49,19 +50,26 @@ def run_jobcard(jobcard, outdir):
     outdir: str
         The path to the directory the output should be written to
     """
-    tmp_dir = join(MODULE_PATH, 'tmp')
-    os.makedirs(tmp_dir, exist_ok=True)
+    tmp_dir = TemporaryDirectory()
     outdir = abspath(outdir)
     log.info("Create temporary file for jobcard")
-    tmpfile_jobcard = NamedTemporaryFile(suffix='.job', dir=tmp_dir)
-    with open(tmpfile_jobcard.name, 'w') as f:
+    jobcard_fpath = join(tmp_dir.name, "tmp.job")
+    with open(jobcard_fpath, 'w') as f:
         f.write(str(jobcard))
     log.info("Create temporary file for associated runscript")
-    tmpfile_shell = NamedTemporaryFile(suffix='.sh', dir=tmp_dir)
-    with open(tmpfile_shell.name, 'w') as f:
-        ctnt = GIBUU_SHELL.format(outdir, tmpfile_jobcard.name)
+    script_fpath = join(tmp_dir.name, "run.sh")
+    with open(script_fpath, 'w') as f:
+        ctnt = GIBUU_SHELL.format(outdir, jobcard_fpath)
         f.write(ctnt)
-    output = Client.execute(IMAGE_PATH, ['/bin/sh', tmpfile_shell.name],
-                            bind=[outdir, tmp_dir])
-    log.info("GiBUU exited with return code {0}".format(output["return_code"]))
+    os.system("ls %s" % (tmp_dir.name))
+    output = Client.execute(Config().gibuu_image_path,
+                            ['/bin/sh', script_fpath],
+                            bind=[outdir, tmp_dir.name],
+                            return_result=True)
+    msg = output['message']
+    if isinstance(msg, str):
+        log.info("GiBUU output:\n %s" % msg)
+    else:
+        log.info("GiBUU output:\n %s" % msg[0])
+        log.error("GiBUU stacktrace:\n%s" % msg[1])
     return output["return_code"]

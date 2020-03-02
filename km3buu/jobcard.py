@@ -15,7 +15,7 @@ __status__ = "Development"
 INPUT_PATH = "/opt/buuinput2019/"
 
 PROCESS_LOOKUP = {"cc": 2, "nc": 3, "anticc": -2, "antinc": -3}
-FLAVOUR_LOOKUP = {"electron": 1, "muon": 2, "tau": 3}
+FLAVOR_LOOKUP = {"electron": 1, "muon": 2, "tau": 3}
 XSECTIONMODE_LOOKUP = {
     "integratedSigma": 0,
     "dSigmadCosThetadElepton": 1,
@@ -48,6 +48,7 @@ class Jobcard(object):
     def __init__(self, input_path=INPUT_PATH):
         self.input_path = "'%s'" % input_path
         self._groups = {}
+        self.set_property("input", "path_to_input", self.input_path)
 
     def set_property(self, group, name, value):
         """ Set a property to the jobcard

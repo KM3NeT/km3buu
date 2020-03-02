@@ -12,14 +12,25 @@ cache:
   paths:
    - .cache/pip
    - venv/
+   - GiBUU.simg
   key: "$CI_COMMIT_REF_SLUG"
-
 
 stages:
     - test
     - coverage
     - docker
+    - reset_cache_image
     - release
+
+reset_test_image:
+    stage: reset_cache_image
+    cache:
+        paths:
+            - GiBUU.simg
+    script:
+        - rm GiBUU.simg
+    only:
+        - tags
 
 .virtualenv_template: &virtualenv_definition |
   python -V
@@ -27,7 +38,8 @@ stages:
   virtualenv venv
   source venv/bin/activate
   pip install -U pip setuptools
-  make install
+  echo n | make buildremote
+  make install-dev
 
 .junit_template: &junit_definition
     artifacts:

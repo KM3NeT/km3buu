@@ -1,2 +1,4 @@
 setuptools_scm
 spython
+thepipe
+click
