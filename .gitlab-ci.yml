@@ -37,8 +37,8 @@ reset_test_image:
   pip install virtualenv
   virtualenv venv
   source venv/bin/activate
-  pip install -U pip setuptools
-  echo n | make buildremote
+  pip install -U pip setuptools yapf
+  if [ ! -f GiBUU.simg ]; then; make buildremote; fi
   make install-dev
 
 .junit_template: &junit_definition
