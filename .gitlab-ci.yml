@@ -40,6 +40,7 @@ reset_test_image:
   pip install -U pip setuptools yapf
   if [ ! -f GiBUU.simg ]; then make buildremote; fi
   make install-dev
+  pip list
 
 .junit_template: &junit_definition
     artifacts:
