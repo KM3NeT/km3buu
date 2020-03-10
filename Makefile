@@ -44,17 +44,17 @@ install-dev:
 	pip install -e .
 
 test:
-	py.test --junitxml=./reports/junit.xml -o junit_suite_name=$(PKGNAME) $(PKGNAME)
+	python -m pytest --junitxml=./reports/junit.xml -o junit_suite_name=$(PKGNAME) $(PKGNAME)
 
 test-cov:
-	py.test --cov ./ --cov-report term-missing --cov-report xml:reports/coverage.xml --cov-report html:reports/coverage $(ALLNAMES)
+	python -m pytest --cov ./ --cov-report term-missing --cov-report xml:reports/coverage.xml --cov-report html:reports/coverage $(ALLNAMES)
 
 
 flake8: 
-	py.test --flake8
+	python -m pytest --flake8
 
 docstyle: 
-	py.test --pydocstyle
+	python -m pytest --pydocstyle
 
 
 
