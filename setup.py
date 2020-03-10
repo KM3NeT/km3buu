@@ -18,6 +18,9 @@ __email__ = 'jschumann@km3net.de'
 with open('requirements.txt') as fobj:
     REQUIREMENTS = [l.strip() for l in fobj.readlines()]
 
+with open('requirements-dev.txt') as fobj:
+    DEV_REQUIREMENTS = [l.strip() for l in fobj.readlines()]
+
 setup(
     name=PACKAGE_NAME,
     url=URL,
@@ -33,6 +36,9 @@ setup(
         'tag_regex': r'^(?P<prefix>v)?(?P<version>[^\+]+)(?P<suffix>.*)?$',
     },
     install_requires=REQUIREMENTS,
+    extras_require={
+        'dev': DEV_REQUIREMENTS
+        },
     python_requires='>=3.0',
     classifiers=[
         'Development Status :: 3 - Alpha',
