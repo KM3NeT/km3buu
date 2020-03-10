@@ -16,10 +16,13 @@ from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
 from tempfile import TemporaryDirectory
 from os import listdir
+from thepipe.logger import get_logger
 
 
 class TestCTRL(unittest.TestCase):
     def setUp(self):
+        log = get_logger("ctrl.py")
+        log.setLevel("INFO")
         self.test_jobcard = Jobcard()
         # NEUTRINO
         self.test_jobcard.set_property("neutrino_induced", "process_ID",
