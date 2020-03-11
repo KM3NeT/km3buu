@@ -51,6 +51,8 @@ reset_test_image:
 test:
     image: docker.km3net.de/base/singularity-py3:3.5.3
     stage: test
+    tags:
+        - docker
     script:
         - *virtualenv_definition
         - make test
