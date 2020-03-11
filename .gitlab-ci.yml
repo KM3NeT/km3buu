@@ -69,6 +69,8 @@ code-style:
 coverage:
     image: docker.km3net.de/base/singularity-py3:3.5.3
     stage: coverage
+    tags:
+        - docker
     script:
         - *virtualenv_definition
         - "make test-cov|grep TOTAL| awk '{printf \"COVERAGE: %.2f%%\", (1-$3/$2)*100 }'"
