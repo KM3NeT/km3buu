@@ -52,10 +52,11 @@ class FinalEvents:
                        ('id', np.int32), ('charge', np.float64),
                        ('perweight', np.float64), ('x', np.float64),
                        ('y', np.float64), ('z', np.float64),
-                       ('p_x', np.float64), ('p_y', np.float64),
-                       ('p_z', np.float64), ('history', np.int32),
-                       ('pID', np.int32), ('energy', np.float64)])
-        return np.genfromtxt(StringIO('\n'.join(s)), dtype=dt)[::1]
+                       ('p_t', np.float64), ('p_x', np.float64),
+                       ('p_y', np.float64), ('p_z', np.float64),
+                       ('history', np.int32), ('pID', np.int32),
+                       ('energy', np.float64)])
+        return np.genfromtxt(StringIO('\n'.join(s)), dtype=dt)
 
     def __len__(self):
         return len(self._line_pos)
