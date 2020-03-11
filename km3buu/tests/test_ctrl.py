@@ -16,10 +16,27 @@ from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
 from tempfile import TemporaryDirectory
 from os import listdir
+from os.path import abspath, join, dirname
 from thepipe.logger import get_logger
 
+JOBCARD_FOLDER = abspath(join(dirname(__file__), "../../jobcards"))
 
-class TestCTRL(unittest.TestCase):
+
+class TestCTRLbyJobcardFile(unittest.TestCase):
+    def setUp(self):
+        self.filename = join(JOBCARD_FOLDER, "examples/example.job")
+        self.output_dir = TemporaryDirectory()
+        self.retval = run_jobcard(self.filename, self.output_dir.name)
+
+    def test_output(self):
+        assert self.retval == 0
+
+    def test_output_files_existing(self):
+        files = listdir(self.output_dir.name)
+        assert "FinalEvents.dat" in files
+
+
+class TestCTRLbyJobcardObject(unittest.TestCase):
     def setUp(self):
         log = get_logger("ctrl.py")
         log.setLevel("INFO")

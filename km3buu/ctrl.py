@@ -59,7 +59,7 @@ def run_jobcard(jobcard, outdir):
         with open(jobcard_fpath, 'w') as f:
             f.write(str(jobcard))
     elif isfile(jobcard):
-        os.system("cp %s %s" % (jobcard, jobcard_fpath.name))
+        os.system("cp %s %s" % (jobcard, jobcard_fpath))
     else:
         log.error("No valid jobcard reference given: %s" % jobcard)
     log.info("Create temporary file for associated runscript")
