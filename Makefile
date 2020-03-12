@@ -49,14 +49,14 @@ test:
 test-cov:
 	python -m pytest --cov ./ --cov-report term-missing --cov-report xml:reports/coverage.xml --cov-report html:reports/coverage $(ALLNAMES)
 
-
 flake8: 
 	python -m pytest --flake8
 
 docstyle: 
 	python -m pytest --pydocstyle
 
+doc:
+	cd doc && make html
+	cd ..
 
-
-
-
+.PHONY: install install-dev doc clean test test-cov flake8 docstyle buildremote
