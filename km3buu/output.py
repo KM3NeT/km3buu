@@ -12,11 +12,28 @@ __maintainer__ = "Johannes Schumann"
 __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
+import re
 import mmap
 import numpy as np
 from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
+
+EVENT_FILENAME = "FinalEvents.dat"
+XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
+
+
+class NeutrinoAbsorptionXSection:
+    def __init__(self, filepath):
+        self._filepath = filepath
+        with open(self._filepath, "r") as f:
+            lines = f.readlines()
+        header = re.sub(r'\d+:|#', '', lines[0]).split()
+        values = map(float, lines[1].split())
+        self._xsections = dict(zip(header, values))
+
+    def __getitem__(self, key):
+        return self._xsections[key]
 
 
 class FinalEvents:

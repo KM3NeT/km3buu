@@ -19,9 +19,21 @@ from os.path import abspath, join, dirname
 TESTDATA_DIR = abspath(join(dirname(__file__), "../data/test-data/"))
 
 
+class TestXSection(unittest.TestCase):
+    def test_xsection_all(self):
+        filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
+        xsection = NeutrinoAbsorptionXSection(filename)
+        self.assertAlmostEqual(xsection['var'], 1.0)
+        self.assertAlmostEqual(xsection['sum'], 0.61548)
+        self.assertAlmostEqual(xsection['Delta'], 0.61537)
+        self.assertAlmostEqual(xsection['highRES'], 1.0661e-4)
+        self.assertAlmostEqual(xsection['Delta'], 0.61537)
+
+
+
 class TestFinalEvents(unittest.TestCase):
     def setUp(self):
-        self.filename = join(TESTDATA_DIR, "FinalEvents.dat")
+        self.filename = join(TESTDATA_DIR, EVENT_FILENAME)
         self.final_events = FinalEvents(self.filename)
 
     def test_values(self):
