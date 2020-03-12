@@ -116,6 +116,7 @@ pages:
     image: docker.km3net.de/base/python:3.6
     stage: doc
     script:
+        - make install-dev
         - cd doc && make clean && cd ..
         - make doc
         - mv doc/_build/html public/
