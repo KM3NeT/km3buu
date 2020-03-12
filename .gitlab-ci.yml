@@ -21,6 +21,7 @@ stages:
     - docker
     - reset_cache_image
     - release
+    - doc
 
 reset_test_image:
     stage: reset_cache_image
