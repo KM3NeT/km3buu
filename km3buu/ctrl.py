@@ -14,6 +14,8 @@ __status__ = "Development"
 
 import os
 from spython.main import Client
+from spython.utils import get_singularity_version
+from distutils.version import LooseVersion
 from os.path import join, abspath, basename, isdir, isfile
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from thepipe.logger import get_logger
@@ -23,6 +25,14 @@ from .config import Config
 from .jobcard import Jobcard
 
 log = get_logger(basename(__file__))
+log.setLevel("INFO")
+
+singularity_version = LooseVersion(get_singularity_version().split()[-1])
+if singularity_version < LooseVersion("3.3"):
+    log.error("Singularity version lower than 3.3 (found: %s)" %
+              singularity_version.vstring)
+    raise OSError("Singularity version below 3.3 (found: %s)" %
+                  singularity_version.vstring)
 
 GIBUU_SHELL = """
 #!/bin/bash
