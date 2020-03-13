@@ -1,4 +1,4 @@
-# Filename: core.py
+# Filename: environment.py
 """
 Core functions for the package environment
 
@@ -14,12 +14,22 @@ __status__ = "Development"
 
 import os
 from spython.main import Client
+from spython.utils import get_singularity_version
 from os.path import join, isdir, basename
 from thepipe.logger import get_logger
+from distutils.version import LooseVersion
 
 from . import IMAGE_NAME, DOCKER_URL
 
 log = get_logger(basename(__file__))
+
+MIN_SINGULARITY_VERSION = "3.3"
+
+
+def is_singularity_version_greater(min_version):  # pragma: no cover
+    singularity_version = LooseVersion(get_singularity_version().split()[-1])
+    retval = singularity_version > LooseVersion(MIN_SINGULARITY_VERSION)
+    return retval
 
 
 def build_image(output_dir):

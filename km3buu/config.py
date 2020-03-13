@@ -12,7 +12,7 @@ from os.path import isfile, isdir, join, dirname, abspath
 from configparser import ConfigParser, Error, NoOptionError, NoSectionError
 from thepipe.logger import get_logger
 from . import IMAGE_NAME
-from .core import build_image
+from .environment import build_image
 
 __author__ = "Johannes Schumann"
 __copyright__ = "Copyright 2020, Johannes Schumann and the KM3NeT collaboration."

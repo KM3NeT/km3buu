@@ -30,7 +30,6 @@ class TestXSection(unittest.TestCase):
         self.assertAlmostEqual(xsection['Delta'], 0.61537)
 
 
-
 class TestFinalEvents(unittest.TestCase):
     def setUp(self):
         self.filename = join(TESTDATA_DIR, EVENT_FILENAME)
@@ -55,7 +54,13 @@ class TestFinalEvents(unittest.TestCase):
     def test_slicing(self):
         assert self.final_events[0:2] is not None
 
+    def test_length(self):
+        assert len(self.final_events) == 5
+
 
 class TestGiBUUOutput(unittest.TestCase):
     def setUp(self):
-        pass
+        self.output = GiBUUOutput(TESTDATA_DIR)
+
+    def test_attr(self):
+        assert hasattr(self.output, "events")
