@@ -74,8 +74,6 @@ class Jobcard(object):
     def __str__(self):
         retval = ""
         for group, attrs in self._groups.items():
-            if len(self._groups[group]) == 0:
-                continue
             retval += "&%s\n" % group
             for attr, value in attrs.items():
                 if type(value) is bool:
@@ -86,11 +84,12 @@ class Jobcard(object):
         return retval
 
 
-def generate_neutrino_jobcard(process,
-                              flavour,
-                              energy,
-                              target,
-                              input_path=INPUT_PATH):
+def generate_neutrino_jobcard_template(
+    process,
+    flavour,
+    energy,
+    target,
+    input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
 
