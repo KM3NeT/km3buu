@@ -27,7 +27,7 @@ log = get_logger(basename(__file__))
 
 if not is_singularity_version_greater(
         MIN_SINGULARITY_VERSION):  # pragma: no cover
-    log.error("Singularity version lower than %" % MIN_SINGULARITY_VERSION)
+    log.error("Singularity version lower than %s" % MIN_SINGULARITY_VERSION)
     raise OSError("Singularity version below %s" % MIN_SINGULARITY_VERSION)
 
 GIBUU_SHELL = """
