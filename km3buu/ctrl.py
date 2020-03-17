@@ -73,7 +73,6 @@ def run_jobcard(jobcard, outdir):
     with open(script_fpath, 'w') as f:
         ctnt = GIBUU_SHELL.format(outdir, jobcard_fpath)
         f.write(ctnt)
-    os.system("ls %s" % (script_dir.name))
     output = Client.execute(Config().gibuu_image_path,
                             ['/bin/sh', script_fpath],
                             bind=[outdir, script_dir.name],
