@@ -96,6 +96,11 @@ class GiBUUOutput:
             f for f in listdir(self._data_dir)
             if isfile(join(self._data_dir, f))
         ]
-        if "FinalEvents.dat" in self.output_files:
+        if EVENT_FILENAME in self.output_files:
             setattr(self, "events",
-                    FinalEvents(join(self._data_dir, "FinalEvents.dat")))
+                    FinalEvents(join(self._data_dir, EVENT_FILENAME)))
+        if XSECTION_FILENAMES["all"] in self.output_files:
+            setattr(
+                self, "xsection",
+                NeutrinoAbsorptionXSection(
+                    join(self._data_dir, XSECTION_FILENAMES["all"])))
