@@ -89,6 +89,7 @@ def generate_neutrino_jobcard_template(
     flavour,
     energy,
     target,
+    write_events=False,
     input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
@@ -113,7 +114,14 @@ def generate_neutrino_jobcard_template(
     jc.set_property("neutrino_inducted", "flavour_ID",
                     FLAVOUR_LOOKUP[flavour.lower()])
     jc.set_property("neutrino_inducted", "nuXsectionMode", 6)
-    jc.set_property("neutrino_inducted", "includeDIS", True)
+    jc.set_property("neutrino_induced", "includeDIS", True)
+    jc.set_property("neutrino_induced", "includeDELTA", True)
+    jc.set_property("neutrino_induced", "includeRES", True)
+    jc.set_property("neutrino_induced", "includeQE", True)
+    jc.set_property("neutrino_induced", "include1pi", True)
+    jc.set_property("neutrino_induced", "include2p2hQE", True)
+    jc.set_property("neutrino_induced", "include2pi", False)
+    jc.set_property("neutrino_induced", "include2p2hDelta", False)
     jc.set_property("neutrino_inducted", "printAbsorptionXS", "T")
 
     # INPUT
@@ -126,4 +134,6 @@ def generate_neutrino_jobcard_template(
     # TARGET
     jc.set_property("target", "Z", target[0])
     jc.set_property("target", "A", target[1])
+    # MISC
+    jc.set_property("neutrinoAnalysis", "outputEvents", write_events)
     return jc
