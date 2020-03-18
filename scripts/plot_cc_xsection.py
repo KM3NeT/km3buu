@@ -72,7 +72,7 @@ def generate_neutrino_jobcard(process, flavor, energy, target):
     # INPUT
     jc.set_property("input", "numTimeSteps", 0)
     jc.set_property("input", "eventtype", 5)
-    jc.set_property("input", "numEnsembles", 1000)
+    jc.set_property("input", "numEnsembles", 10000)
     jc.set_property("input", "delta_T", 0.2)
     jc.set_property("input", "localEnsemble", True)
     jc.set_property("input", "num_runs_SameEnergy", 1)
@@ -101,8 +101,8 @@ def main():
     from docopt import docopt
     args = docopt(__doc__)
     if args["--verbose"]:
-        log.setLevel("INFO")
         log = get_logger("ctrl.py")
+        log.setLevel("INFO")
     workers = int(args["--threads"])
     xsections = defaultdict(list)
     energies = np.logspace(-1, 1, 50)
@@ -110,14 +110,15 @@ def main():
     with ThreadPoolExecutor(max_workers=workers) as executor:
         for i, energy in enumerate(energies):
             tasks[i] = executor.submit(worker, energy)
-        while True:
-            time.sleep(1)
-            status = {k: v.done() for k, v in tasks.items()}
-            click.clear()
-            for thr, st in status.items():
-                click.echo("Thread %s (%s): %s" % (thr, energies[thr], st))
-            if all(status.values()):
-                break
+        if args["--verbose"]:
+            while True:
+                time.sleep(1)
+                status = {k: v.done() for k, v in tasks.items()}
+                click.clear()
+                for thr, st in status.items():
+                    click.echo("Thread %s (%s): %s" % (thr, energies[thr], st))
+                if all(status.values()):
+                    break
     for i, res in tasks.items():
         data = res.result()
         for k in ['sum', 'QE', 'highRES', 'DIS', 'Delta']:
