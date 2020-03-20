@@ -91,7 +91,7 @@ def worker(energy, anti_flag=False):
     if anti_flag:
         process = "anticc"
     # create a neutrino jobcard for oxygen
-    tmpjc = generate_neutrino_jobcard("cc", "electron", energy, (8, 16))
+    tmpjc = generate_neutrino_jobcard(process, "electron", energy, (8, 16))
     datadir = TemporaryDirectory(dir=dirname(__file__),
                                  prefix="%sGeV" % energy)
     run_jobcard(tmpjc, datadir.name)
