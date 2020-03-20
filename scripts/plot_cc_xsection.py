@@ -6,7 +6,7 @@
 Generate 
 
 Usage:
-    neutrino_jobcard_generator.py OUTFILE [--threads=<n>] [--verbose]
+    neutrino_jobcard_generator.py OUTFILE [--threads=<n>] [--verbose] [--anticc]
     neutrino_jobcard_generator.py (-h | --help)
 
 Options:
@@ -18,7 +18,6 @@ Options:
 """
 import os
 import time
-import click
 import numpy as np
 import matplotlib.pyplot as plt
 from thepipe.logger import get_logger
@@ -87,7 +86,10 @@ def generate_neutrino_jobcard(process, flavor, energy, target):
     return jc
 
 
-def worker(energy):
+def worker(energy, anti_flag=False):
+    process = "cc"
+    if anti_flag:
+        process = "anticc"
     # create a neutrino jobcard for oxygen
     tmpjc = generate_neutrino_jobcard("cc", "electron", energy, (8, 16))
     datadir = TemporaryDirectory(dir=dirname(__file__),
@@ -105,12 +107,13 @@ def main():
         log.setLevel("INFO")
     workers = int(args["--threads"])
     xsections = defaultdict(list)
-    energies = np.logspace(-1, 1, 50)
+    energies = np.logspace(-1, 1, 60)
     tasks = {}
     with ThreadPoolExecutor(max_workers=workers) as executor:
         for i, energy in enumerate(energies):
-            tasks[i] = executor.submit(worker, energy)
+            tasks[i] = executor.submit(worker, energy, args["--anticc"])
         if args["--verbose"]:
+            import click
             while True:
                 time.sleep(1)
                 status = {k: v.done() for k, v in tasks.items()}
@@ -126,7 +129,7 @@ def main():
     for k in ['sum', 'QE', 'highRES', 'DIS', 'Delta']:
         plt.plot(energies, np.divide(xsections[k], energies), label=k)
     plt.xlabel("Energy [GeV]")
-    plt.ylabel("Crosssection")
+    plt.ylabel(r"$\nu$ Crosssection / E [$10^-38cm^{cm^2}/GeV$]")
     plt.legend()
     plt.xscale("log")
     plt.grid()
