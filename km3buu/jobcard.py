@@ -109,11 +109,11 @@ def generate_neutrino_jobcard_template(
     """
     jc = Jobcard(input_path)
     # NEUTRINO
-    jc.set_property("neutrino_inducted", "process_ID",
+    jc.set_property("neutrino_induced", "process_ID",
                     PROCESS_LOOKUP[process.lower()])
-    jc.set_property("neutrino_inducted", "flavour_ID",
-                    FLAVOUR_LOOKUP[flavour.lower()])
-    jc.set_property("neutrino_inducted", "nuXsectionMode", 6)
+    jc.set_property("neutrino_induced", "flavour_ID",
+                    FLAVOR_LOOKUP[flavour.lower()])
+    jc.set_property("neutrino_induced", "nuXsectionMode", 6)
     jc.set_property("neutrino_induced", "includeDIS", True)
     jc.set_property("neutrino_induced", "includeDELTA", True)
     jc.set_property("neutrino_induced", "includeRES", True)
