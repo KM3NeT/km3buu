@@ -18,6 +18,7 @@ import numpy as np
 from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
+from tempfile import TemporaryDirectory
 
 EVENT_FILENAME = "FinalEvents.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
@@ -91,16 +92,20 @@ class GiBUUOutput:
         ----------
         data_dir: str
         """
-        self._data_dir = abspath(data_dir)
+        if isinstance(data_dir, TemporaryDirectory):
+            self._tmp_dir = data_dir
+            self._data_path = abspath(data_dir.name)
+        else:
+            self._data_path = abspath(data_dir)
         self.output_files = [
-            f for f in listdir(self._data_dir)
-            if isfile(join(self._data_dir, f))
+            f for f in listdir(self._data_path)
+            if isfile(join(self._data_path, f))
         ]
         if EVENT_FILENAME in self.output_files:
             setattr(self, "events",
-                    FinalEvents(join(self._data_dir, EVENT_FILENAME)))
+                    FinalEvents(join(self._data_path, EVENT_FILENAME)))
         if XSECTION_FILENAMES["all"] in self.output_files:
             setattr(
                 self, "xsection",
                 NeutrinoAbsorptionXSection(
-                    join(self._data_dir, XSECTION_FILENAMES["all"])))
+                    join(self._data_path, XSECTION_FILENAMES["all"])))
