@@ -55,7 +55,7 @@ class FinalEvents:
                 break
             line_pos.append(next_pos)
             self._final_events_map.seek(line_pos[-1])
-        return line_pos
+        return line_pos[:-1]
 
     def __getitem__(self, i):
         if isinstance(i, slice):
@@ -65,7 +65,9 @@ class FinalEvents:
         s = []
         for p in pos:
             self._final_events_map.seek(p)
-            s.append(self._final_events_map.readline().decode('utf-8'))
+            line = self._final_events_map.readline().decode('utf-8').strip(
+                "\n")
+            s.append("%s %.3f %3f\n" % (line, 0., 0.))
         dt = np.dtype([('run', np.uint32), ('event', np.uint32),
                        ('id', np.int32), ('charge', np.float64),
                        ('perweight', np.float64), ('x', np.float64),
@@ -73,8 +75,12 @@ class FinalEvents:
                        ('p_t', np.float64), ('p_x', np.float64),
                        ('p_y', np.float64), ('p_z', np.float64),
                        ('history', np.int32), ('pID', np.int32),
-                       ('energy', np.float64)])
-        return np.genfromtxt(StringIO('\n'.join(s)), dtype=dt)
+                       ('nu_energy', np.float64), ('Bx', np.float64),
+                       ('By', np.float64)])
+        values = np.genfromtxt(StringIO('\n'.join(s)), dtype=dt)
+        # values['Bx'] = / 2. /
+        values['By'] = 1 - values["p_t"] / values["nu_energy"]
+        return values
 
     def __len__(self):
         return len(self._line_pos)
