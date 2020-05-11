@@ -102,16 +102,27 @@ def worker(energy, Z, anti_flag=False):
 
 
 def plot(datafile, plotfile):
+    import h5py
+    f = h5py.File(datafile, 'r')
+    data = f['xsec'][()]
+    data = data[['energy', 'Z', 'sum']]
+    energies = np.sort(np.unique(data['energy']))
+    Zrange = np.sort(np.unique(data['Z']))
+    fig, ax = plt.subplots()
+    h = ax.hist2d(x=data['energy'],
+                  y=data['Z'],
+                  bins=(energies, Zrange),
+                  weights=np.divide(data['sum'], data['energy']))
+    cb = plt.colorbar(h[3], ax=ax)
+    cb.ax.get_yaxis().labelpad = 15
+    cb.ax.set_ylabel(r"$\nu$ Crosssection / E [$10^-38cm^{cm^2}/GeV$]")
     plt.xlabel("Energy [GeV]")
-    plt.ylabel(r"$\nu$ Crosssection / E [$10^-38cm^{cm^2}/GeV$]")
-    plt.legend()
-    plt.xscale("log")
-    plt.grid()
+    plt.ylabel(r"Z")
+    plt.xscale('log')
     plt.savefig(plotfile)
-    pass
 
 
-class XSectionPump(kp.Module):
+class GiBUUTaskPump(kp.Module):
     def configure(self):
         self.tasks = self.require('tasks')
         self.energies = self.require('energies')
@@ -154,7 +165,7 @@ def main():
     if args['--Zmax']:
         Zmax = int(args['--Zmax'])
 
-    energies = np.logspace(-1, 1, 2)
+    energies = np.logspace(-1, 1, 40)
     Zrange = range(Zmin, Zmax + 1)
     tasks = {}
     with ThreadPoolExecutor(max_workers=workers) as executor:
@@ -175,7 +186,7 @@ def main():
                     break
 
     pipe = kp.Pipeline()
-    pipe.attach(XSectionPump, tasks=tasks, energies=energies, zrange=Zrange)
+    pipe.attach(GiBUUTaskPump, tasks=tasks, energies=energies, zrange=Zrange)
     pipe.attach(kp.io.HDF5Sink, filename=datafile)
     pipe.drain()
 
