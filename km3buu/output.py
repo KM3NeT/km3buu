@@ -20,21 +20,29 @@ from os import listdir
 from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
 
+from .jobcard import Jobcard
+
 EVENT_FILENAME = "FinalEvents.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 
 
-class NeutrinoAbsorptionXSection:
-    def __init__(self, filepath):
-        self._filepath = filepath
-        with open(self._filepath, "r") as f:
-            lines = f.readlines()
-        header = re.sub(r'\d+:|#', '', lines[0]).split()
-        values = map(float, lines[1].split())
-        self._xsections = dict(zip(header, values))
+def read_nu_abs_xsection(filepath):
+    """
+    Read the crosssections calculated by GiBUU
 
-    def __getitem__(self, key):
-        return self._xsections[key]
+    Parameters
+    ----------
+    filepath: str
+        Filepath to the GiBUU output file with neutrino absorption cross-section
+        (neutrino_absorption_cross_section_*.dat)
+
+    """
+    with open(filepath, "r") as f:
+        lines = f.readlines()
+    header = re.sub(r'\d+:|#', '', lines[0]).split()
+    dt = np.dtype([(field, np.float64) for field in header])
+    values = np.genfromtxt(StringIO(lines[-1]), dtype=dt)
+    return values
 
 
 class FinalEvents:
@@ -113,5 +121,17 @@ class GiBUUOutput:
         if XSECTION_FILENAMES["all"] in self.output_files:
             setattr(
                 self, "xsection",
-                NeutrinoAbsorptionXSection(
+                read_nu_abs_xsection(
                     join(self._data_path, XSECTION_FILENAMES["all"])))
+        self._jobcard = None
+
+    def associate_jobcard(self, jobcard):
+        """
+        Append a jobcard to the wrapped output directory
+
+        Parameters
+        ----------
+        jobcard: Jobcard
+            Jobcard object instance
+        """
+        self._jobcard = jobcard
