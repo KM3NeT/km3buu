@@ -73,7 +73,7 @@ def generate_neutrino_jobcard(process, flavor, energy, target):
     # INPUT
     jc.set_property("input", "numTimeSteps", 0)
     jc.set_property("input", "eventtype", 5)
-    jc.set_property("input", "numEnsembles", 100)
+    jc.set_property("input", "numEnsembles", 10000)
     jc.set_property("input", "delta_T", 0.2)
     jc.set_property("input", "localEnsemble", True)
     jc.set_property("input", "num_runs_SameEnergy", 1)
@@ -94,8 +94,7 @@ def worker(energy, Z, anti_flag=False):
         process = "anticc"
     # create a neutrino jobcard for oxygen
     tmpjc = generate_neutrino_jobcard(process, "electron", energy, (Z, 2 * Z))
-    datadir = TemporaryDirectory(dir=dirname(__file__),
-                                 prefix="%sGeV" % energy)
+    datadir = TemporaryDirectory(dir=dirname('.'), prefix="%sGeV" % energy)
     run_jobcard(tmpjc, datadir.name)
     data = GiBUUOutput(datadir)
     return data
@@ -135,10 +134,19 @@ class GiBUUTaskPump(kp.Module):
         key = list(self.tasks.keys())[0]
         task = self.tasks.pop(key)
         res = task.result()
-
-        dct = dict(res.xsection._xsections)
+        xsec = res.xsection
+        dct = dict(zip(xsec.dtype.names, xsec.tolist()))
         dct.update({'energy': self.energies[key[0]], 'Z': self.Zrange[key[1]]})
         blob['Xsection'] = kp.Table(dct, h5loc='xsec')
+        ev = res.events[:]
+        ids, counts = np.unique(ev['id'], return_counts=True)
+        dct = {
+            'energy': self.energies[key[0]],
+            'Z': self.Zrange[key[1]],
+            'particles': ids,
+            'multiplicity': counts
+        }
+        blob['Particles'] = kp.Table(dct, h5loc='particles')
         return blob
 
 
@@ -165,7 +173,7 @@ def main():
     if args['--Zmax']:
         Zmax = int(args['--Zmax'])
 
-    energies = np.logspace(-1, 1, 40)
+    energies = np.logspace(-1, 2, 100)
     Zrange = range(Zmin, Zmax + 1)
     tasks = {}
     with ThreadPoolExecutor(max_workers=workers) as executor:
