@@ -22,7 +22,6 @@ import os
 import time
 import numpy as np
 import km3pipe as kp
-import matplotlib.pyplot as plt
 from tempfile import TemporaryDirectory
 from os.path import dirname, abspath
 from collections import defaultdict
@@ -73,7 +72,7 @@ def generate_neutrino_jobcard(process, flavor, energy, target):
     # INPUT
     jc.set_property("input", "numTimeSteps", 0)
     jc.set_property("input", "eventtype", 5)
-    jc.set_property("input", "numEnsembles", 100)
+    jc.set_property("input", "numEnsembles", 10000)
     jc.set_property("input", "delta_T", 0.2)
     jc.set_property("input", "localEnsemble", True)
     jc.set_property("input", "num_runs_SameEnergy", 1)
@@ -94,8 +93,7 @@ def worker(energy, Z, anti_flag=False):
         process = "anticc"
     # create a neutrino jobcard for oxygen
     tmpjc = generate_neutrino_jobcard(process, "electron", energy, (Z, 2 * Z))
-    datadir = TemporaryDirectory(dir=dirname(__file__),
-                                 prefix="%sGeV" % energy)
+    datadir = TemporaryDirectory(dir=dirname('.'), prefix="%sGeV" % energy)
     run_jobcard(tmpjc, datadir.name)
     data = GiBUUOutput(datadir)
     return data
@@ -103,23 +101,49 @@ def worker(energy, Z, anti_flag=False):
 
 def plot(datafile, plotfile):
     import h5py
-    f = h5py.File(datafile, 'r')
-    data = f['xsec'][()]
-    data = data[['energy', 'Z', 'sum']]
-    energies = np.sort(np.unique(data['energy']))
-    Zrange = np.sort(np.unique(data['Z']))
-    fig, ax = plt.subplots()
-    h = ax.hist2d(x=data['energy'],
-                  y=data['Z'],
-                  bins=(energies, Zrange),
-                  weights=np.divide(data['sum'], data['energy']))
-    cb = plt.colorbar(h[3], ax=ax)
-    cb.ax.get_yaxis().labelpad = 15
-    cb.ax.set_ylabel(r"$\nu$ Crosssection / E [$10^-38cm^{cm^2}/GeV$]")
-    plt.xlabel("Energy [GeV]")
-    plt.ylabel(r"Z")
-    plt.xscale('log')
-    plt.savefig(plotfile)
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
+    import matplotlib.colors as colors
+    with PdfPages(plotfile) as pdf:
+        f = h5py.File(datafile, 'r')
+        data = f['xsec'][()]
+        data = data[['energy', 'Z', 'sum']]
+        energies = np.sort(np.unique(data['energy']))
+        Zrange = np.sort(np.unique(data['Z']))
+        fig, ax = plt.subplots()
+        h = ax.hist2d(x=data['energy'],
+                      y=data['Z'],
+                      bins=(energies, Zrange),
+                      weights=np.divide(data['sum'], data['energy']))
+        cb = plt.colorbar(h[3], ax=ax)
+        cb.ax.get_yaxis().labelpad = 15
+        cb.ax.set_ylabel(r"$\nu$ Crosssection / E [$10^-38cm^{cm^2}/GeV$]")
+        plt.xlabel("Energy [GeV]")
+        plt.ylabel(r"Z")
+        plt.xscale('log')
+        pdf.savefig()
+        plt.close()
+        data = f['particles'][()]
+        data = data[['energy', 'Z', 'multiplicity', 'particles']]
+        particle_ids = np.unique(data['particles'])
+        for p in particle_ids:
+            mask = data['particles'] == p
+            fig, ax = plt.subplots()
+            tmp = data[mask]
+            h = ax.hist2d(x=tmp['energy'],
+                          y=tmp['Z'],
+                          bins=(energies, Zrange),
+                          weights=tmp['multiplicity'],
+                          norm=colors.LogNorm())
+            cb = plt.colorbar(h[3], ax=ax)
+            cb.ax.get_yaxis().labelpad = 15
+            cb.ax.set_ylabel(r"Particle Count")
+            plt.xlabel("Energy [GeV]")
+            plt.ylabel(r"Z")
+            plt.xscale('log')
+            plt.title('Particle %s' % p)
+            pdf.savefig()
+            plt.close()
 
 
 class GiBUUTaskPump(kp.Module):
@@ -135,10 +159,19 @@ class GiBUUTaskPump(kp.Module):
         key = list(self.tasks.keys())[0]
         task = self.tasks.pop(key)
         res = task.result()
-
-        dct = dict(res.xsection._xsections)
+        xsec = res.xsection
+        dct = dict(zip(xsec.dtype.names, xsec.tolist()))
         dct.update({'energy': self.energies[key[0]], 'Z': self.Zrange[key[1]]})
         blob['Xsection'] = kp.Table(dct, h5loc='xsec')
+        ev = res.events[:]
+        ids, counts = np.unique(ev['id'], return_counts=True)
+        dct = {
+            'energy': self.energies[key[0]],
+            'Z': self.Zrange[key[1]],
+            'particles': ids,
+            'multiplicity': counts
+        }
+        blob['Particles'] = kp.Table(dct, h5loc='particles')
         return blob
 
 
@@ -165,7 +198,7 @@ def main():
     if args['--Zmax']:
         Zmax = int(args['--Zmax'])
 
-    energies = np.logspace(-1, 1, 40)
+    energies = np.logspace(-1, 3, 100)
     Zrange = range(Zmin, Zmax + 1)
     tasks = {}
     with ThreadPoolExecutor(max_workers=workers) as executor:
