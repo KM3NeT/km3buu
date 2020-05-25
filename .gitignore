@@ -5,6 +5,10 @@
 *.dat
 output/
 
+# Version info for PyPI
+km3buu/version.py
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
