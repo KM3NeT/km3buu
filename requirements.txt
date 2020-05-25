@@ -2,4 +2,6 @@ setuptools_scm
 numpy
 spython
 thepipe
+particle
 click
+pylhe
