@@ -12,6 +12,8 @@ __maintainer__ = "Johannes Schumann"
 __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
+import f90nml
+
 INPUT_PATH = "/opt/buuinput2019/"
 
 PROCESS_LOOKUP = {"cc": 2, "nc": 3, "anticc": -2, "antinc": -3}
@@ -47,7 +49,7 @@ class Jobcard(object):
     """
     def __init__(self, input_path=INPUT_PATH):
         self.input_path = "'%s'" % input_path
-        self._groups = {}
+        self._groups = f90nml.Namelist()
         self.set_property("input", "path_to_input", self.input_path)
 
     def set_property(self, group, name, value):
@@ -82,6 +84,31 @@ class Jobcard(object):
                     retval += "\t%s = %s\n" % (attr, value)
             retval += "/\n\n"
         return retval
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            if '/' in key:
+                k = key.split('/')
+                return self._groups[k[0]][k[1]]
+            else:
+                return self._groups[key]
+        elif isinstance(key, tuple) and len(key) == 2:
+            return self._groups[key[0]][key[1]]
+        else:
+            raise IndexError("Invalid access to Jobcard")
+
+
+def read_jobcard(fpath):
+    """ Read a jobcard from file
+
+    Parameters
+    ----------
+    fpath: str
+        Filepath of the jobcard
+    """
+    jc = Jobcard()
+    jc._groups = f90nml.read(fpath)
+    return jc
 
 
 def generate_neutrino_jobcard_template(
