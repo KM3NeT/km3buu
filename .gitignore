@@ -32,3 +32,14 @@ var/
 *.egg
 .eggs
 
+# venv, pyenv tmp
+.python-version
+venv
+
+# Sphinx documentation
+doc/_build/
+doc/auto_examples/
+doc/modules/
+doc/api
+
+
