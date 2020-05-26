@@ -13,6 +13,10 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import f90nml
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 INPUT_PATH = "/opt/buuinput2019/"
 
@@ -48,8 +52,8 @@ class Jobcard(object):
         The input path pointing to the GiBUU lookup data which should be used
     """
     def __init__(self, input_path=INPUT_PATH):
-        self.input_path = "'%s'" % input_path
-        self._groups = f90nml.Namelist()
+        self.input_path = "%s" % input_path
+        self._nml = f90nml.Namelist()
         self.set_property("input", "path_to_input", self.input_path)
 
     def set_property(self, group, name, value):
@@ -64,36 +68,29 @@ class Jobcard(object):
         value:
             The property value
         """
-        if group not in self._groups.keys():
-            self._groups[group] = {}
-        self._groups[group][name] = value
+        if group not in self._nml.keys():
+            self._nml[group] = {}
+        self._nml[group][name] = value
 
     def remove_property(self, group, name):
-        del self._groups[group][name]
-        if len(self._groups[group]) == 0:
-            del self._groups[group]
+        del self._nml[group][name]
+        if len(self._nml[group]) == 0:
+            del self._nml[group]
 
     def __str__(self):
-        retval = ""
-        for group, attrs in self._groups.items():
-            retval += "&%s\n" % group
-            for attr, value in attrs.items():
-                if type(value) is bool:
-                    retval += "\t%s = .%s.\n" % (attr, str(value).lower())
-                else:
-                    retval += "\t%s = %s\n" % (attr, value)
-            retval += "/\n\n"
-        return retval
+        stream = StringIO()
+        self._nml.write(stream)
+        return stream.getvalue()
 
     def __getitem__(self, key):
         if isinstance(key, str):
             if '/' in key:
                 k = key.split('/')
-                return self._groups[k[0]][k[1]]
+                return self._nml[k[0]][k[1]]
             else:
-                return self._groups[key]
+                return self._nml[key]
         elif isinstance(key, tuple) and len(key) == 2:
-            return self._groups[key[0]][key[1]]
+            return self._nml[key[0]][key[1]]
         else:
             raise IndexError("Invalid access to Jobcard")
 
@@ -107,7 +104,7 @@ def read_jobcard(fpath):
         Filepath of the jobcard
     """
     jc = Jobcard()
-    jc._groups = f90nml.read(fpath)
+    jc._nml = f90nml.read(fpath)
     return jc
 
 
