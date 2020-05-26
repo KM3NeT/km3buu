@@ -22,7 +22,7 @@ TESTDATA_DIR = abspath(join(dirname(__file__), "../data/test-data/"))
 class TestXSection(unittest.TestCase):
     def test_xsection_all(self):
         filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
-        xsection = NeutrinoAbsorptionXSection(filename)
+        xsection = read_nu_abs_xsection(filename)
         self.assertAlmostEqual(xsection['var'], 1.0)
         self.assertAlmostEqual(xsection['sum'], 0.61548)
         self.assertAlmostEqual(xsection['Delta'], 0.61537)
@@ -43,7 +43,7 @@ class TestFinalEvents(unittest.TestCase):
         self.assertAlmostEqual(self.final_events[0]["p_x"], 2.619802e-2)
         self.assertAlmostEqual(self.final_events[0]["p_y"], 3.290991e-1)
         self.assertAlmostEqual(self.final_events[0]["p_z"], 3.821936e-1)
-        self.assertAlmostEqual(self.final_events[0]["energy"], 1.0)
+        self.assertAlmostEqual(self.final_events[0]["nu_energy"], 1.0)
         assert self.final_events[3]["id"] == 1
         assert self.final_events[3]["charge"] == 1
         self.assertAlmostEqual(self.final_events[3]["perweight"], 6.154773e-1)
@@ -55,7 +55,7 @@ class TestFinalEvents(unittest.TestCase):
         assert self.final_events[0:2] is not None
 
     def test_length(self):
-        assert len(self.final_events) == 5
+        assert len(self.final_events) == 4
 
 
 class TestGiBUUOutput(unittest.TestCase):

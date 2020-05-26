@@ -21,6 +21,9 @@ from thepipe.logger import get_logger
 
 JOBCARD_FOLDER = abspath(join(dirname(__file__), "../../jobcards"))
 
+# class TestCTRLmisc(unittest.TestCase):
+#     def test_invalid_jobcard(self):
+
 
 class TestCTRLbyJobcardFile(unittest.TestCase):
     def setUp(self):
@@ -50,7 +53,7 @@ class TestCTRLbyJobcardObject(unittest.TestCase):
                                        XSECTIONMODE_LOOKUP["dSigmaMC"])
         self.test_jobcard.set_property("neutrino_induced", "includeDIS", True)
         self.test_jobcard.set_property("neutrino_induced", "printAbsorptionXS",
-                                       "T")
+                                       True)
         self.test_jobcard.set_property("nl_SigmaMC", "enu", 1)
         # INPUT
         self.test_jobcard.set_property("input", "numTimeSteps", 0)

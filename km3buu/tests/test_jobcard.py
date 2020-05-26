@@ -25,14 +25,15 @@ class TestJobcard(unittest.TestCase):
         expected_line = "path_to_input = '%s'" % INPUT_PATH
         ctnt = str(self.test_jobcard)
         group_start = ctnt.find("&input")
-        group_end = ctnt.find("/\n\n", group_start)
+        group_end = ctnt.find("/\n", group_start)
         assert ctnt[group_start:group_end].find(expected_line) != -1
 
     def test_elements(self):
         ctnt = str(self.test_jobcard)
         expected_line = "def = 42"
-        group_start = ctnt.find("&ABC")
-        group_end = ctnt.find("/\n\n", group_start)
+        group_start = ctnt.find("&abc")
+        group_end = ctnt.find("/", group_start)
+        print(ctnt)
         assert ctnt[group_start:group_end].find(expected_line) != -1
 
     def test_remove_elements(self):
