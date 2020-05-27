@@ -19,7 +19,7 @@ class TestJobcard(unittest.TestCase):
     def setUp(self):
         self.test_jobcard = Jobcard()
         # Insert some test elements
-        self.test_jobcard.set_property("ABC", "def", 42)
+        self.test_jobcard["ABC"]["def"] = 42
 
     def test_input_path(self):
         expected_line = "path_to_input = '%s'" % INPUT_PATH
@@ -37,7 +37,7 @@ class TestJobcard(unittest.TestCase):
         assert ctnt[group_start:group_end].find(expected_line) != -1
 
     def test_remove_elements(self):
-        self.test_jobcard.remove_property("ABC", "def")
+        del self.test_jobcard["ABC"]["def"]
         ctnt = str(self.test_jobcard)
         expected_line = "def = 42"
         assert ctnt.find("&ABC") == -1
