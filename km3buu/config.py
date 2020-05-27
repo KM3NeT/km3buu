@@ -22,7 +22,7 @@ __maintainer__ = "Johannes Schumann"
 __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
-CONFIG_PATH = os.path.expanduser('~/.km3buu/config')
+CONFIG_PATH = os.path.expanduser("~/.km3buu/config")
 
 log = get_logger(__name__)
 
@@ -37,7 +37,7 @@ class Config(object):
         if section not in self.config.sections():
             self.config.add_section(section)
         self.config.set(section, key, value)
-        with open(self._config_path, 'w') as f:
+        with open(self._config_path, "w") as f:
             self.config.write(f)
 
     def get(self, section, key, default=None):
@@ -59,17 +59,17 @@ class Config(object):
             dev_path = abspath(join(dirname(__file__), os.pardir, IMAGE_NAME))
             if isfile(dev_path):
                 image_path = dev_path
-            elif click.confirm("Is the GiBUU image already available?",
-                               default=False):
-                image_path = click.prompt("GiBUU image path?",
-                                          type=click.Path(exists=True,
-                                                          dir_okay=False))
+            elif click.confirm("Is the GiBUU image already available?", default=False):
+                image_path = click.prompt(
+                    "GiBUU image path?", type=click.Path(exists=True, dir_okay=False)
+                )
             elif click.confirm("Install image from remote?", default=True):
                 default_dir = join(os.environ["HOME"], ".km3buu")
                 image_dir = click.prompt(
                     "GiBUU image path (default: ~/.km3buu) ?",
                     type=click.Path(exists=True, file_okay=False),
-                    default=default_dir)
+                    default=default_dir,
+                )
                 image_path = build_image(image_dir)
             self.set(section, key, image_path)
         return image_path
