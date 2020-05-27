@@ -20,13 +20,12 @@ from thepipe.logger import get_logger
 
 from . import IMAGE_NAME
 from .config import Config
-from .jobcard import Jobcard
+from .jobcard import Jobcard, read_jobcard
 from .environment import is_singularity_version_greater, MIN_SINGULARITY_VERSION
 
 log = get_logger(basename(__file__))
 
-if not is_singularity_version_greater(
-        MIN_SINGULARITY_VERSION):  # pragma: no cover
+if not is_singularity_version_greater(MIN_SINGULARITY_VERSION):  # pragma: no cover
     log.error("Singularity version lower than %s" % MIN_SINGULARITY_VERSION)
     raise OSError("Singularity version below %s" % MIN_SINGULARITY_VERSION)
 
@@ -45,7 +44,7 @@ $CONTAINER_GIBUU_EXEC < {1};
 """
 
 
-def run_jobcard(jobcard, outdir):
+def run_jobcard(jobcard, outdir, fluxfile=None):
     """
     Method for run
 
@@ -56,28 +55,40 @@ def run_jobcard(jobcard, outdir):
         of a jobcard object or a path to a jobcard
     outdir: str 
         The path to the directory the output should be written to.
+    fluxfile: str
+        Filepath of the custom flux file if initNeutrino/nuExp = 99
     """
-    script_dir = TemporaryDirectory()
+    input_dir = TemporaryDirectory()
     outdir = abspath(outdir)
     log.info("Create temporary file for jobcard")
-    jobcard_fpath = join(script_dir.name, "tmp.job")
+    jobcard_fpath = join(input_dir.name, "tmp.job")
+
+    if isinstance(jobcard, str) and isfile(jobcard):
+        jobcard = read_jobcard(jobcard)
+
+    if "initneutrino" in jobcard and jobcard["initneutrino"]["nuexp"] == 99:
+        if fluxfile is None or not isfile(fluxfile):
+            raise IOError("Fluxfile not found!")
+        tmp_fluxfile = join(input_dir.name, basename(fluxfile))
+        os.system("cp %s %s" % (fluxfile, tmp_fluxfile))
+        jobcard["initneutrino"]["filenameflux"] = tmp_fluxfile
     if isinstance(jobcard, Jobcard):
-        with open(jobcard_fpath, 'w') as f:
+        with open(jobcard_fpath, "w") as f:
             f.write(str(jobcard))
-    elif isfile(jobcard):
-        os.system("cp %s %s" % (jobcard, jobcard_fpath))
     else:
         log.error("No valid jobcard reference given: %s" % jobcard)
     log.info("Create temporary file for associated runscript")
-    script_fpath = join(script_dir.name, "run.sh")
-    with open(script_fpath, 'w') as f:
+    script_fpath = join(input_dir.name, "run.sh")
+    with open(script_fpath, "w") as f:
         ctnt = GIBUU_SHELL.format(outdir, jobcard_fpath)
         f.write(ctnt)
-    output = Client.execute(Config().gibuu_image_path,
-                            ['/bin/sh', script_fpath],
-                            bind=[outdir, script_dir.name],
-                            return_result=True)
-    msg = output['message']
+    output = Client.execute(
+        Config().gibuu_image_path,
+        ["/bin/sh", script_fpath],
+        bind=[outdir, input_dir.name],
+        return_result=True,
+    )
+    msg = output["message"]
     if isinstance(msg, str):
         log.info("GiBUU output:\n %s" % msg)
     else:
