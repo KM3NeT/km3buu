@@ -31,7 +31,10 @@ class Config(object):
     def __init__(self, config_path=CONFIG_PATH):
         self.config = ConfigParser()
         self._config_path = config_path
-        os.makedirs(dirname(CONFIG_PATH), exist_ok=True)
+        if isfile(self._config_path):
+            self.config.read(self._config_path)
+        else:
+            os.makedirs(dirname(CONFIG_PATH), exist_ok=True)
 
     def set(self, section, key, value):
         if section not in self.config.sections():
@@ -54,7 +57,7 @@ class Config(object):
     def gibuu_image_path(self):
         section = "GiBUU"
         key = "image_path"
-        image_path = self.get(section, section)
+        image_path = self.get(section, key)
         if image_path is None or not isfile(image_path):
             dev_path = abspath(join(dirname(__file__), os.pardir, IMAGE_NAME))
             if isfile(dev_path):
