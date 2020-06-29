@@ -25,7 +25,8 @@ from .environment import is_singularity_version_greater, MIN_SINGULARITY_VERSION
 
 log = get_logger(basename(__file__))
 
-if not is_singularity_version_greater(MIN_SINGULARITY_VERSION):  # pragma: no cover
+if not is_singularity_version_greater(
+        MIN_SINGULARITY_VERSION):  # pragma: no cover
     log.error("Singularity version lower than %s" % MIN_SINGULARITY_VERSION)
     raise OSError("Singularity version below %s" % MIN_SINGULARITY_VERSION)
 
@@ -66,12 +67,14 @@ def run_jobcard(jobcard, outdir, fluxfile=None):
     if isinstance(jobcard, str) and isfile(jobcard):
         jobcard = read_jobcard(jobcard)
 
-    if "initneutrino" in jobcard and jobcard["initneutrino"]["nuexp"] == 99:
+    if "neutrino_induced" in jobcard and jobcard["neutrino_induced"][
+            "nuexp"] == 99:
         if fluxfile is None or not isfile(fluxfile):
             raise IOError("Fluxfile not found!")
         tmp_fluxfile = join(input_dir.name, basename(fluxfile))
         os.system("cp %s %s" % (fluxfile, tmp_fluxfile))
-        jobcard["initneutrino"]["filenameflux"] = tmp_fluxfile
+        log.info("Set FileNameFlux to: %s" % tmp_fluxfile)
+        jobcard["neutrino_induced"]["FileNameflux"] = tmp_fluxfile
     if isinstance(jobcard, Jobcard):
         with open(jobcard_fpath, "w") as f:
             f.write(str(jobcard))
