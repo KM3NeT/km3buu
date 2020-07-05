@@ -52,7 +52,6 @@ class Jobcard(f90nml.Namelist):
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
-
     def __init__(self, *args, **kwargs):
         if "input_path" in kwargs:
             self.input_path = "%s" % input_path
@@ -84,8 +83,12 @@ def read_jobcard(filepath):
 
 
 def generate_neutrino_jobcard_template(
-    process, flavour, energy, target, write_events=False, input_path=INPUT_PATH
-):  # pragma: no cover
+    process,
+    flavour,
+    energy_limits,
+    target,
+    write_events=False,
+    input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
 
@@ -95,8 +98,8 @@ def generate_neutrino_jobcard_template(
         Interaction channel ["CC", "NC", "antiCC", "antiNC"]
     flavour: str
         Flavour ["electron", "muon", "tau"]
-    energy: float
-        Initial energy of the neutrino in GeV
+    energy_range: (float, float)
+        Energy range limits of the incoming neutrino flux in GeV
     target: (int, int)
         (Z, A) describing the target nukleon
     input_path: str
@@ -106,7 +109,8 @@ def generate_neutrino_jobcard_template(
     # NEUTRINO
     jc["neutrino_induced"]["process_ID"] = PROCESS_LOOKUP[process.lower()]
     jc["neutrino_induced"]["flavour_ID"] = FLAVOR_LOOKUP[flavour.lower()]
-    jc["neutrino_induced"]["nuXsectionMode"] = 6
+    jc["neutrino_induced"]["nuXsectionMode"] = XSECTIONMODE_LOOKUP[
+        "EXP_dSigmaMC"]
     jc["neutrino_induced"]["includeDIS"] = True
     jc["neutrino_induced"]["includeDELTA"] = True
     jc["neutrino_induced"]["includeRES"] = True
@@ -115,18 +119,25 @@ def generate_neutrino_jobcard_template(
     jc["neutrino_induced"]["include2p2hQE"] = True
     jc["neutrino_induced"]["include2pi"] = False
     jc["neutrino_induced"]["include2p2hDelta"] = False
-    jc["neutrino_inducted"]["printAbsorptionXS"] = True
-
+    jc["neutrino_induced"]["printAbsorptionXS"] = True
+    jc["neutrino_induced"]["nuExp"] = 99
     # INPUT
     jc["input"]["numTimeSteps"] = 0
     jc["input"]["eventtype"] = 5
-    jc["input"]["numEnsembles"] = 100000
+    jc["input"]["numEnsembles"] = 10000
     jc["input"]["delta_T"] = 0.2
     jc["input"]["localEnsemble"] = True
     jc["input"]["num_runs_SameEnergy"] = 1
+    # FLUX
+    jc["nl_fluxcuts"]["energylimit_for_Qsrec"] = True
+    jc["nl_neutrino_energyFlux"]["Eflux_min"] = energy_limits[0]
+    jc["nl_neutrino_energyFlux"]["Eflux_max"] = energy_limits[1]
     # TARGET
     jc["target"]["Z"] = target[0]
     jc["target"]["A"] = target[1]
     # MISC
-    jc["neutrinoAnalysis"]["outputEvents"] = write_events
+    jc["neutrinoAnalysis"]["outputEvents"] = False
+    jc["EventOutput"]["EventFormat"] = 1
+    jc["EventOutput"]["WritePerturbativeParticles"] = True
+    jc["EventOutput"]["WriteRealParticles"] = False
     return jc
