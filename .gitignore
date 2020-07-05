@@ -42,4 +42,7 @@ doc/auto_examples/
 doc/modules/
 doc/api
 
+# 
+junit*.xml
+reports
 

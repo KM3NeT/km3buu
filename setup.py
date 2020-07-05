@@ -36,10 +36,9 @@ setup(
         'tag_regex': r'^(?P<prefix>v)?(?P<version>[^\+]+)(?P<suffix>.*)?$',
     },
     install_requires=REQUIREMENTS,
-    extras_require={
-        'dev': DEV_REQUIREMENTS
-        },
+    extras_require={'dev': DEV_REQUIREMENTS},
     python_requires='>=3.0',
+    entry_points={'console_scripts': ['km3buu=km3buu.cmd:main']},
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
