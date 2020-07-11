@@ -52,15 +52,14 @@ class Jobcard(f90nml.Namelist):
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
-
     def __init__(self, *args, **kwargs):
+        super(Jobcard, self).__init__(*args, **kwargs)
         if "input_path" in kwargs:
-            self.input_path = "%s" % input_path
+            self.input_path = str(input_path)
             del kwargs["input_path"]
         else:
             self.input_path = INPUT_PATH
         self.__getitem__("input")["path_to_input"] = self.input_path
-        super(Jobcard, self).__init__(*args, **kwargs)
 
     def __getitem__(self, key):
         if not self.__contains__(key):
@@ -84,8 +83,12 @@ def read_jobcard(filepath):
 
 
 def generate_neutrino_jobcard_template(
-    process, flavour, energy, target, write_events=False, input_path=INPUT_PATH
-):  # pragma: no cover
+        process,
+        flavour,
+        energy,
+        target,
+        write_events=False,
+        input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
 
