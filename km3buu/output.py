@@ -1,4 +1,4 @@
-# Filename: io.py
+# Filename: output.py
 """
 IO for km3buu
 
@@ -15,15 +15,53 @@ __status__ = "Development"
 import re
 import mmap
 import numpy as np
+import pylhe
 from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
+from collections import defaultdict
+import awkward1
+import itertools
 
 from .jobcard import Jobcard
 
 EVENT_FILENAME = "FinalEvents.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
+
+EVENT_FILE_DTYPE = np.dtype([
+    ("run", np.uint32),
+    ("event", np.uint32),
+    ("id", np.int32),
+    ("charge", np.float64),
+    ("perweight", np.float64),
+    ("x", np.float64),
+    ("y", np.float64),
+    ("z", np.float64),
+    ("p_t", np.float64),
+    ("p_x", np.float64),
+    ("p_y", np.float64),
+    ("p_z", np.float64),
+    ("history", np.int32),
+    ("pID", np.int32),
+    ("nu_energy", np.float64),
+    ("Bx", np.float64),
+    ("By", np.float64),
+])
+
+LHE_NU_INFO_DTYPE = np.dtype([('type', np.int), ('weight', np.float64),
+                              ('mom_lepton_in_E', np.float64),
+                              ('mom_lepton_in_x', np.float64),
+                              ('mom_lepton_in_y', np.float64),
+                              ('mom_lepton_in_z', np.float64),
+                              ('mom_lepton_out_E', np.float64),
+                              ('mom_lepton_out_x', np.float64),
+                              ('mom_lepton_out_y', np.float64),
+                              ('mom_lepton_out_z', np.float64),
+                              ('mom_nucleon_in_E', np.float64),
+                              ('mom_nucleon_in_x', np.float64),
+                              ('mom_nucleon_in_y', np.float64),
+                              ('mom_nucleon_in_z', np.float64)])
 
 
 def read_nu_abs_xsection(filepath):
@@ -39,14 +77,32 @@ def read_nu_abs_xsection(filepath):
     """
     with open(filepath, "r") as f:
         lines = f.readlines()
-    header = re.sub(r'\d+:|#', '', lines[0]).split()
+    header = re.sub(r"\d+:|#", "", lines[0]).split()
     dt = np.dtype([(field, np.float64) for field in header])
     values = np.genfromtxt(StringIO(lines[-1]), dtype=dt)
     return values
 
 
+def parse_gibuu_event_info(line):
+    fields = line.split()[1:]
+    if int(fields[0]) != 5:
+        raise NotImplementedError(
+            "Event information type %s cannot be parsed yet!" % fields[0])
+    else:
+        return np.genfromtxt(StringIO(line[3:]), dtype=LHE_NU_INFO_DTYPE)
+
+
 class FinalEvents:
+    """ 
+    Reader for FinalEvents.dat
+
+    Parameters
+    ----------
+    filepath: str
+        Filepath pointing to the FinalEvents file
+    """
     def __init__(self, filepath):
+        """ Constructor """
         self._filepath = filepath
         with open(self._filepath, "r") as f:
             self._final_events_map = mmap.mmap(f.fileno(),
@@ -58,7 +114,7 @@ class FinalEvents:
         self._final_events_map.seek(0)
         line_pos = []
         while True:
-            next_pos = self._final_events_map.find(b'\n') + 1
+            next_pos = self._final_events_map.find(b"\n") + 1
             if next_pos == 0:
                 break
             line_pos.append(next_pos)
@@ -73,28 +129,19 @@ class FinalEvents:
         s = []
         for p in pos:
             self._final_events_map.seek(p)
-            line = self._final_events_map.readline().decode('utf-8').strip(
+            line = self._final_events_map.readline().decode("utf-8").strip(
                 "\n")
-            s.append("%s %.3f %3f\n" % (line, 0., 0.))
-        dt = np.dtype([('run', np.uint32), ('event', np.uint32),
-                       ('id', np.int32), ('charge', np.float64),
-                       ('perweight', np.float64), ('x', np.float64),
-                       ('y', np.float64), ('z', np.float64),
-                       ('p_t', np.float64), ('p_x', np.float64),
-                       ('p_y', np.float64), ('p_z', np.float64),
-                       ('history', np.int32), ('pID', np.int32),
-                       ('nu_energy', np.float64), ('Bx', np.float64),
-                       ('By', np.float64)])
-        values = np.genfromtxt(StringIO('\n'.join(s)), dtype=dt)
+            s.append("%s %.3f %3f\n" % (line, 0.0, 0.0))
+        values = np.genfromtxt(StringIO("\n".join(s)), dtype=EVENT_FILE_DTYPE)
         # values['Bx'] = / 2. /
-        values['By'] = 1 - values["p_t"] / values["nu_energy"]
+        values["By"] = 1 - values["p_t"] / values["nu_energy"]
         return values
 
     def __len__(self):
         return len(self._line_pos)
 
 
-OUTPUT_FILE_WRAPPERS = {'FinalEvents.dat': FinalEvents}
+OUTPUT_FILE_WRAPPERS = {"FinalEvents.dat": FinalEvents}
 
 
 class GiBUUOutput:
@@ -120,9 +167,11 @@ class GiBUUOutput:
                     FinalEvents(join(self._data_path, EVENT_FILENAME)))
         if XSECTION_FILENAMES["all"] in self.output_files:
             setattr(
-                self, "xsection",
+                self,
+                "xsection",
                 read_nu_abs_xsection(
-                    join(self._data_path, XSECTION_FILENAMES["all"])))
+                    join(self._data_path, XSECTION_FILENAMES["all"])),
+            )
         self._jobcard = None
 
     def associate_jobcard(self, jobcard):
