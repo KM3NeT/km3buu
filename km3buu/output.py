@@ -23,10 +23,13 @@ from tempfile import TemporaryDirectory
 from collections import defaultdict
 import awkward1
 import itertools
+from scipy.spatial.transform import Rotation
 
 from .jobcard import Jobcard
 
 EVENT_FILENAME = "FinalEvents.dat"
+LHE_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.lhe"
+LHE_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.lhe"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 
 EVENT_FILE_DTYPE = np.dtype([
@@ -163,8 +166,9 @@ class GiBUUOutput:
             if isfile(join(self._data_path, f))
         ]
         if EVENT_FILENAME in self.output_files:
-            setattr(self, "events",
+            setattr(self, "final_events",
                     FinalEvents(join(self._data_path, EVENT_FILENAME)))
+
         if XSECTION_FILENAMES["all"] in self.output_files:
             setattr(
                 self,
@@ -172,7 +176,20 @@ class GiBUUOutput:
                 read_nu_abs_xsection(
                     join(self._data_path, XSECTION_FILENAMES["all"])),
             )
-        self._jobcard = None
+        lhe_pert_regex = re.compile(LHE_PERT_FILENAME)
+        self.lhe_pert_files = list(
+            filter(lhe_pert_regex.match, self.output_files))
+
+        lhe_real_regex = re.compile(LHE_REAL_FILENAME)
+        self.lhe_real_files = list(
+            filter(lhe_real_regex.match, self.output_files))
+
+        jobcard_regex = re.compile('.job')
+        jobcard_files = list(filter(jobcard_regex.match, self.output_files))
+        if len(jobcard_files) == 1:
+            self._jobcard = jobcard_files[0]
+        else:
+            self._jobcard = None
 
     def associate_jobcard(self, jobcard):
         """
@@ -184,3 +201,61 @@ class GiBUUOutput:
             Jobcard object instance
         """
         self._jobcard = jobcard
+
+
+def write_detector_file(gibuu_output,
+                        ofile="gibuu.aanet.root",
+                        can=(0, 476.5, 403.4),
+                        livetime=3.156e7):
+    import aa, ROOT
+    fobj = ROOT.EventFile()
+    fobj.set_output(ofile)
+    mc_event_id = 0
+
+    for ifile in gibuu_output.lhe_pert_files:
+        lhe_data = pylhe.readLHEWithAttributes(ifile)
+        for event in lhe_data:
+            fobj.evt.clear()
+            fobj.evt.id = mc_event_id
+            fobj.evt.mc_run_id = mc_event_id
+            mc_event_id += 1
+            # Vertex Position
+            r = can[2] * np.sqrt(np.random.uniform(0, 1))
+            phi = np.random.uniform(0, 2 * np.pi)
+            pos_x = r * np.cos(phi)
+            pos_y = r * np.sin(phi)
+            pos_z = np.random.uniform(can[0], can[1])
+            vtx_pos = np.array([pos_x, pos_y, pos_z])
+            # Direction
+            phi = np.random.uniform(0, 2 * np.pi)
+            cos_theta = np.random.uniform(-1, 1)
+            sin_theta = np.sqrt(1 - cos_theta**2)
+
+            dir_x = np.cos(phi) * sin_theta
+            dir_y = np.sin(phi) * sin_theta
+            dir_z = cos_theta
+
+            direction = np.array([dir_x, dir_y, dir_z])
+            rotation = np.array([dir_y, -dir_x, 0])
+            sin_rot = np.linalg.norm(rotation)
+            R = Rotation.from_rotvec(rotation * np.arcsin(sin_rot) / sin_rot)
+
+            timestamp = np.random.uniform(0, livetime)
+
+            # event_info = parse_gibuu_event_info(event.optional[0])
+            # p_lepton_in = event_info
+            for i, p in enumerate(event.particles):
+                trk = ROOT.Trk()
+                trk.id = i
+                mom = np.array([p.px, p.py, p.pz])
+                p_dir = mom / np.linalg.norm(mom)
+                trk.pos.set(*vtx_pos)
+                trk.dir.set(*p_dir)
+                trk.mother_id = 0
+                trk.type = int(p.id)
+                trk.E = np.linalg.norm(mom)
+                trk.t = timestamp
+                fobj.evt.mc_trks.push_back(trk)
+            fobj.write()
+
+    del fobj
