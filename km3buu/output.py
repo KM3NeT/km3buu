@@ -25,7 +25,7 @@ import awkward1
 import itertools
 from scipy.spatial.transform import Rotation
 
-from .jobcard import Jobcard
+from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 
 EVENT_FILENAME = "FinalEvents.dat"
 LHE_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.lhe"
@@ -184,12 +184,14 @@ class GiBUUOutput:
         self.lhe_real_files = list(
             filter(lhe_real_regex.match, self.output_files))
 
-        jobcard_regex = re.compile('.job')
+        jobcard_regex = re.compile('.*.job')
         jobcard_files = list(filter(jobcard_regex.match, self.output_files))
+        print(self.output_files)
         if len(jobcard_files) == 1:
-            self._jobcard = jobcard_files[0]
+            self._jobcard_fname = jobcard_files[0]
+            self.jobcard = read_jobcard(self._jobcard_fname)
         else:
-            self._jobcard = None
+            self.jobcard = None
 
     def associate_jobcard(self, jobcard):
         """
@@ -200,7 +202,7 @@ class GiBUUOutput:
         jobcard: Jobcard
             Jobcard object instance
         """
-        self._jobcard = jobcard
+        self.jobcard = jobcard
 
 
 def write_detector_file(gibuu_output,
@@ -211,6 +213,21 @@ def write_detector_file(gibuu_output,
     fobj = ROOT.EventFile()
     fobj.set_output(ofile)
     mc_event_id = 0
+
+    is_cc = False
+
+    if gibuu_output.jobcard is None:
+        raise EnvironmentError("No jobcard provided within the GiBUU output!")
+
+    nu_type = PDGID_LOOKUP[gibuu_output.jobcard['neutrino_induced']
+                           ['flavor_id']]
+    sec_lep_type = nu_type
+    if abs(gibuu_output.jobcard['neutrino_induced']['process_id']) == 2:
+        is_cc = True
+        sec_lep_type -= 1
+    if gibuu_output.jobcard['neutrino_induced']['process_id'] < 0:
+        nu_type *= -1
+        sec_lep_type *= -1
 
     for ifile in gibuu_output.lhe_pert_files:
         lhe_data = pylhe.readLHEWithAttributes(ifile)
@@ -242,13 +259,37 @@ def write_detector_file(gibuu_output,
 
             timestamp = np.random.uniform(0, livetime)
 
-            # event_info = parse_gibuu_event_info(event.optional[0])
-            # p_lepton_in = event_info
+            event_info = parse_gibuu_event_info(event.optional[0])
+            nu_in_trk = ROOT.Trk()
+            nu_in_trk.id = 0
+            nu_in_trk.mother_id = -1
+            nu_in_trk.type = nu_type
+            nu_in_trk.pos.set(*vtx_pos)
+            nu_in_trk.dir.set(*direction)
+            nu_in_trk.E = event_info['mom_lepton_in_E'].item()
+            nu_in_trk.t = timestamp
+            nu_in_trk.setusr('cc', is_cc)
+            fobj.evt.mc_trks.push_back(nu_in_trk)
+
+            lep_out_trk = ROOT.Trk()
+            lep_out_trk.id = 1
+            lep_out_trk.mother_id = 0
+            lep_out_trk.type = sec_lep_type
+            lep_out_trk.pos.set(*vtx_pos)
+            mom = np.array(event_info[[
+                'mom_lepton_out_x', 'mom_lepton_out_y', 'mom_lepton_out_z'
+            ]].item())
+            p_dir = R.apply(mom / np.linalg.norm(mom))
+            lep_out_trk.dir.set(*p_dir)
+            lep_out_trk.E = event_info['mom_lepton_out_E'].item()
+            lep_out_trk.t = timestamp
+            fobj.evt.mc_trks.push_back(lep_out_trk)
+
             for i, p in enumerate(event.particles):
                 trk = ROOT.Trk()
-                trk.id = i
+                trk.id = i + 2
                 mom = np.array([p.px, p.py, p.pz])
-                p_dir = mom / np.linalg.norm(mom)
+                p_dir = R.apply(mom / np.linalg.norm(mom))
                 trk.pos.set(*vtx_pos)
                 trk.dir.set(*p_dir)
                 trk.mother_id = 0
@@ -257,5 +298,7 @@ def write_detector_file(gibuu_output,
                 trk.t = timestamp
                 fobj.evt.mc_trks.push_back(trk)
             fobj.write()
+            if mc_event_id > 100:
+                break
 
     del fobj

@@ -23,6 +23,7 @@ INPUT_PATH = "/opt/buuinput2019/"
 
 PROCESS_LOOKUP = {"cc": 2, "nc": 3, "anticc": -2, "antinc": -3}
 FLAVOR_LOOKUP = {"electron": 1, "muon": 2, "tau": 3}
+PDGID_LOOKUP = {1: 12, 2: 14, 3: 16}
 XSECTIONMODE_LOOKUP = {
     "integratedSigma": 0,
     "dSigmadCosThetadElepton": 1,
@@ -83,12 +84,12 @@ def read_jobcard(filepath):
 
 
 def generate_neutrino_jobcard_template(
-        process,
-        flavour,
-        energy,
-        target,
-        write_events=False,
-        input_path=INPUT_PATH):  # pragma: no cover
+    process,
+    flavour,
+    energy,
+    target,
+    write_events=False,
+    input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
 
