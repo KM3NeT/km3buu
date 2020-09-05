@@ -23,6 +23,8 @@ JOBCARDS=$(find $CONTAINER_JOBCARD_DIR -name "*.job")
 
 cd $CONTAINER_OUTPUT_DIR
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/bin
+
 for filepath in $JOBCARDS; do
     filename=$(basename -- $filepath)
     foldername="${filename%.*}"
