@@ -20,7 +20,6 @@ From: debian:stretch
     cmake -DCMAKE_INSTALL_PREFIX=/usr/local -Dpyroot=OFF -Dpyroot_experimental=OFF -Dx11=OFF -Dxft=OFF ..  && \
     make -j4; make install
 
-
     cd /opt && \
     wget http://www.hepforge.org/archive/roottuple/RootTuple-1.0.0.tar.gz && \
     tar xvzf RootTuple-1.0.0.tar.gz && \
@@ -42,7 +41,8 @@ From: debian:stretch
     rm -rf /opt/*.tar.gz
 
 %environment
-    export CONTAINER_GIBUU_EXEC=/opt/release2019/objects/GiBUU.x
+    export CONTAINER_GIBUU_EXEC=/opt/release2019/objects/GiBUU.x && \
+    export LD_LIBRARY_PATH=/usr/local/lib
 
 
 
