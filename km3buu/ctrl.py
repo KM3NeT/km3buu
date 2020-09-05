@@ -33,6 +33,8 @@ if not is_singularity_version_greater(
 GIBUU_SHELL = """
 #!/bin/bash
 
+export LD_LIBRARY_PATH=/usr/local/lib
+
 if [ -z "$CONTAINER_GIBUU_EXEC+x" ];
 then
     echo "No GIBUU executable provided via CONTAINER_GIBUU_EXEC";
