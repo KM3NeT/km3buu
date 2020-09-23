@@ -30,27 +30,9 @@ from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 EVENT_FILENAME = "FinalEvents.dat"
 LHE_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.lhe"
 LHE_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.lhe"
+ROOT_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.root"
+ROOT_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.root"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
-
-EVENT_FILE_DTYPE = np.dtype([
-    ("run", np.uint32),
-    ("event", np.uint32),
-    ("id", np.int32),
-    ("charge", np.float64),
-    ("perweight", np.float64),
-    ("x", np.float64),
-    ("y", np.float64),
-    ("z", np.float64),
-    ("p_t", np.float64),
-    ("p_x", np.float64),
-    ("p_y", np.float64),
-    ("p_z", np.float64),
-    ("history", np.int32),
-    ("pID", np.int32),
-    ("nu_energy", np.float64),
-    ("Bx", np.float64),
-    ("By", np.float64),
-])
 
 LHE_NU_INFO_DTYPE = np.dtype([('type', np.int), ('weight', np.float64),
                               ('mom_lepton_in_E', np.float64),
@@ -65,6 +47,16 @@ LHE_NU_INFO_DTYPE = np.dtype([('type', np.int), ('weight', np.float64),
                               ('mom_nucleon_in_x', np.float64),
                               ('mom_nucleon_in_y', np.float64),
                               ('mom_nucleon_in_z', np.float64)])
+
+EVENT_TYPE = {
+    1: 'QE',
+    32: 'pi neutron-background',
+    33: 'pi proton-background',
+    34: 'DIS',
+    35: '2p2h QE',
+    36: '2p2h Delta',
+    37: '2pi background'
+}
 
 
 def read_nu_abs_xsection(filepath):
@@ -93,58 +85,6 @@ def parse_gibuu_event_info(line):
             "Event information type %s cannot be parsed yet!" % fields[0])
     else:
         return np.genfromtxt(StringIO(line[3:]), dtype=LHE_NU_INFO_DTYPE)
-
-
-class FinalEvents:
-    """ 
-    Reader for FinalEvents.dat
-
-    Parameters
-    ----------
-    filepath: str
-        Filepath pointing to the FinalEvents file
-    """
-    def __init__(self, filepath):
-        """ Constructor """
-        self._filepath = filepath
-        with open(self._filepath, "r") as f:
-            self._final_events_map = mmap.mmap(f.fileno(),
-                                               0,
-                                               prot=mmap.PROT_READ)
-        self._line_pos = self._line_mapper()
-
-    def _line_mapper(self):
-        self._final_events_map.seek(0)
-        line_pos = []
-        while True:
-            next_pos = self._final_events_map.find(b"\n") + 1
-            if next_pos == 0:
-                break
-            line_pos.append(next_pos)
-            self._final_events_map.seek(line_pos[-1])
-        return line_pos[:-1]
-
-    def __getitem__(self, i):
-        if isinstance(i, slice):
-            pos = self._line_pos[i]
-        else:
-            pos = [self._line_pos[i]]
-        s = []
-        for p in pos:
-            self._final_events_map.seek(p)
-            line = self._final_events_map.readline().decode("utf-8").strip(
-                "\n")
-            s.append("%s %.3f %3f\n" % (line, 0.0, 0.0))
-        values = np.genfromtxt(StringIO("\n".join(s)), dtype=EVENT_FILE_DTYPE)
-        # values['Bx'] = / 2. /
-        values["By"] = 1 - values["p_t"] / values["nu_energy"]
-        return values
-
-    def __len__(self):
-        return len(self._line_pos)
-
-
-OUTPUT_FILE_WRAPPERS = {"FinalEvents.dat": FinalEvents}
 
 
 class GiBUUOutput:
@@ -176,11 +116,11 @@ class GiBUUOutput:
                 read_nu_abs_xsection(
                     join(self._data_path, XSECTION_FILENAMES["all"])),
             )
-        lhe_pert_regex = re.compile(LHE_PERT_FILENAME)
+        root_pert_regex = re.compile(ROOT_PERT_FILENAME)
         self.lhe_pert_files = list(
             filter(lhe_pert_regex.match, self.output_files))
 
-        lhe_real_regex = re.compile(LHE_REAL_FILENAME)
+        root_real_regex = re.compile(ROOT_REAL_FILENAME)
         self.lhe_real_files = list(
             filter(lhe_real_regex.match, self.output_files))
 
@@ -205,13 +145,16 @@ class GiBUUOutput:
         self.jobcard = jobcard
 
 
+# def read_pert_gibuu_output(filenames):
+
+
 def write_detector_file(gibuu_output,
                         ofile="gibuu.aanet.root",
                         can=(0, 476.5, 403.4),
                         livetime=3.156e7):
     import aa, ROOT
-    fobj = ROOT.EventFile()
-    fobj.set_output(ofile)
+    aafile = ROOT.EventFile()
+    aafile.set_output(ofile)
     mc_event_id = 0
 
     is_cc = False
@@ -232,9 +175,9 @@ def write_detector_file(gibuu_output,
     for ifile in gibuu_output.lhe_pert_files:
         lhe_data = pylhe.readLHEWithAttributes(ifile)
         for event in lhe_data:
-            fobj.evt.clear()
-            fobj.evt.id = mc_event_id
-            fobj.evt.mc_run_id = mc_event_id
+            aafile.evt.clear()
+            aafile.evt.id = mc_event_id
+            aafile.evt.mc_run_id = mc_event_id
             mc_event_id += 1
             # Vertex Position
             r = can[2] * np.sqrt(np.random.uniform(0, 1))
@@ -269,7 +212,7 @@ def write_detector_file(gibuu_output,
             nu_in_trk.E = event_info['mom_lepton_in_E'].item()
             nu_in_trk.t = timestamp
             nu_in_trk.setusr('cc', is_cc)
-            fobj.evt.mc_trks.push_back(nu_in_trk)
+            aafile.evt.mc_trks.push_back(nu_in_trk)
 
             lep_out_trk = ROOT.Trk()
             lep_out_trk.id = 1
@@ -283,7 +226,7 @@ def write_detector_file(gibuu_output,
             lep_out_trk.dir.set(*p_dir)
             lep_out_trk.E = event_info['mom_lepton_out_E'].item()
             lep_out_trk.t = timestamp
-            fobj.evt.mc_trks.push_back(lep_out_trk)
+            aafile.evt.mc_trks.push_back(lep_out_trk)
 
             for i, p in enumerate(event.particles):
                 trk = ROOT.Trk()
@@ -296,9 +239,9 @@ def write_detector_file(gibuu_output,
                 trk.type = int(p.id)
                 trk.E = np.linalg.norm(mom)
                 trk.t = timestamp
-                fobj.evt.mc_trks.push_back(trk)
-            fobj.write()
+                aafile.evt.mc_trks.push_back(trk)
+            aafile.write()
             if mc_event_id > 100:
                 break
 
-    del fobj
+    del aafile
