@@ -16,13 +16,15 @@ import re
 import mmap
 import numpy as np
 import pylhe
+import pandas as pd
 from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
 from collections import defaultdict
-import awkward1
+import awkward
 import itertools
+import uproot
 from scipy.spatial.transform import Rotation
 
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
@@ -34,6 +36,8 @@ ROOT_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.root"
 ROOT_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.root"
 FLUXDESCR_FILENAME = "neutrino_initialized_energyFlux.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
+
+PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "barcode"]
 
 LHE_NU_INFO_DTYPE = np.dtype([
     ("type", np.int),
@@ -146,8 +150,37 @@ class GiBUUOutput:
             self.jobcard = None
 
     def _read_flux_file(self):
-        self.flux_data = np.loadtxt(join(self._data_path, FLUXDESCR_FILENAME),
-                                    dtype=FLUX_INFORMATION_DTYPE)
+        fpath = join(self._data_path, FLUXDESCR_FILENAME)
+        if isfile(fpath):
+            self.flux_flat = False
+            self.flux_data = np.loadtxt(fpath, dtype=FLUX_INFORMATION_DTYPE)
+        else:
+            self.flux_flat = True
+
+    @property
+    def particle_df(self):
+        df = None
+        for fname in self.root_pert_files:
+            fobj = uproot.open(fname)
+            file_df = None
+            for col in PARTICLE_COLUMNS:
+                tmp = awkward.topandas(fobj["RootTuple"][col].array(),
+                                       flatten=True)
+                if file_df is None:
+                    file_df = tmp
+                else:
+                    file_df = pd.concat([file_df, tmp], axis=1)
+            if df is None:
+                df = file_df
+            else:
+                new_indices = file_df.index.levels[0] + df.index.levels[0].max(
+                ) + 1
+                file_df.index = file_df.index.set_levels(new_indices, level=0)
+                df = df.append(file_df)
+            fobj.close()
+
+        df = df.rename(columns=dict(enumerate(PARTICLE_COLUMNS)))
+        return df
 
 
 def write_detector_file(gibuu_output,
