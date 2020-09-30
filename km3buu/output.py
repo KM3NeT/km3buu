@@ -176,6 +176,7 @@ class GiBUUOutput:
             for col in PARTICLE_COLUMNS:
                 tmp = awkward.topandas(fobj["RootTuple"][col].array(),
                                        flatten=True)
+                tmp.name = col
                 if file_df is None:
                     file_df = tmp
                 else:
@@ -188,8 +189,6 @@ class GiBUUOutput:
                 file_df.index = file_df.index.set_levels(new_indices, level=0)
                 df = df.append(file_df)
             fobj.close()
-
-        df = df.rename(columns=dict(enumerate(PARTICLE_COLUMNS)))
         return df
 
     @property
