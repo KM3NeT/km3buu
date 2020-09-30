@@ -13,31 +13,31 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import re
-import mmap
 import numpy as np
-import pylhe
 import pandas as pd
 from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
-from collections import defaultdict
 import awkward
-import itertools
 import uproot
+from scipy.interpolate import UnivariateSpline
 from scipy.spatial.transform import Rotation
 
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 
 EVENT_FILENAME = "FinalEvents.dat"
-LHE_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.lhe"
-LHE_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.lhe"
 ROOT_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.root"
 ROOT_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.root"
 FLUXDESCR_FILENAME = "neutrino_initialized_energyFlux.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 
 PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "barcode"]
+EVENTINFO_COLUMNS = [
+    "weight", "evType", "lepIn_E", "lepIn_Px", "lepIn_Py", "lepIn_Pz",
+    "lepOut_E", "lepOut_Px", "lepOut_Py", "lepOut_Pz", "nuc_E", "nuc_Px",
+    "nuc_Py", "nuc_Pz"
+]
 
 LHE_NU_INFO_DTYPE = np.dtype([
     ("type", np.int),
@@ -151,17 +151,27 @@ class GiBUUOutput:
 
     def _read_flux_file(self):
         fpath = join(self._data_path, FLUXDESCR_FILENAME)
-        if isfile(fpath):
-            self.flux_flat = False
-            self.flux_data = np.loadtxt(fpath, dtype=FLUX_INFORMATION_DTYPE)
-        else:
-            self.flux_flat = True
+        self.flux_data = np.loadtxt(fpath, dtype=FLUX_INFORMATION_DTYPE)
+        self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
+                                                   self.flux_data["events"])
+
+    @property
+    def event_weights(self):
+        event_df = self.event_info_df
+        gibuu_wgt = event_df["weight"]
+        flux = self.flux_interpolation(event_df["lepIn_E"])
+        energy_min = np.min(self.flux_data["energy"])
+        energy_max = np.max(self.flux_data["energy"])
+        total_events = self.flux_interpolation.integral(energy_min, energy_max)
+        n_files = len(self.root_pert_files)
+        wgt = np.divide(total_events * gibuu_wgt, flux * n_files)
+        return wgt
 
     @property
     def particle_df(self):
         df = None
         for fname in self.root_pert_files:
-            fobj = uproot.open(fname)
+            fobj = uproot.open(join(self._data_path, fname))
             file_df = None
             for col in PARTICLE_COLUMNS:
                 tmp = awkward.topandas(fobj["RootTuple"][col].array(),
@@ -180,6 +190,19 @@ class GiBUUOutput:
             fobj.close()
 
         df = df.rename(columns=dict(enumerate(PARTICLE_COLUMNS)))
+        return df
+
+    @property
+    def event_info_df(self):
+        df = None
+        for fname in self.root_pert_files:
+            fobj = uproot.open(join(self._data_path, fname))
+            event_data = fobj["RootTuple"]
+            dct = {k: event_data[k].array() for k in EVENTINFO_COLUMNS}
+            if df is None:
+                df = pd.DataFrame(dct)
+            else:
+                df = df.append(pd.DataFrame(dct), ignore_index=True)
         return df
 
 
