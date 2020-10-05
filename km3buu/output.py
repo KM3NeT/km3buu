@@ -145,7 +145,8 @@ class GiBUUOutput:
         jobcard_files = list(filter(jobcard_regex.match, self.output_files))
         if len(jobcard_files) == 1:
             self._jobcard_fname = jobcard_files[0]
-            self.jobcard = read_jobcard(self._jobcard_fname)
+            self.jobcard = read_jobcard(
+                join(self._data_path, self._jobcard_fname))
         else:
             self.jobcard = None
 
