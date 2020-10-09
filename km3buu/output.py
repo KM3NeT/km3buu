@@ -14,7 +14,6 @@ __status__ = "Development"
 
 import re
 import numpy as np
-import pandas as pd
 from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
@@ -170,6 +169,7 @@ class GiBUUOutput:
 
     @property
     def particle_df(self):
+        import pandas as pd
         df = None
         for fname in self.root_pert_files:
             fobj = uproot.open(join(self._data_path, fname))
@@ -194,6 +194,7 @@ class GiBUUOutput:
 
     @property
     def event_info_df(self):
+        import pandas as pd
         df = None
         for fname in self.root_pert_files:
             fobj = uproot.open(join(self._data_path, fname))
@@ -203,6 +204,7 @@ class GiBUUOutput:
                 df = pd.DataFrame(dct)
             else:
                 df = df.append(pd.DataFrame(dct), ignore_index=True)
+            df["By"] = 1 - df.lepOut_E / df.lepIn_E
         return df
 
 
@@ -210,6 +212,20 @@ def write_detector_file(gibuu_output,
                         ofile="gibuu.aanet.root",
                         can=(0, 476.5, 403.4),
                         livetime=3.156e7):
+    """
+    Convert the GiBUU output to a KM3NeT MC (AANET) file
+
+    Parameters
+    ----------
+    gibuu_output: GiBUUOutput
+        Output object which wraps the information from the GiBUU output files
+    ofile: str
+        Output filename
+    can: tuple
+        The can dimensions which are used to distribute the events
+    livetime: float
+        The data livetime
+    """
     import aa, ROOT
 
     aafile = ROOT.EventFile()
@@ -231,9 +247,10 @@ def write_detector_file(gibuu_output,
         nu_type *= -1
         sec_lep_type *= -1
 
-    for ifile in gibuu_output.lhe_pert_files:
-        lhe_data = pylhe.readLHEWithAttributes(ifile)
-        for event in lhe_data:
+    for ifile in gibuu_output.root_pert_files:
+        fobj = uproot.open(ifile)
+        event_data = fobj["RootTuple"]
+        for event in event_data.lazyarrays():
             aafile.evt.clear()
             aafile.evt.id = mc_event_id
             aafile.evt.mc_run_id = mc_event_id
@@ -268,7 +285,7 @@ def write_detector_file(gibuu_output,
             nu_in_trk.type = nu_type
             nu_in_trk.pos.set(*vtx_pos)
             nu_in_trk.dir.set(*direction)
-            nu_in_trk.E = event_info["mom_lepton_in_E"].item()
+            nu_in_trk.E = event.lepIn_E
             nu_in_trk.t = timestamp
             nu_in_trk.setusr("cc", is_cc)
             aafile.evt.mc_trks.push_back(nu_in_trk)
@@ -278,25 +295,23 @@ def write_detector_file(gibuu_output,
             lep_out_trk.mother_id = 0
             lep_out_trk.type = sec_lep_type
             lep_out_trk.pos.set(*vtx_pos)
-            mom = np.array(event_info[[
-                "mom_lepton_out_x", "mom_lepton_out_y", "mom_lepton_out_z"
-            ]].item())
+            mom = np.array([event.lepOut_Px, event.lepOut_Py, event.lepOut_Pz])
             p_dir = R.apply(mom / np.linalg.norm(mom))
             lep_out_trk.dir.set(*p_dir)
-            lep_out_trk.E = event_info["mom_lepton_out_E"].item()
+            lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
             aafile.evt.mc_trks.push_back(lep_out_trk)
 
-            for i, p in enumerate(event.particles):
+            for i in range(len(event.E)):
                 trk = ROOT.Trk()
                 trk.id = i + 2
-                mom = np.array([p.px, p.py, p.pz])
+                mom = np.array([event.Px[i], event.Py[i], event.Pz[i]])
                 p_dir = R.apply(mom / np.linalg.norm(mom))
                 trk.pos.set(*vtx_pos)
                 trk.dir.set(*p_dir)
                 trk.mother_id = 0
-                trk.type = int(p.id)
-                trk.E = np.linalg.norm(mom)
+                trk.type = int(event.barcode[i])
+                trk.E = event.E[i]
                 trk.t = timestamp
                 aafile.evt.mc_trks.push_back(trk)
             aafile.write()
