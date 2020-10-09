@@ -240,7 +240,8 @@ def write_detector_file(gibuu_output,
     nu_type = PDGID_LOOKUP[gibuu_output.jobcard["neutrino_induced"]
                            ["flavor_id"]]
     sec_lep_type = nu_type
-    if abs(gibuu_output.jobcard["neutrino_induced"]["process_id"]) == 2:
+    ichan = abs(gibuu_output.jobcard["neutrino_induced"]["process_id"])
+    if ichan == 2:
         is_cc = True
         sec_lep_type -= 1
     if gibuu_output.jobcard["neutrino_induced"]["process_id"] < 0:
@@ -287,8 +288,6 @@ def write_detector_file(gibuu_output,
             nu_in_trk.dir.set(*direction)
             nu_in_trk.E = event.lepIn_E
             nu_in_trk.t = timestamp
-            nu_in_trk.setusr("cc", is_cc)
-            aafile.evt.mc_trks.push_back(nu_in_trk)
 
             lep_out_trk = ROOT.Trk()
             lep_out_trk.id = 1
@@ -300,6 +299,14 @@ def write_detector_file(gibuu_output,
             lep_out_trk.dir.set(*p_dir)
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
+
+            bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
+            nu_in_trk.setusr('bx', -1)
+            nu_in_trk.setusr('by', bjorken_y)
+            nu_in_trk.setusr('ichan', ichan)
+            nu_in_trk.setusr("cc", is_cc)
+
+            aafile.evt.mc_trks.push_back(nu_in_trk)
             aafile.evt.mc_trks.push_back(lep_out_trk)
 
             for i in range(len(event.E)):
