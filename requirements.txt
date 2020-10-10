@@ -1,5 +1,6 @@
 setuptools_scm
 numpy
+scipy
 spython
 thepipe
 particle
