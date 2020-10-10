@@ -4,5 +4,6 @@ spython
 thepipe
 particle
 click
-pylhe
 f90nml
+uproot
+awkward
