@@ -279,7 +279,6 @@ def write_detector_file(gibuu_output,
 
             timestamp = np.random.uniform(0, livetime)
 
-            event_info = parse_gibuu_event_info(event.optional[0])
             nu_in_trk = ROOT.Trk()
             nu_in_trk.id = 0
             nu_in_trk.mother_id = -1
@@ -322,7 +321,7 @@ def write_detector_file(gibuu_output,
                 trk.t = timestamp
                 aafile.evt.mc_trks.push_back(trk)
             aafile.write()
-            if mc_event_id > 100:
-                break
+            # if mc_event_id > 100:
+            #     break
 
     del aafile
