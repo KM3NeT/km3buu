@@ -69,8 +69,8 @@ def run_jobcard(jobcard, outdir, fluxfile=None):
     if isinstance(jobcard, str) and isfile(jobcard):
         jobcard = read_jobcard(jobcard)
 
-    if "neutrino_induced" in jobcard and jobcard["neutrino_induced"][
-            "nuexp"] == 99:
+    if "neutrino_induced" in jobcard and "nuexp" in jobcard[
+            "neutrino_induced"] and jobcard["neutrino_induced"]["nuexp"] == 99:
         if fluxfile is None or not isfile(fluxfile):
             raise IOError("Fluxfile not found!")
         tmp_fluxfile = join(input_dir.name, basename(fluxfile))

@@ -15,47 +15,19 @@ import numpy as np
 from km3buu.output import *
 from os import listdir
 from os.path import abspath, join, dirname
+from km3net_testdata import data_path
 
-TESTDATA_DIR = abspath(join(dirname(__file__), "../data/test-data/"))
+TESTDATA_DIR = data_path("km3buu/gibuu_raw")
 
 
 class TestXSection(unittest.TestCase):
     def test_xsection_all(self):
         filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
         xsection = read_nu_abs_xsection(filename)
-        self.assertAlmostEqual(xsection['var'], 1.0)
-        self.assertAlmostEqual(xsection['sum'], 0.61548)
-        self.assertAlmostEqual(xsection['Delta'], 0.61537)
-        self.assertAlmostEqual(xsection['highRES'], 1.0661e-4)
-        self.assertAlmostEqual(xsection['Delta'], 0.61537)
-
-
-class TestFinalEvents(unittest.TestCase):
-    def setUp(self):
-        self.filename = join(TESTDATA_DIR, EVENT_FILENAME)
-        self.final_events = FinalEvents(self.filename)
-
-    def test_values(self):
-        assert self.final_events[0]["id"] == 901
-        assert self.final_events[0]["charge"] == -1
-        self.assertAlmostEqual(self.final_events[0]["perweight"], 6.154773e-1)
-        self.assertAlmostEqual(self.final_events[0]["p_t"], 5.050394e-1)
-        self.assertAlmostEqual(self.final_events[0]["p_x"], 2.619802e-2)
-        self.assertAlmostEqual(self.final_events[0]["p_y"], 3.290991e-1)
-        self.assertAlmostEqual(self.final_events[0]["p_z"], 3.821936e-1)
-        self.assertAlmostEqual(self.final_events[0]["nu_energy"], 1.0)
-        assert self.final_events[3]["id"] == 1
-        assert self.final_events[3]["charge"] == 1
-        self.assertAlmostEqual(self.final_events[3]["perweight"], 6.154773e-1)
-
-    def test_index(self):
-        assert self.final_events[0] is not None
-
-    def test_slicing(self):
-        assert self.final_events[0:2] is not None
-
-    def test_length(self):
-        assert len(self.final_events) == 4
+        self.assertAlmostEqual(xsection['var'], 58.631)
+        self.assertAlmostEqual(xsection['sum'], 8.0929)
+        self.assertAlmostEqual(xsection['Delta'], 0.26805)
+        self.assertAlmostEqual(xsection['highRES'], 0.14248)
 
 
 class TestGiBUUOutput(unittest.TestCase):
@@ -63,4 +35,5 @@ class TestGiBUUOutput(unittest.TestCase):
         self.output = GiBUUOutput(TESTDATA_DIR)
 
     def test_attr(self):
-        assert hasattr(self.output, "events")
+        assert hasattr(self.output, "event_info_df")
+        assert hasattr(self.output, "particle_df")
