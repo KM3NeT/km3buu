@@ -17,7 +17,7 @@ from os import listdir
 from os.path import abspath, join, dirname
 from km3net_testdata import data_path
 
-TESTDATA_DIR = data_path("km3buu/gibuu_raw")
+TESTDATA_DIR = data_path("gibuu")
 
 
 class TestXSection(unittest.TestCase):
