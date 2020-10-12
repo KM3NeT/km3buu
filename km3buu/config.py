@@ -62,10 +62,11 @@ class Config(object):
             dev_path = abspath(join(dirname(__file__), os.pardir, IMAGE_NAME))
             if isfile(dev_path):
                 image_path = dev_path
-            elif click.confirm("Is the GiBUU image already available?", default=False):
-                image_path = click.prompt(
-                    "GiBUU image path?", type=click.Path(exists=True, dir_okay=False)
-                )
+            elif click.confirm("Is the GiBUU image already available?",
+                               default=False):
+                image_path = click.prompt("GiBUU image path?",
+                                          type=click.Path(exists=True,
+                                                          dir_okay=False))
             elif click.confirm("Install image from remote?", default=True):
                 default_dir = join(os.environ["HOME"], ".km3buu")
                 image_dir = click.prompt(
