@@ -8,3 +8,4 @@ click
 f90nml
 uproot
 awkward
+pandas
