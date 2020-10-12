@@ -1,3 +1,6 @@
+PKGNAME=km3buu
+ALLNAMES = $(PKGNAME)
+
 export REPO_OUTPUT_DIR := output
 export REPO_JOBCARDS_DIR := jobcards
 export CONTAINER_OUTPUT_DIR := /opt/output
@@ -7,7 +10,6 @@ default: run
 
 build: km3buu.Singularity
 	sudo singularity build GiBUU.simg km3buu.Singularity 
-
 
 run: GiBUU.simg
 	@if [ ! -d "jobcards/${CARDSET}" ];then \
@@ -32,5 +34,29 @@ buildremote:
 
 clean:
 	@rm -rf output
+	python setup.py clean --all
 
+### PYTHON ###
+install:
+	pip install .
 
+install-dev:
+	pip install -e ".[dev]"
+
+test:
+	python -m pytest --junitxml=./reports/junit.xml -o junit_suite_name=$(PKGNAME) $(PKGNAME)
+
+test-cov:
+	python -m pytest --cov ./ --cov-report term-missing --cov-report xml:reports/coverage.xml --cov-report html:reports/coverage $(ALLNAMES)
+
+flake8: 
+	python -m pytest --flake8
+
+docstyle: 
+	python -m pytest --pydocstyle
+
+doc:
+	cd doc && make html
+	cd ..
+
+.PHONY: install install-dev doc clean test test-cov flake8 docstyle buildremote

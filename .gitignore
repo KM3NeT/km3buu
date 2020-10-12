@@ -4,3 +4,45 @@
 # GiBUU
 *.dat
 output/
+
+# Version info for PyPI
+km3buu/version.py
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyxbldc
+
+# Distribution / packaging
+.Python
+env/
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.eggs
+
+# venv, pyenv tmp
+.python-version
+venv
+
+# Sphinx documentation
+doc/_build/
+doc/auto_examples/
+doc/modules/
+doc/api
+
+# 
+junit*.xml
+reports
+

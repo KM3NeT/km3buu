@@ -1,0 +1,11 @@
+setuptools_scm
+numpy
+scipy
+spython
+thepipe
+particle
+click
+f90nml
+uproot
+awkward
+pandas

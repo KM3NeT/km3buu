@@ -3,7 +3,7 @@
 	flavor_ID = 2 		! 1:electron, 2:muon, 3:tau
 	nuXsectionMode = 6 	! 6: dSigmaMC
 	includeDIS = .true. 	! enables DIS events
-	printAbsorptionXS = T
+	printAbsorptionXS = .true.
 /
 
 &target
@@ -44,7 +44,7 @@
 
 
 &neutrinoAnalysis
-	outputEvents = .true	! output list of events and
+	outputEvents = .true.	! output list of events and
 				! all outgoing particles in
 				! each event to the file 
 				! FinalEvents.dat
