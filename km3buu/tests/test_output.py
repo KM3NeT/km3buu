@@ -35,5 +35,4 @@ class TestGiBUUOutput(unittest.TestCase):
         self.output = GiBUUOutput(TESTDATA_DIR)
 
     def test_attr(self):
-        assert hasattr(self.output, "event_info_df")
-        assert hasattr(self.output, "particle_df")
+        assert hasattr(self.output, "df")
