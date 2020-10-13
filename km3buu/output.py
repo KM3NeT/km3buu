@@ -18,8 +18,8 @@ from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
-import awkward
-import uproot
+import awkward1
+import uproot4
 from scipy.interpolate import UnivariateSpline
 from scipy.spatial.transform import Rotation
 
@@ -168,43 +168,21 @@ class GiBUUOutput:
         return wgt
 
     @property
-    def particle_df(self):
-        import pandas as pd
+    def df(self):
         df = None
         for fname in self.root_pert_files:
-            fobj = uproot.open(join(self._data_path, fname))
-            file_df = None
-            for col in PARTICLE_COLUMNS:
-                tmp = awkward.topandas(fobj["RootTuple"][col].array(),
-                                       flatten=True)
-                tmp.name = col
-                if file_df is None:
-                    file_df = tmp
-                else:
-                    file_df = pd.concat([file_df, tmp], axis=1)
+            fobj = uproot4.open(join(self._data_path, fname))
+            event_data = fobj["RootTuple"].arrays()
+            tmp_df = awkward1.to_pandas(event_data)
             if df is None:
-                df = file_df
+                df = tmp_df
             else:
-                new_indices = file_df.index.levels[0] + df.index.levels[0].max(
+                new_indices = tmp_df.index.levels[0] + df.index.levels[0].max(
                 ) + 1
-                file_df.index = file_df.index.set_levels(new_indices, level=0)
-                df = df.append(file_df)
-            fobj.close()
-        return df
-
-    @property
-    def event_info_df(self):
-        import pandas as pd
-        df = None
-        for fname in self.root_pert_files:
-            fobj = uproot.open(join(self._data_path, fname))
-            event_data = fobj["RootTuple"]
-            dct = {k: event_data[k].array() for k in EVENTINFO_COLUMNS}
-            if df is None:
-                df = pd.DataFrame(dct)
-            else:
-                df = df.append(pd.DataFrame(dct), ignore_index=True)
-            df["By"] = 1 - df.lepOut_E / df.lepIn_E
+                tmp_df.index = tmp_df.index.set_levels(new_indices, level=0)
+                df = df.append(tmp_df)
+        df.columns = [col[0] for col in df.columns]
+        df["By"] = 1 - df.lepOut_E / df.lepIn_E
         return df
 
 

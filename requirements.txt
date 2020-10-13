@@ -6,6 +6,6 @@ thepipe
 particle
 click
 f90nml
-uproot
-awkward
+uproot4
+awkward1
 pandas
