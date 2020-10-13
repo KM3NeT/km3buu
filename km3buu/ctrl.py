@@ -68,6 +68,8 @@ def run_jobcard(jobcard, outdir, fluxfile=None):
 
     if isinstance(jobcard, str) and isfile(jobcard):
         jobcard = read_jobcard(jobcard)
+    elif not isinstance(jobcard, Jobcard):
+        log.error("No valid jobcard reference given: %s" % jobcard)
 
     if "neutrino_induced" in jobcard and "nuexp" in jobcard[
             "neutrino_induced"] and jobcard["neutrino_induced"]["nuexp"] == 99:
@@ -77,11 +79,8 @@ def run_jobcard(jobcard, outdir, fluxfile=None):
         os.system("cp %s %s" % (fluxfile, tmp_fluxfile))
         log.info("Set FileNameFlux to: %s" % tmp_fluxfile)
         jobcard["neutrino_induced"]["FileNameflux"] = tmp_fluxfile
-    if isinstance(jobcard, Jobcard):
-        with open(jobcard_fpath, "w") as f:
-            f.write(str(jobcard))
-    else:
-        log.error("No valid jobcard reference given: %s" % jobcard)
+    with open(jobcard_fpath, "w") as f:
+        f.write(str(jobcard))
     log.info("Create temporary file for associated runscript")
     script_fpath = join(input_dir.name, "run.sh")
     with open(script_fpath, "w") as f:
