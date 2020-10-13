@@ -1,6 +1,13 @@
 KM3BUU
 ======
 
+.. image:: https://git.km3net.de/simulation/km3buu/badges/master/pipeline.svg
+    :target: https://git.km3net.de/simulation/km3buu/pipelines
+
+.. image:: https://git.km3net.de/simulation/km3buu/badges/master/coverage.svg
+
+
+
 The KM3BUU project is an integrated environment for the GiBUU studies
 within the KM3NeT experiment.
 
