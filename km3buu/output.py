@@ -167,6 +167,7 @@ class GiBUUOutput:
 
     @property
     def df(self):
+        import pandas as pd
         df = None
         for fname in self.root_pert_files:
             fobj = uproot4.open(join(self._data_path, fname))
