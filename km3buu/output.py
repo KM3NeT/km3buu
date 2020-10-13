@@ -182,6 +182,19 @@ class GiBUUOutput:
         df.columns = [col[0] for col in df.columns]
         df["By"] = 1 - df.lepOut_E / df.lepIn_E
         df["xsec_wgt"] = self._event_weights(df)
+        # Add secondary lepton to particle list
+        sec_df = df[df.index.get_level_values(1) == 0]
+        sec_df.loc[:, "E"] = sec_df.lepOut_E
+        sec_df.loc[:, "Px"] = sec_df.lepOut_Px
+        sec_df.loc[:, "Py"] = sec_df.lepOut_Py
+        sec_df.loc[:, "Pz"] = sec_df.lepOut_Pz
+        sec_pdgid = (
+            PDGID_LOOKUP[self.jobcard["neutrino_induced"]["flavor_id"]] -
+            1) * np.sign(self.jobcard["neutrino_induced"]["process_id"])
+        sec_df.loc[:, "barcode"] = sec_pdgid
+        sec_df.index = pd.MultiIndex.from_tuples(
+            zip(*np.unique(df.index.get_level_values(0), return_counts=True)))
+        df = df.append(sec_df)
         return df
 
 
