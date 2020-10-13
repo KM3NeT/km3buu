@@ -155,11 +155,9 @@ class GiBUUOutput:
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
                                                    self.flux_data["events"])
 
-    @property
-    def event_weights(self):
-        event_df = self.event_info_df
-        gibuu_wgt = event_df["weight"]
-        flux = self.flux_interpolation(event_df["lepIn_E"])
+    def _event_weights(self, df):
+        gibuu_wgt = df["weight"]
+        flux = self.flux_interpolation(df["lepIn_E"])
         energy_min = np.min(self.flux_data["energy"])
         energy_max = np.max(self.flux_data["energy"])
         total_events = self.flux_interpolation.integral(energy_min, energy_max)
@@ -183,6 +181,7 @@ class GiBUUOutput:
                 df = df.append(tmp_df)
         df.columns = [col[0] for col in df.columns]
         df["By"] = 1 - df.lepOut_E / df.lepIn_E
+        df["xsec_wgt"] = self._event_weights(df)
         return df
 
 
