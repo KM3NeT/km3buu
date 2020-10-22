@@ -43,4 +43,4 @@ RUN cd /opt && \
     rm -rf /opt/*.tar.gz
 
 ENV CONTAINER_GIBUU_EXEC=/opt/release2019/objects/GiBUU.x 
-ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
