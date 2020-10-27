@@ -160,10 +160,22 @@ class GiBUUOutput:
         flux = self.flux_interpolation(df["lepIn_E"])
         energy_min = np.min(self.flux_data["energy"])
         energy_max = np.max(self.flux_data["energy"])
-        total_events = self.flux_interpolation.integral(energy_min, energy_max)
+        evt_energy_width = df.lepIn_E.max() - df.lepIn_E.min()
+        total_flux_events = self.flux_interpolation.integral(
+            energy_min, energy_max)
         n_files = len(self.root_pert_files)
-        wgt = np.divide(total_events * gibuu_wgt, flux * n_files)
+        n_events = df.index.levels[0].shape[0]
+        wgt = np.divide(n_events * total_flux_events * gibuu_wgt,
+                        flux * n_files * evt_energy_width)
         return wgt
+
+    @property
+    def A(self):
+        return self.jobcard["target"]["target_a"]
+
+    @property
+    def Z(self):
+        return self.jobcard["target"]["target_z"]
 
     @property
     def df(self):
@@ -182,7 +194,7 @@ class GiBUUOutput:
                 df = df.append(tmp_df)
         df.columns = [col[0] for col in df.columns]
         df["By"] = 1 - df.lepOut_E / df.lepIn_E
-        df["xsec_wgt"] = self._event_weights(df)
+        df["xsec"] = self._event_weights(df)
         # Add secondary lepton to particle list
         sec_df = df[df.index.get_level_values(1) == 0]
         sec_df.loc[:, "E"] = sec_df.lepOut_E
