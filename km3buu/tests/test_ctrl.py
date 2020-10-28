@@ -10,26 +10,32 @@ __maintainer__ = "Johannes Schumann"
 __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
+import csv
 import unittest
 import numpy as np
 from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, NamedTemporaryFile
 from os import listdir
 from os.path import abspath, join, dirname
 from thepipe.logger import get_logger
+from km3net_testdata import data_path
 
-JOBCARD_FOLDER = abspath(join(dirname(__file__), "../../jobcards"))
-
-# class TestCTRLmisc(unittest.TestCase):
-#     def test_invalid_jobcard(self):
+TESTDATA_DIR = data_path("gibuu")
 
 
 class TestCTRLbyJobcardFile(unittest.TestCase):
     def setUp(self):
-        self.filename = join(JOBCARD_FOLDER, "examples/example.job")
+        self.filename = join(TESTDATA_DIR, "km3net_testdata.job")
         self.output_dir = TemporaryDirectory()
-        self.retval = run_jobcard(self.filename, self.output_dir.name)
+        self.flux_file = NamedTemporaryFile(suffix='.dat')
+        with open(self.flux_file.name, 'w') as f:
+            ene = np.linspace(0.1, 20, 100)
+            writer = csv.writer(f, delimiter=' ')
+            writer.writerows(zip(ene, np.power(ene, -1)))
+        self.retval = run_jobcard(self.filename,
+                                  self.output_dir.name,
+                                  fluxfile=self.flux_file.name)
         log = get_logger("ctrl.py")
         log.setLevel("INFO")
 
@@ -38,7 +44,7 @@ class TestCTRLbyJobcardFile(unittest.TestCase):
 
     def test_output_files_existing(self):
         files = listdir(self.output_dir.name)
-        assert "FinalEvents.dat" in files
+        assert "EventOutput.Pert.00000001.root" in files
 
 
 class TestCTRLbyJobcardObject(unittest.TestCase):

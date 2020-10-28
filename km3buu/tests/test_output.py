@@ -36,3 +36,11 @@ class TestGiBUUOutput(unittest.TestCase):
 
     def test_attr(self):
         assert hasattr(self.output, "df")
+
+    def test_mean_xsec(self):
+        df = self.output.df
+        df = df.groupby(level=0).head(1)
+        df = df[(df.lepIn_E > 0.7) & (df.lepIn_E < 1.0)]
+        xsec = np.sum(df.xsec / df.lepIn_E)
+        n_evts = self.output.flux_interpolation.integral(0.7, 1.0) / 0.02
+        self.assertAlmostEqual(xsec / n_evts, 0.8, places=2)
