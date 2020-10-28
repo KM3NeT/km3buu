@@ -89,15 +89,6 @@ def read_nu_abs_xsection(filepath):
     return values
 
 
-def parse_gibuu_event_info(line):
-    fields = line.split()[1:]
-    if int(fields[0]) != 5:
-        raise NotImplementedError(
-            "Event information type %s cannot be parsed yet!" % fields[0])
-    else:
-        return np.genfromtxt(StringIO(line[3:]), dtype=LHE_NU_INFO_DTYPE)
-
-
 class GiBUUOutput:
     def __init__(self, data_dir):
         """
