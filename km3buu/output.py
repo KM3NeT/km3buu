@@ -155,18 +155,16 @@ class GiBUUOutput:
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
                                                    self.flux_data["events"])
 
-    def _event_weights(self, df):
+    def _event_xsec(self, df):
         gibuu_wgt = df["weight"]
-        flux = self.flux_interpolation(df["lepIn_E"])
+        deltaE = np.mean(self.flux_data['energy'][1:] -
+                         self.flux_data['energy'][:-1])
         energy_min = np.min(self.flux_data["energy"])
         energy_max = np.max(self.flux_data["energy"])
-        evt_energy_width = df.lepIn_E.max() - df.lepIn_E.min()
         total_flux_events = self.flux_interpolation.integral(
             energy_min, energy_max)
         n_files = len(self.root_pert_files)
-        n_events = df.index.levels[0].shape[0]
-        wgt = np.divide(n_events * total_flux_events * gibuu_wgt,
-                        flux * n_files * evt_energy_width)
+        wgt = np.divide(total_flux_events * gibuu_wgt, deltaE * n_files)
         return wgt
 
     @property
@@ -194,7 +192,7 @@ class GiBUUOutput:
                 df = df.append(tmp_df)
         df.columns = [col[0] for col in df.columns]
         df["By"] = 1 - df.lepOut_E / df.lepIn_E
-        df["xsec"] = self._event_weights(df)
+        df["xsec"] = self._event_xsec(df)
         # Add secondary lepton to particle list
         sec_df = df[df.index.get_level_values(1) == 0]
         sec_df.loc[:, "E"] = sec_df.lepOut_E
