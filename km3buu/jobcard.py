@@ -120,7 +120,6 @@ def generate_neutrino_jobcard_template(
     jc["neutrino_induced"]["include2pi"] = False
     jc["neutrino_induced"]["include2p2hDelta"] = False
     jc["neutrino_inducted"]["printAbsorptionXS"] = True
-
     # INPUT
     jc["input"]["numTimeSteps"] = 0
     jc["input"]["eventtype"] = 5
@@ -133,4 +132,5 @@ def generate_neutrino_jobcard_template(
     jc["target"]["A"] = target[1]
     # MISC
     jc["neutrinoAnalysis"]["outputEvents"] = write_events
+    jc["insertion"]["propagateNoPhoton"] = False
     return jc
