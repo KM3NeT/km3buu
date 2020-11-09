@@ -1,0 +1,76 @@
+&input
+    path_to_input = '/opt/buuinput2019/'
+    numtimesteps = 0
+    eventtype = 5
+    numensembles = 6250
+    delta_t = 0.2
+    localensemble = .true.
+    freezerealparticles = .true.
+    num_runs_sameenergy = 1
+    lrf_equals_calc_frame = .true.
+/
+
+&insertion
+    propagateNoPhoton = .false.
+/
+
+&neutrino_induced
+    process_id = 2
+    flavor_id = 1
+    nuxsectionmode = 16
+    includedis = .true.
+    includedelta = .true.
+    includeres = .true.
+    includeqe = .true.
+    include1pi = .true.
+    include2p2hqe = .true.
+    include2pi = .false.
+    include2p2hdelta = .false.
+    printabsorptionxs = .true.
+    nuexp = 10
+/
+
+&thermoDynamics
+temperatureSwitch = 2
+/
+&ModifyParticles
+    stabilityFlag(56) = 4
+    stabilityFlag(57) = 4
+    stabilityFlag(114) = 4
+    stabilityFlag(115) = 4
+    stabilityFlag(118) = 4
+    stabilityFlag(119) = 4
+/
+
+&target
+    target_z = 8
+    target_a = 16
+/
+
+&nl_fluxcuts
+    energylimit_for_qsrec = .true.
+/
+
+&nl_neutrino_energyflux
+    eflux_min = 0.1
+    eflux_max = 50.0
+/
+
+&neutrinoanalysis
+    outputevents = .false.
+/
+
+&pythia
+    parp(91) = 0.44
+    MDCY(102,1) = 1
+/
+
+&eventoutput
+    eventformat = 4
+    writeperturbativeparticles = .true.
+    writerealparticles = .false.
+/
+
+&propagation
+    rungekuttaorder = 2
+/
