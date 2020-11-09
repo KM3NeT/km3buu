@@ -29,7 +29,7 @@ reset_test_image:
         paths:
             - GiBUU.simg
     script:
-        - rm GiBUU.simg
+        - rm -f GiBUU.simg
     only:
         - tags
 
