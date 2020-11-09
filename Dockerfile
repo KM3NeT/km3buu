@@ -38,6 +38,7 @@ RUN cd /opt && \
     tar xvzf downloads?f=release2019.tar.gz && \
     ls -ahl && \
     cd release2019 && \
+    sed -i '/type(particle)/s/dimension(10)/dimension(30)/' code/collisions/oneBodyReactions/AddDecay.f90 && \
     cp /opt/RootTuple-1.0.0/build/src/libRootTuple.a ./objects/LIB/lib/libRootTuple.100.a && \
     make -j withROOT=1 && \
     rm -rf /opt/*.tar.gz
