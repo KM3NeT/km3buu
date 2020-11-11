@@ -69,6 +69,8 @@ EVENT_TYPE = {
     37: "2pi background",
 }
 
+ROOTTUPLE_KEY = "RootTuple"
+
 
 def read_nu_abs_xsection(filepath):
     """
@@ -146,7 +148,8 @@ class GiBUUOutput:
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
                                                    self.flux_data["events"])
 
-    def _event_xsec(self, weights):
+    def _event_xsec(self, root_tupledata):
+        weights = np.array(root_tupledata.weight)
         deltaE = np.mean(self.flux_data['energy'][1:] -
                          self.flux_data['energy'][:-1])
         energy_min = np.min(self.flux_data["energy"])
@@ -154,8 +157,35 @@ class GiBUUOutput:
         total_flux_events = self.flux_interpolation.integral(
             energy_min, energy_max)
         n_files = len(self.root_pert_files)
-        wgt = np.divide(total_flux_events * weights, deltaE * n_files)
-        return wgt
+        xsec = np.divide(total_flux_events * weights, deltaE * n_files)
+        return xsec
+
+    def _bjorken_x(self, roottuple_data):
+        d = roottuple_data
+        k_in = np.vstack([
+            np.array(d.lepIn_E),
+            np.array(d.lepIn_Px),
+            np.array(d.lepIn_Py),
+            np.array(d.lepIn_Pz)
+        ])
+        k_out = np.vstack([
+            np.array(d.lepOut_E),
+            np.array(d.lepOut_Px),
+            np.array(d.lepOut_Py),
+            np.array(d.lepOut_Pz)
+        ])
+        q = k_in - k_out
+        qtmp = np.power(q, 2)
+        q2 = qtmp[0, :] - np.sum(qtmp[1:4, :], axis=0)
+        pq = q[0, :] * d.nuc_E - q[1, :] * d.nuc_Px - q[2, :] * d.nuc_Py - q[
+            3, :] * d.nuc_Pz
+        x = np.divide(-q2, 2 * pq)
+        return np.array(x)
+
+    def _bjorken_y(self, roottuple_data):
+        d = roottuple_data
+        y = 1 - np.divide(np.array(d.lepOut_E), np.array(d.lepIn_E))
+        return y
 
     @property
     def A(self):
@@ -170,9 +200,13 @@ class GiBUUOutput:
         import pandas as pd
         df = None
         for fname in self.root_pert_files:
-            fobj = uproot4.open(join(self._data_path, fname))
-            event_data = fobj["RootTuple"].arrays()
+            with uproot4.open(join(self._data_path, fname)) as fobj:
+                event_data = fobj[ROOTTUPLE_KEY].arrays()
             tmp_df = awkward1.to_pandas(event_data)
+            idx_mask = tmp_df.groupby(level=[0]).ngroup()
+            tmp_df["xsec"] = self._event_xsec(event_data)[idx_mask]
+            tmp_df["Bx"] = self._bjorken_x(event_data)[idx_mask]
+            tmp_df["By"] = self._bjorken_y(event_data)[idx_mask]
             if df is None:
                 df = tmp_df
             else:
@@ -181,9 +215,6 @@ class GiBUUOutput:
                 tmp_df.index = tmp_df.index.set_levels(new_indices, level=0)
                 df = df.append(tmp_df)
         df.columns = [col[0] for col in df.columns]
-        df["By"] = 1 - df.lepOut_E / df.lepIn_E
-        df["xsec"] = self._event_xsec(df.weight)
-        # Add secondary lepton to particle list
         sec_df = df[df.index.get_level_values(1) == 0]
         sec_df.loc[:, "E"] = sec_df.lepOut_E
         sec_df.loc[:, "Px"] = sec_df.lepOut_Px
