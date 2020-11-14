@@ -160,7 +160,8 @@ class GiBUUOutput:
         xsec = np.divide(total_flux_events * weights, deltaE * n_files)
         return xsec
 
-    def _bjorken_x(self, roottuple_data):
+    @staticmethod
+    def bjorken_x(roottuple_data):
         d = roottuple_data
         k_in = np.vstack([
             np.array(d.lepIn_E),
@@ -182,7 +183,8 @@ class GiBUUOutput:
         x = np.divide(-q2, 2 * pq)
         return np.array(x)
 
-    def _bjorken_y(self, roottuple_data):
+    @staticmethod
+    def bjorken_y(roottuple_data):
         d = roottuple_data
         y = 1 - np.divide(np.array(d.lepOut_E), np.array(d.lepIn_E))
         return y
@@ -196,6 +198,10 @@ class GiBUUOutput:
         return self.jobcard["target"]["target_z"]
 
     @property
+    def data_path(self):
+        return self._data_path
+
+    @property
     def df(self):
         import pandas as pd
         df = None
@@ -205,8 +211,8 @@ class GiBUUOutput:
             tmp_df = awkward1.to_pandas(event_data)
             idx_mask = tmp_df.groupby(level=[0]).ngroup()
             tmp_df["xsec"] = self._event_xsec(event_data)[idx_mask]
-            tmp_df["Bx"] = self._bjorken_x(event_data)[idx_mask]
-            tmp_df["By"] = self._bjorken_y(event_data)[idx_mask]
+            tmp_df["Bx"] = GiBUUOutput.bjorken_x(event_data)[idx_mask]
+            tmp_df["By"] = GiBUUOutput.bjorken_y(event_data)[idx_mask]
             if df is None:
                 df = tmp_df
             else:
@@ -271,9 +277,12 @@ def write_detector_file(gibuu_output,
         sec_lep_type *= -1
 
     for ifile in gibuu_output.root_pert_files:
-        fobj = uproot.open(ifile)
-        event_data = fobj["RootTuple"]
-        for event in event_data.lazyarrays():
+        fobj = uproot4.open(join(gibuu_output.data_path, ifile))
+        event_data = fobj["RootTuple"].arrays()
+        bjorkenx = GiBUUOutput.bjorken_x(event_data)
+        bjorkeny = GiBUUOutput.bjorken_y(event_data)
+        from tqdm import tqdm
+        for i, event in tqdm(enumerate(event_data)):
             aafile.evt.clear()
             aafile.evt.id = mc_event_id
             aafile.evt.mc_run_id = mc_event_id
@@ -295,9 +304,8 @@ def write_detector_file(gibuu_output,
             dir_z = cos_theta
 
             direction = np.array([dir_x, dir_y, dir_z])
-            rotation = np.array([dir_y, -dir_x, 0])
-            sin_rot = np.linalg.norm(rotation)
-            R = Rotation.from_rotvec(rotation * np.arcsin(sin_rot) / sin_rot)
+            theta = np.arccos(cos_theta)
+            R = Rotation.from_euler("yz", [theta, phi])
 
             timestamp = np.random.uniform(0, livetime)
 
@@ -321,9 +329,9 @@ def write_detector_file(gibuu_output,
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
 
-            bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
-            nu_in_trk.setusr('bx', -1)
-            nu_in_trk.setusr('by', bjorken_y)
+            # bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
+            nu_in_trk.setusr('bx', bjorkenx[i])
+            nu_in_trk.setusr('by', bjorkeny[i])
             nu_in_trk.setusr('ichan', ichan)
             nu_in_trk.setusr("cc", is_cc)
 
@@ -343,7 +351,5 @@ def write_detector_file(gibuu_output,
                 trk.t = timestamp
                 aafile.evt.mc_trks.push_back(trk)
             aafile.write()
-            # if mc_event_id > 100:
-            #     break
 
     del aafile
