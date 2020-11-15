@@ -281,8 +281,7 @@ def write_detector_file(gibuu_output,
         event_data = fobj["RootTuple"].arrays()
         bjorkenx = GiBUUOutput.bjorken_x(event_data)
         bjorkeny = GiBUUOutput.bjorken_y(event_data)
-        from tqdm import tqdm
-        for i, event in tqdm(enumerate(event_data)):
+        for i, event in enumerate(event_data):
             aafile.evt.clear()
             aafile.evt.id = mc_event_id
             aafile.evt.mc_run_id = mc_event_id
