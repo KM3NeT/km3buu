@@ -13,6 +13,8 @@ from configparser import ConfigParser, Error, NoOptionError, NoSectionError
 from thepipe.logger import get_logger
 from . import IMAGE_NAME
 from .environment import build_image
+import mendeleev
+import xml.etree.ElementTree as ElementTree
 
 __author__ = "Johannes Schumann"
 __copyright__ = "Copyright 2020, Johannes Schumann and the KM3NeT collaboration."
@@ -83,3 +85,35 @@ class Config(object):
         section = "GiBUU"
         key = "image_path"
         self.set(section, key, value)
+
+
+def read_media_compositions(filename):
+    """
+    Read gSeagen media composition xml formated file
+
+    Parameters
+    ----------
+    filename: str
+        Input file
+    """
+    xmlroot = ElementTree.parse(filename).getroot()
+    if xmlroot == "media_comp":
+        raise KeyError()
+
+    compositions = dict()
+    for media in xmlroot:
+        if media.tag != "param_set":
+            continue
+        elements = dict()
+        for element in media:
+            name = element.attrib["name"]
+            fraction = float(element.text)
+            elements[name] = (mendeleev.element(name), fraction)
+        attr = dict()
+        if "density" in media.attrib:
+            density = media.attrib["density"]
+            attr["density"] = density
+        attr["elements"] = elements
+        key = media.attrib["media"]
+        compositions[key] = attr
+    return compositions
