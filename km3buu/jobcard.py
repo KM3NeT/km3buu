@@ -43,6 +43,8 @@ XSECTIONMODE_LOOKUP = {
     "EXP_dSigmadW": 17,
 }
 
+DECAYED_HADRONS = [56, 57, 114, 115, 118, 119]
+
 
 class Jobcard(f90nml.Namelist):
     """
@@ -89,6 +91,7 @@ def generate_neutrino_jobcard_template(
         energy,
         target,
         write_events=False,
+        do_decay=False,
         input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
@@ -130,6 +133,12 @@ def generate_neutrino_jobcard_template(
     # TARGET
     jc["target"]["Z"] = target[0]
     jc["target"]["A"] = target[1]
+    # DECAY
+    if do_decay:
+        for i in DECAYED_HADRONS:
+            key = "stabilityFlag({:d})".format(i)
+            jc["ModifyParticles"][key] = 4
+        jc["pythia"]["MDCY(102,1)"] = 1
     # MISC
     jc["neutrinoAnalysis"]["outputEvents"] = write_events
     jc["insertion"]["propagateNoPhoton"] = False
