@@ -28,6 +28,9 @@ CONFIG_PATH = os.path.expanduser("~/.km3buu/config")
 
 log = get_logger(__name__)
 
+GIBUU_SECTION = "GiBUU"
+PROPOSAL_SECTION = "PROPOSAL"
+
 
 class Config(object):
     def __init__(self, config_path=CONFIG_PATH):
@@ -57,9 +60,8 @@ class Config(object):
 
     @property
     def gibuu_image_path(self):
-        section = "GiBUU"
         key = "image_path"
-        image_path = self.get(section, key)
+        image_path = self.get(GIBUU_SECTION, key)
         if image_path is None or not isfile(image_path):
             dev_path = abspath(join(dirname(__file__), os.pardir, IMAGE_NAME))
             if isfile(dev_path):
@@ -77,7 +79,7 @@ class Config(object):
                     default=default_dir,
                 )
                 image_path = build_image(image_dir)
-            self.set(section, key, image_path)
+            self.set(GIBUU_SECTION, key, image_path)
         return image_path
 
     @gibuu_image_path.setter
@@ -85,6 +87,14 @@ class Config(object):
         section = "GiBUU"
         key = "image_path"
         self.set(section, key, value)
+
+    @property
+    def proposal_itp_tables(self):
+        return self.get(PROPOSAL_SECTION, "itp_table_path")
+
+    @proposal_itp_tables.setter
+    def proposal_itp_tables(self, value):
+        self.set(PROPOSAL_SECTION, "itp_table_path")
 
 
 def read_media_compositions(filename):
