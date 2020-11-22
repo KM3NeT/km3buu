@@ -352,35 +352,38 @@ def write_detector_file(gibuu_output,
 
             aafile.evt.mc_trks.push_back(nu_in_trk)
 
-            event_tau_sec = tau_secondaries[mc_event_id]
-            for i in range(len(event_tau_sec.E)):
+            event_tau_sec = tau_secondaries[i]
+            for j in range(len(event_tau_sec.E)):
                 trk = ROOT.Trk()
                 trk.id = mc_trk_id
                 mc_trk_id += 1
                 mom = np.array([
-                    event_tau_sec.Px[i], event_tau_sec.Py[i],
-                    event_tau_sec.Pz[i]
+                    event_tau_sec.Px[j], event_tau_sec.Py[j],
+                    event_tau_sec.Pz[j]
                 ])
                 p_dir = R.apply(mom / np.linalg.norm(mom))
-                trk.pos.set(*vtx_pos)
+                prtcl_pos_offset = np.array([
+                    event_tau_sec.x[j], event_tau_sec.y[j], event_tau_sec.z[j]
+                ])
+                trk.pos.set(*np.add(vtx_pos, prtcl_pos_offset))
                 trk.dir.set(*p_dir)
                 trk.mother_id = 0
-                trk.type = int(event_tau_sec.barcode[i])
-                trk.E = event_tau_sec.E[i]
+                trk.type = int(event_tau_sec.barcode[j])
+                trk.E = event_tau_sec.E[j]
                 trk.t = timestamp
                 aafile.evt.mc_trks.push_back(trk)
 
-            for i in range(len(event.E)):
+            for j in range(len(event.E)):
                 trk = ROOT.Trk()
                 trk.id = mc_trk_id
                 mc_trk_id += 1
-                mom = np.array([event.Px[i], event.Py[i], event.Pz[i]])
+                mom = np.array([event.Px[j], event.Py[j], event.Pz[j]])
                 p_dir = R.apply(mom / np.linalg.norm(mom))
                 trk.pos.set(*vtx_pos)
                 trk.dir.set(*p_dir)
                 trk.mother_id = 0
-                trk.type = int(event.barcode[i])
-                trk.E = event.E[i]
+                trk.type = int(event.barcode[j])
+                trk.E = event.E[j]
                 trk.t = timestamp
                 aafile.evt.mc_trks.push_back(trk)
             aafile.write()

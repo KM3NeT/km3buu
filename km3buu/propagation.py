@@ -75,14 +75,17 @@ def propagate_lepton(lepout_data, pdgid):
         Px = [p.direction.x * p.momentum for p in secondaries.particles]
         Py = [p.direction.y * p.momentum for p in secondaries.particles]
         Pz = [p.direction.z * p.momentum for p in secondaries.particles]
+        x = [p.position.x for p in secondaries.particles]
+        y = [p.position.y for p in secondaries.particles]
+        z = [p.position.z for p in secondaries.particles]
 
         propagated_data["E"].append(E)
         propagated_data["Px"].append(Px)
         propagated_data["Py"].append(Py)
         propagated_data["Pz"].append(Pz)
         propagated_data["barcode"].append(pdgid)
-        propagated_data["x"].append(p.position.x)
-        propagated_data["y"].append(p.position.y)
-        propagated_data["z"].append(p.position.z)
+        propagated_data["x"].append(x)
+        propagated_data["y"].append(y)
+        propagated_data["z"].append(z)
 
     return ak.Array(propagated_data)
