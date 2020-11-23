@@ -50,9 +50,9 @@ def _setup_propagator(max_distance, lepton_definition):
     interpolation.path_to_tables_readonly = cfg.proposal_itp_tables
 
     return pp.Propagator(sector_defs=[sector],
-                          particle_def=lepton_definition,
-                          detector=geometry,
-                          interpolation_def=interpolation)
+                         particle_def=lepton_definition,
+                         detector=geometry,
+                         interpolation_def=interpolation)
 
 
 def propagate_lepton(lepout_data, pdgid):
