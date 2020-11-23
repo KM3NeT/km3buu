@@ -7,6 +7,6 @@ particle
 click
 f90nml
 uproot4
-awkward1
+awkward1>=0.4.4
 pandas
 mendeleev

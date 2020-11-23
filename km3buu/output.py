@@ -220,7 +220,6 @@ class GiBUUOutput:
                 ) + 1
                 tmp_df.index = tmp_df.index.set_levels(new_indices, level=0)
                 df = df.append(tmp_df)
-        df.columns = [col[0] for col in df.columns]
         sec_df = df[df.index.get_level_values(1) == 0]
         sec_df.loc[:, "E"] = sec_df.lepOut_E
         sec_df.loc[:, "Px"] = sec_df.lepOut_Px
