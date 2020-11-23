@@ -90,7 +90,8 @@ class Config(object):
 
     @property
     def proposal_itp_tables(self):
-        return self.get(PROPOSAL_SECTION, "itp_table_path")
+        default_path = abspath(join(dirname(__file__), "../.tables"))
+        return self.get(PROPOSAL_SECTION, "itp_table_path", default_path)
 
     @proposal_itp_tables.setter
     def proposal_itp_tables(self, value):
