@@ -99,6 +99,7 @@ class GiBUUOutput:
         Parameters
         ----------
         data_dir: str
+            Path to the GiBUU output directory
         """
         if isinstance(data_dir, TemporaryDirectory):
             self._tmp_dir = data_dir
@@ -165,6 +166,13 @@ class GiBUUOutput:
 
     @staticmethod
     def bjorken_x(roottuple_data):
+        """
+        Calculate Bjorken x variable for the GiBUU events
+
+        Parameters
+        ----------
+            roottuple_data: awkward1.highlevel.Array                
+        """
         d = roottuple_data
         k_in = np.vstack([
             np.array(d.lepIn_E),
@@ -188,6 +196,14 @@ class GiBUUOutput:
 
     @staticmethod
     def bjorken_y(roottuple_data):
+        """
+        Calculate Bjorken y scaling variable for the GiBUU events
+        (Lab. frame)
+
+        Parameters
+        ----------
+            roottuple_data: awkward1.highlevel.Array                
+        """
         d = roottuple_data
         y = 1 - np.divide(np.array(d.lepOut_E), np.array(d.lepIn_E))
         return y
@@ -263,6 +279,25 @@ def write_detector_file(gibuu_output,
     aafile.set_output(ofile)
     mc_event_id = 0
     mc_trk_id = 0
+
+    def add_particles(particle_data, rotation):
+        for i in range(len(particle_data.E)):
+            trk = ROOT.Trk()
+            trk.id = mc_trk_id
+            mc_trk_id += 1
+            mom = np.array([
+                particle_data.Px[i], particle_data.Py[i], particle_data.Pz[i]
+            ])
+            p_dir = R.apply(mom / np.linalg.norm(mom))
+            prtcl_pos_offset = np.array(
+                [particle_data.x[i], particle_data.y[i], particle_data.z[i]])
+            trk.pos.set(*np.add(vtx_pos, prtcl_pos_offset))
+            trk.dir.set(*p_dir)
+            trk.mother_id = 0
+            trk.type = int(particle_data.barcode[i])
+            trk.E = particle_data.E[i]
+            trk.t = timestamp
+            aafile.evt.mc_trks.push_back(trk)
 
     is_cc = False
 
@@ -352,40 +387,12 @@ def write_detector_file(gibuu_output,
 
             aafile.evt.mc_trks.push_back(nu_in_trk)
 
-            event_tau_sec = tau_secondaries[i]
-            for j in range(len(event_tau_sec.E)):
-                trk = ROOT.Trk()
-                trk.id = mc_trk_id
-                mc_trk_id += 1
-                mom = np.array([
-                    event_tau_sec.Px[j], event_tau_sec.Py[j],
-                    event_tau_sec.Pz[j]
-                ])
-                p_dir = R.apply(mom / np.linalg.norm(mom))
-                prtcl_pos_offset = np.array([
-                    event_tau_sec.x[j], event_tau_sec.y[j], event_tau_sec.z[j]
-                ])
-                trk.pos.set(*np.add(vtx_pos, prtcl_pos_offset))
-                trk.dir.set(*p_dir)
-                trk.mother_id = 0
-                trk.type = int(event_tau_sec.barcode[j])
-                trk.E = event_tau_sec.E[j]
-                trk.t = timestamp
-                aafile.evt.mc_trks.push_back(trk)
+            if tau_secondaries is not None:
+                event_tau_sec = tau_secondaries[i]
+                add_particles(event_tau_sec)
 
-            for j in range(len(event.E)):
-                trk = ROOT.Trk()
-                trk.id = mc_trk_id
-                mc_trk_id += 1
-                mom = np.array([event.Px[j], event.Py[j], event.Pz[j]])
-                p_dir = R.apply(mom / np.linalg.norm(mom))
-                trk.pos.set(*vtx_pos)
-                trk.dir.set(*p_dir)
-                trk.mother_id = 0
-                trk.type = int(event.barcode[j])
-                trk.E = event.E[j]
-                trk.t = timestamp
-                aafile.evt.mc_trks.push_back(trk)
+            add_particles(event)
+
             aafile.write()
 
     del aafile
