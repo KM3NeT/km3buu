@@ -37,14 +37,10 @@ PROPOSAL_LEPTON_DEFINITIONS = {
 }
 
 
-def propagate_lepton(lepout_data, pdgid):
-    lepton_info = Particle.from_pdgid(pdgid)
-    prop_range = const.c * lepton_info.lifetime * 1e11 * np.max(
-        lepout_data.lepOut_E) / lepton_info.mass  #[cm]
-
+def _setup_propagator(max_distance, lepton_definition):
     sector = pp.SectorDefinition()
     sector.medium = pp.medium.AntaresWater(1.0)
-    geometry = pp.geometry.Sphere(pp.Vector3D(), 10 * prop_range, 0)
+    geometry = pp.geometry.Sphere(pp.Vector3D(), max_distance, 0)
     sector.geometry = geometry
     sector.scattering_model = pp.scattering.ScatteringModel.Highland
 
@@ -53,15 +49,37 @@ def propagate_lepton(lepout_data, pdgid):
     interpolation.path_to_tables = cfg.proposal_itp_tables
     interpolation.path_to_tables_readonly = cfg.proposal_itp_tables
 
+    return pp.Propagator(sector_defs=[sector],
+                          particle_def=lepton_definition,
+                          detector=geometry,
+                          interpolation_def=interpolation)
+
+
+def propagate_lepton(lepout_data, pdgid):
+    """
+    Lepton propagation based on PROPOSAL
+
+    Parameters
+    ----------
+    lepout_data: awkward1.highlevel.Array
+        Lepton data in the GiBUU output shape containing the fields 
+        'lepOut_E, lepOut_Px, lepOut_Py, lepOut_Pz'
+    pdgid:
+        The pdgid of the propagated lepton
+
+    Returns
+    -------
+    awkward1.highlevel.Array (E, Px, Py, Pz, x, y, z)
+    """
+    lepton_info = Particle.from_pdgid(pdgid)
+    prop_range = const.c * lepton_info.lifetime * 1e11 * np.max(
+        lepout_data.lepOut_E) / lepton_info.mass  #[cm]
+
     lepton_def = PROPOSAL_LEPTON_DEFINITIONS[pdgid]()
-    propagator = pp.Propagator(sector_defs=[sector],
-                               particle_def=lepton_def,
-                               detector=geometry,
-                               interpolation_def=interpolation)
-
     lepton = pp.particle.DynamicData(lepton_def.particle_type)
-
     propagated_data = defaultdict(list)
+
+    propagator = _setup_propagator(10 * prop_range, lepton_def)
 
     for entry in lepout_data:
         lepton.energy = entry.lepOut_E * 1e3
