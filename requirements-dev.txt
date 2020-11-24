@@ -14,3 +14,4 @@ sphinx-autoapi
 setuptools_scm
 yapf>=0.25
 km3net-testdata>=0.2.11
+km3io
