@@ -280,7 +280,7 @@ def write_detector_file(gibuu_output,
     mc_event_id = 0
     mc_trk_id = 0
 
-    def add_particles(particle_data, rotation):
+    def add_particles(particle_data, pos_offset, rotation):
         for i in range(len(particle_data.E)):
             trk = ROOT.Trk()
             trk.id = mc_trk_id
@@ -289,9 +289,9 @@ def write_detector_file(gibuu_output,
                 particle_data.Px[i], particle_data.Py[i], particle_data.Pz[i]
             ])
             p_dir = rotation.apply(mom / np.linalg.norm(mom))
-            prtcl_pos_offset = np.array(
+            ptrcl_pos = np.array(
                 [particle_data.x[i], particle_data.y[i], particle_data.z[i]])
-            trk.pos.set(*np.add(vtx_pos, prtcl_pos_offset))
+            trk.pos.set(*np.add(pos_offset, prtcl_pos))
             trk.dir.set(*p_dir)
             trk.mother_id = 0
             trk.type = int(particle_data.barcode[i])
@@ -389,9 +389,9 @@ def write_detector_file(gibuu_output,
 
             if tau_secondaries is not None:
                 event_tau_sec = tau_secondaries[i]
-                add_particles(event_tau_sec, R)
+                add_particles(event_tau_sec, vtx_pos, R)
 
-            add_particles(event, R)
+            add_particles(event, vtx_pos, R)
 
             aafile.write()
 
