@@ -293,8 +293,9 @@ def write_detector_file(gibuu_output,
             ])
             p_dir = rotation.apply(mom / np.linalg.norm(mom))
             try:
-                prtcl_pos = np.array(
-                [particle_data.x[i], particle_data.y[i], particle_data.z[i]])
+                prtcl_pos = np.array([
+                    particle_data.x[i], particle_data.y[i], particle_data.z[i]
+                ])
                 trk.pos.set(*np.add(pos_offset, prtcl_pos))
             except AttributeError:
                 trk.pos.set(*pos_offset)
