@@ -288,7 +288,7 @@ def write_detector_file(gibuu_output,
             mom = np.array([
                 particle_data.Px[i], particle_data.Py[i], particle_data.Pz[i]
             ])
-            p_dir = R.apply(mom / np.linalg.norm(mom))
+            p_dir = rotation.apply(mom / np.linalg.norm(mom))
             prtcl_pos_offset = np.array(
                 [particle_data.x[i], particle_data.y[i], particle_data.z[i]])
             trk.pos.set(*np.add(vtx_pos, prtcl_pos_offset))
@@ -389,9 +389,9 @@ def write_detector_file(gibuu_output,
 
             if tau_secondaries is not None:
                 event_tau_sec = tau_secondaries[i]
-                add_particles(event_tau_sec)
+                add_particles(event_tau_sec, R)
 
-            add_particles(event)
+            add_particles(event, R)
 
             aafile.write()
 
