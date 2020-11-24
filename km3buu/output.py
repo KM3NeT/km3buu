@@ -281,6 +281,9 @@ def write_detector_file(gibuu_output,
     mc_trk_id = 0
 
     def add_particles(particle_data, pos_offset, rotation):
+        nonlocal aafile
+        nonlocal mc_event_id
+        nonlocal mc_trk_id
         for i in range(len(particle_data.E)):
             trk = ROOT.Trk()
             trk.id = mc_trk_id
@@ -289,9 +292,12 @@ def write_detector_file(gibuu_output,
                 particle_data.Px[i], particle_data.Py[i], particle_data.Pz[i]
             ])
             p_dir = rotation.apply(mom / np.linalg.norm(mom))
-            ptrcl_pos = np.array(
+            try:
+                prtcl_pos = np.array(
                 [particle_data.x[i], particle_data.y[i], particle_data.z[i]])
-            trk.pos.set(*np.add(pos_offset, prtcl_pos))
+                trk.pos.set(*np.add(pos_offset, prtcl_pos))
+            except AttributeError:
+                trk.pos.set(*pos_offset)
             trk.dir.set(*p_dir)
             trk.mother_id = 0
             trk.type = int(particle_data.barcode[i])
