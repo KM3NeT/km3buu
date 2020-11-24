@@ -10,3 +10,4 @@ uproot4
 awkward1>=0.4.4
 pandas
 mendeleev
+proposal
