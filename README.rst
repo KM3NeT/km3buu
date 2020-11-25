@@ -14,57 +14,82 @@ within the KM3NeT experiment.
 Installation
 ------------
 
-The project is based on images using ``singularity``, for which version
-3 or higher (e.g. `v3.4 <https://sylabs.io/guides/3.4/user-guide/>`__)
-is required. This is done due to the intention to provide a comparable
-installation on all systems and thus make the results easily
-reproducible. The main project control is based on ``make``. In order to
-apply installation commands presented within this section, clone this
-repository and change to the project directory:
+The main `KM3BUU` project is python based using ``singularity`` for running GiBUU.
+The python environment is required to have version 3.5 or higher and singularity 
+is required to have version 3.3 or higher (e.g. `v3.4 <https://sylabs.io/guides/3.4/user-guide/>`__). In the default workflow the singularity image is build remote from the 
+KM3NeT docker server, but it can also be built locally (see :ref:`Local Machine`).
+`KM3BUU` is not provided via python package manager and can be installed as follows.
+First the repository needs to be cloned:
 
 ::
 
    git clone https://git.km3net.de/simulation/km3buu
    cd km3buu
 
-Local Machine
-~~~~~~~~~~~~~
+After downloading the repository the package can be installed via:
 
-By “Local Machine” a computer where are root (administrative) privileges
-are available is meant. These root privileges are required to build the
-singularity image by yourself. In order to start the build, run the
-following ``make`` command:
+::
+
+   pip install -e . 
+
+GiBUU Only Usage
+~~~~~~~~~~~~~~~~
+The repository design also allows the usage without python environment.
+In this scenario the singularity container containing the GiBUU environment 
+has to be built first. This can be done locally if root privileges are available:
 
 ::
 
    make build
 
-Compute Cluster
-~~~~~~~~~~~~~~~
-
-In order to make this project also usable in a non-root environment, the
-Image is also provided via the KM3NeT Docker-Server. Within KM3NeT
-computing infrastructure this is the case for the lyon compute cluster,
-thus this case is customised for this environment.
-
-In order to build the singularity image based on the remote image, run
-the following ``make`` command:
+If root privileges are not available, e.g. running the `KM3BUU` on a compute cluster, 
+it also can be done remote via the KM3NeT docker server:
 
 ::
 
    make buildremote
 
-Structure & Usage
------------------
+If the python environment is used afterwards, the file path of the container can
+be written to the configuration file and is not required to be built again.
 
-The used GiBUU jobcards are located in a sub-folder within the jobcards
-folder. Each sub-folder represents a set of jobcards, which can be
-processed by:
+For running GiBUU the used jobcards have to be moved to a sub-folder within the 
+jobcards folder of the project. Each sub-folder represents a set of jobcards, 
+which can be passed to GiBUU by:
 
 ::
 
    make run CARDSET=examples
 
-This command runs all jobcards within the ``jobcards/examples`` folder
-and writes the output it to the folder ``output``. The folder structure
+This specific command runs all jobcards within the ``jobcards/examples`` folder
+and stores the output inside the folder ``output``. The folder structure
 is applied from the ``jobcards``\ folder.
+
+Tutorial
+--------
+The python framework is build around the GiBUU workflow, i.e. a jobcard is 
+processed and the output files are written out. The jobcards are technically 
+FORTRAN namelists and can be created using a `Jobcard` object. In the example
+this is done via loading an existing jobcard:
+
+.. code-block:: python3
+
+    >>> from km3buu.jobcard import Jobcard, read_jobcard
+
+    >>> jc = read_jobcard("jobcards/examples/example.job")
+
+In the next step the jobcard is processed:
+
+.. code-block:: python3
+
+    >>> from km3buu.ctrl import run_jobcard
+
+    >>> run_jobcard(jc, "./output")
+    0
+
+Finally, the output can be parsed using a `GiBUUOutput` object:
+
+.. code-block:: python3
+
+    >>> from km3buu.output import GiBUUOutput
+
+    >>> data = GiBUUOutput("./output")
