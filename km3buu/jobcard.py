@@ -13,6 +13,7 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import f90nml
+from os.path import basename
 
 try:
     from StringIO import StringIO
@@ -20,6 +21,8 @@ except ImportError:
     from io import StringIO
 
 INPUT_PATH = "/opt/buuinput2019/"
+
+DEFAULT_JOBCARD_FILENAME = "jobcard.job"
 
 PROCESS_LOOKUP = {"cc": 2, "nc": 3, "anticc": -2, "antinc": -3}
 FLAVOR_LOOKUP = {"electron": 1, "muon": 2, "tau": 3}
@@ -56,6 +59,11 @@ class Jobcard(f90nml.Namelist):
         The input path pointing to the GiBUU lookup data which should be used
     """
     def __init__(self, *args, **kwargs):
+        if "filename" in kwargs:
+            self.filename = kwargs["filename"]
+            del kwargs["filename"]
+        else:
+            self.filename = DEFAULT_JOBCARD_FILENAME
         super(Jobcard, self).__init__(*args, **kwargs)
         if "input_path" in kwargs:
             self.input_path = str(input_path)
@@ -82,17 +90,17 @@ class Jobcard(f90nml.Namelist):
 
 
 def read_jobcard(filepath):
-    return Jobcard(f90nml.read(filepath))
+    return Jobcard(f90nml.read(filepath), filename=basename(filepath))
 
 
 def generate_neutrino_jobcard_template(
-        process,
-        flavour,
-        energy,
-        target,
-        write_events=False,
-        do_decay=False,
-        input_path=INPUT_PATH):  # pragma: no cover
+    process,
+    flavour,
+    energy,
+    target,
+    write_events=False,
+    do_decay=False,
+    input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
 

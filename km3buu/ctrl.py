@@ -92,6 +92,8 @@ def run_jobcard(jobcard, outdir, fluxfile=None):
         bind=[outdir, input_dir.name],
         return_result=True,
     )
+    with open(join(outdir, jobcard.filename), "w") as f:
+        f.write(str(jobcard))
     msg = output["message"]
     if isinstance(msg, str):
         log.info("GiBUU output:\n %s" % msg)
