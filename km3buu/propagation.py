@@ -83,6 +83,7 @@ def propagate_lepton(lepout_data, pdgid):
 
     for entry in lepout_data:
         lepton.energy = entry.lepOut_E * 1e3
+        lepton.position = pp.Vector3D(0, 0, 0)
         lepton.direction = pp.Vector3D(entry.lepOut_Px, entry.lepOut_Py,
                                        entry.lepOut_Pz)
         lepton.direction.normalize()
@@ -90,12 +91,13 @@ def propagate_lepton(lepout_data, pdgid):
 
         E = np.array(secondaries.energy) / 1e3
         pdgid = [p.type for p in secondaries.particles]
-        Px = [p.direction.x * p.momentum for p in secondaries.particles]
-        Py = [p.direction.y * p.momentum for p in secondaries.particles]
-        Pz = [p.direction.z * p.momentum for p in secondaries.particles]
-        x = [p.position.x for p in secondaries.particles]
-        y = [p.position.y for p in secondaries.particles]
-        z = [p.position.z for p in secondaries.particles]
+        Px = [p.direction.x * p.momentum / 1e3 for p in secondaries.particles]
+        Py = [p.direction.y * p.momentum / 1e3 for p in secondaries.particles]
+        Pz = [p.direction.z * p.momentum / 1e3 for p in secondaries.particles]
+        x = [p.position.x / 100 for p in secondaries.particles]
+        y = [p.position.y / 100 for p in secondaries.particles]
+        z = [p.position.z / 100 for p in secondaries.particles]
+        dt = [p.time for p in secondaries.particles]
 
         propagated_data["E"].append(E)
         propagated_data["Px"].append(Px)
@@ -105,5 +107,6 @@ def propagate_lepton(lepout_data, pdgid):
         propagated_data["x"].append(x)
         propagated_data["y"].append(y)
         propagated_data["z"].append(z)
+        propagated_data["deltaT"].append(dt)
 
     return ak.Array(propagated_data)

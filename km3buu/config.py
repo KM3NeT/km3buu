@@ -3,7 +3,7 @@
 # Filename: config.py
 # Author: Johannes Schumann <jschumann@km3net.de>
 """
-
+Configuration for km3buu
 
 """
 import os
@@ -30,6 +30,8 @@ log = get_logger(__name__)
 
 GIBUU_SECTION = "GiBUU"
 PROPOSAL_SECTION = "PROPOSAL"
+GSEAGEN_SECTION = "gSeagen"
+GSEAGEN_MEDIA_COMPOSITION_FILE = "MediaComposition.xml"
 
 
 class Config(object):
@@ -95,7 +97,15 @@ class Config(object):
 
     @proposal_itp_tables.setter
     def proposal_itp_tables(self, value):
-        self.set(PROPOSAL_SECTION, "itp_table_path")
+        self.set(PROPOSAL_SECTION, "itp_table_path", value)
+
+    @property
+    def gseagen_path(self):
+        return self.get(GSEAGEN_SECTION, "path")
+
+    @gseagen_path.setter
+    def gseagen_path(self, value):
+        self.set(GIBUU_SECTION, "path", value)
 
 
 def read_media_compositions(filename):
@@ -122,9 +132,15 @@ def read_media_compositions(filename):
             elements[name] = (mendeleev.element(name), fraction)
         attr = dict()
         if "density" in media.attrib:
-            density = media.attrib["density"]
+            density = float(media.attrib["density"])
             attr["density"] = density
         attr["elements"] = elements
         key = media.attrib["media"]
         compositions[key] = attr
     return compositions
+
+
+def read_default_media_compositions():
+    cfg = Config()
+    fpath = join(cfg.gseagen_path, "dat", GSEAGEN_MEDIA_COMPOSITION_FILE)
+    return read_media_compositions(fpath)

@@ -40,17 +40,17 @@ class TestTauPropagation(unittest.TestCase):
 
     def test_secondary_momenta(self):
         np.testing.assert_array_almost_equal(np.array(self.sec[0].E),
-                                             [0.5, 1.3, 0.3],
-                                             decimal=1)
+                                             [0.535, 1.316, 0.331],
+                                             decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec[0].Px),
-                                             [-467.4, 320.7, -245.5],
-                                             decimal=1)
+                                             [-0.467, 0.321, -0.246],
+                                             decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec[0].Py),
-                                             [127.2, -822.4, 217.5],
-                                             decimal=1)
+                                             [0.127, -0.822, 0.218],
+                                             decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec[0].Pz),
-                                             [179., 967.1, -41.1],
-                                             decimal=1)
+                                             [0.179, 0.967, -0.041],
+                                             decimal=3)
 
     def test_secondary_types(self):
         np.testing.assert_array_equal(np.array(self.sec[0].barcode),
