@@ -297,7 +297,7 @@ def write_detector_file(gibuu_output,
                         ofile="gibuu.aanet.root",
                         can=(0, 476.5, 403.4),
                         livetime=3.156e7,
-                        propagate_tau=True):
+                        propagate_tau=True):  # pragma: no cover
     """
     Convert the GiBUU output to a KM3NeT MC (AANET) file
 
