@@ -22,14 +22,19 @@ import awkward1
 import uproot4
 from scipy.interpolate import UnivariateSpline
 from scipy.spatial.transform import Rotation
+import scipy.constants as constants
+import mendeleev
 
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
+from .config import read_default_media_compositions
 
 EVENT_FILENAME = "FinalEvents.dat"
 ROOT_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.root"
 ROOT_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.root"
 FLUXDESCR_FILENAME = "neutrino_initialized_energyFlux.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
+
+SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
 
 PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "barcode"]
 EVENTINFO_COLUMNS = [
@@ -161,8 +166,34 @@ class GiBUUOutput:
         xsec = np.divide(total_flux_events * weights, deltaE * n_files)
         return xsec
 
-    def _w2weights(self, root_tupledata):
-        pass
+    def w2weights(self, volume, target_density, solid_angle):
+        """
+        Calculate w2weights
+
+        Parameters
+        ----------
+            volume: float [m^3]
+                The interaction volume
+            target_density: float [m^-3]
+                N_A * ρ
+            solid_angle: float
+                Solid angle of the possible neutrino incident direction
+            
+        """
+        root_tupledata = self.arrays
+        energy_min = np.min(self.flux_data["energy"])
+        energy_max = np.max(self.flux_data["energy"])
+        energy_phase_space = self.flux_interpolation.integral(
+            energy_min, energy_max)
+        xsec = self._event_xsec(
+            root_tupledata
+        ) * self.A  #xsec_per_nucleon * no_nucleons in the core
+        inv_gen_flux = np.power(
+            self.flux_interpolation(root_tupledata.lepIn_E), -1)
+        phase_space = solid_angle * energy_phase_space
+        env_factor = volume * SECONDS_PER_YEAR
+        retval = env_factor * phase_space * inv_gen_flux * xsec * 10**-42 * target_density
+        return retval
 
     @staticmethod
     def bjorken_x(roottuple_data):
@@ -222,23 +253,12 @@ class GiBUUOutput:
 
     @property
     def df(self):
+        """
+        GiBUU output data in pandas dataframe format
+        """
         import pandas as pd
         df = None
-        for fname in self.root_pert_files:
-            with uproot4.open(join(self._data_path, fname)) as fobj:
-                event_data = fobj[ROOTTUPLE_KEY].arrays()
-            tmp_df = awkward1.to_pandas(event_data)
-            idx_mask = tmp_df.groupby(level=[0]).ngroup()
-            tmp_df["xsec"] = self._event_xsec(event_data)[idx_mask]
-            tmp_df["Bx"] = GiBUUOutput.bjorken_x(event_data)[idx_mask]
-            tmp_df["By"] = GiBUUOutput.bjorken_y(event_data)[idx_mask]
-            if df is None:
-                df = tmp_df
-            else:
-                new_indices = tmp_df.index.levels[0] + df.index.levels[0].max(
-                ) + 1
-                tmp_df.index = tmp_df.index.set_levels(new_indices, level=0)
-                df = df.append(tmp_df)
+        df = awkward1.to_pandas(self.arrays)
         sec_df = df[df.index.get_level_values(1) == 0]
         sec_df.loc[:, "E"] = sec_df.lepOut_E
         sec_df.loc[:, "Px"] = sec_df.lepOut_Px
@@ -252,6 +272,25 @@ class GiBUUOutput:
             zip(*np.unique(df.index.get_level_values(0), return_counts=True)))
         df = df.append(sec_df)
         return df
+
+    @property
+    def arrays(self):
+        """
+        GiBUU output data in awkward1 format
+        """
+        retval = None
+        for ifile in self.root_pert_files:
+            fobj = uproot4.open(join(self.data_path, ifile))
+            if retval is None:
+                retval = fobj["RootTuple"].arrays()
+            else:
+                tmp = fobj["RootTuple"].arrays()
+                retval = np.concatenate((retval, tmp))
+        # Calculate additional information
+        retval["xsec"] = self._event_xsec(retval)
+        retval["Bx"] = GiBUUOutput.bjorken_x(retval)
+        retval["By"] = GiBUUOutput.bjorken_y(retval)
+        return retval
 
 
 def write_detector_file(gibuu_output,
@@ -269,7 +308,8 @@ def write_detector_file(gibuu_output,
     ofile: str
         Output filename
     can: tuple
-        The can dimensions which are used to distribute the events
+        The can dimensions which are used to distribute the events 
+        (z_min, z_max, radius)
     livetime: float
         The data livetime
     """
@@ -277,17 +317,14 @@ def write_detector_file(gibuu_output,
 
     aafile = ROOT.EventFile()
     aafile.set_output(ofile)
-    mc_event_id = 0
     mc_trk_id = 0
 
-    def add_particles(particle_data, pos_offset, rotation):
+    def add_particles(particle_data, pos_offset, rotation, start_mc_trk_id,
+                      timestamp):
         nonlocal aafile
-        nonlocal mc_event_id
-        nonlocal mc_trk_id
         for i in range(len(particle_data.E)):
             trk = ROOT.Trk()
-            trk.id = mc_trk_id
-            mc_trk_id += 1
+            trk.id = start_mc_trk_id + i
             mom = np.array([
                 particle_data.Px[i], particle_data.Py[i], particle_data.Pz[i]
             ])
@@ -296,14 +333,16 @@ def write_detector_file(gibuu_output,
                 prtcl_pos = np.array([
                     particle_data.x[i], particle_data.y[i], particle_data.z[i]
                 ])
+                prtcl_pos = rotation.apply(prtcl_pos)
                 trk.pos.set(*np.add(pos_offset, prtcl_pos))
+                trk.t = timestamp + particle_data.deltaT[i] * 1e9
             except AttributeError:
                 trk.pos.set(*pos_offset)
+                trk.t = timestamp
             trk.dir.set(*p_dir)
             trk.mother_id = 0
             trk.type = int(particle_data.barcode[i])
             trk.E = particle_data.E[i]
-            trk.t = timestamp
             aafile.evt.mc_trks.push_back(trk)
 
     is_cc = False
@@ -322,84 +361,95 @@ def write_detector_file(gibuu_output,
         nu_type *= -1
         sec_lep_type *= -1
 
-    for ifile in gibuu_output.root_pert_files:
-        fobj = uproot4.open(join(gibuu_output.data_path, ifile))
-        event_data = fobj["RootTuple"].arrays()
-        bjorkenx = GiBUUOutput.bjorken_x(event_data)
-        bjorkeny = GiBUUOutput.bjorken_y(event_data)
+    event_data = gibuu_output.arrays
+    bjorkenx = event_data.Bx
+    bjorkeny = event_data.By
 
-        tau_secondaries = None
-        if propagate_tau and abs(nu_type) == 16:
-            from .propagation import propagate_lepton
-            tau_secondaries = propagate_lepton(event_data,
-                                               np.sign(nu_type) * 15)
+    tau_secondaries = None
+    if propagate_tau and abs(nu_type) == 16:
+        from .propagation import propagate_lepton
+        tau_secondaries = propagate_lepton(event_data, np.sign(nu_type) * 15)
 
-        for i, event in enumerate(event_data):
-            aafile.evt.clear()
-            aafile.evt.id = mc_event_id
-            aafile.evt.mc_run_id = mc_event_id
-            mc_event_id += 1
-            # Vertex Position
-            r = can[2] * np.sqrt(np.random.uniform(0, 1))
-            phi = np.random.uniform(0, 2 * np.pi)
-            pos_x = r * np.cos(phi)
-            pos_y = r * np.sin(phi)
-            pos_z = np.random.uniform(can[0], can[1])
-            vtx_pos = np.array([pos_x, pos_y, pos_z])
-            # Direction
-            phi = np.random.uniform(0, 2 * np.pi)
-            cos_theta = np.random.uniform(-1, 1)
-            sin_theta = np.sqrt(1 - cos_theta**2)
+    media = read_default_media_compositions()
+    density = media["SeaWater"]["density"]
+    symbol = mendeleev.element(gibuu_output.Z).symbol
+    target = media["SeaWater"]["elements"][symbol]
+    target_density = 1e3 * density * target[1]
+    targets_per_volume = target_density * (1e3 * constants.Avogadro /
+                                           target[0].atomic_weight)
 
-            dir_x = np.cos(phi) * sin_theta
-            dir_y = np.sin(phi) * sin_theta
-            dir_z = cos_theta
+    can_volume = np.pi * (can[1] - can[0]) * np.power(can[2], 2)
+    w2 = gibuu_output.w2weights(can_volume, targets_per_volume, 4 * np.pi)
 
-            direction = np.array([dir_x, dir_y, dir_z])
-            theta = np.arccos(cos_theta)
-            R = Rotation.from_euler("yz", [theta, phi])
+    for mc_event_id, event in enumerate(event_data):
+        aafile.evt.clear()
+        aafile.evt.id = mc_event_id
+        aafile.evt.mc_run_id = mc_event_id
+        # Weights
+        aafile.evt.w.push_back(can_volume)  #w1 (can volume)
+        aafile.evt.w.push_back(w2[mc_event_id])  #w2
+        aafile.evt.w.push_back(-1.0)  #w3 (= w2*flux)
+        # Vertex Position
+        r = can[2] * np.sqrt(np.random.uniform(0, 1))
+        phi = np.random.uniform(0, 2 * np.pi)
+        pos_x = r * np.cos(phi)
+        pos_y = r * np.sin(phi)
+        pos_z = np.random.uniform(can[0], can[1])
+        vtx_pos = np.array([pos_x, pos_y, pos_z])
+        # Direction
+        phi = np.random.uniform(0, 2 * np.pi)
+        cos_theta = np.random.uniform(-1, 1)
+        sin_theta = np.sqrt(1 - cos_theta**2)
 
-            timestamp = np.random.uniform(0, livetime)
+        dir_x = np.cos(phi) * sin_theta
+        dir_y = np.sin(phi) * sin_theta
+        dir_z = cos_theta
 
-            nu_in_trk = ROOT.Trk()
-            nu_in_trk.id = mc_trk_id
+        direction = np.array([dir_x, dir_y, dir_z])
+        theta = np.arccos(cos_theta)
+        R = Rotation.from_euler("yz", [theta, phi])
+
+        timestamp = np.random.uniform(0, livetime)
+
+        nu_in_trk = ROOT.Trk()
+        nu_in_trk.id = mc_trk_id
+        mc_trk_id += 1
+        nu_in_trk.mother_id = -1
+        nu_in_trk.type = nu_type
+        nu_in_trk.pos.set(*vtx_pos)
+        nu_in_trk.dir.set(*direction)
+        nu_in_trk.E = event.lepIn_E
+        nu_in_trk.t = timestamp
+
+        if not propagate_tau:
+            lep_out_trk = ROOT.Trk()
+            lep_out_trk.id = mc_trk_id
             mc_trk_id += 1
-            nu_in_trk.mother_id = -1
-            nu_in_trk.type = nu_type
-            nu_in_trk.pos.set(*vtx_pos)
-            nu_in_trk.dir.set(*direction)
-            nu_in_trk.E = event.lepIn_E
-            nu_in_trk.t = timestamp
+            lep_out_trk.mother_id = 0
+            lep_out_trk.type = sec_lep_type
+            lep_out_trk.pos.set(*vtx_pos)
+            mom = np.array([event.lepOut_Px, event.lepOut_Py, event.lepOut_Pz])
+            p_dir = R.apply(mom / np.linalg.norm(mom))
+            lep_out_trk.dir.set(*p_dir)
+            lep_out_trk.E = event.lepOut_E
+            lep_out_trk.t = timestamp
+            aafile.evt.mc_trks.push_back(lep_out_trk)
 
-            if not propagate_tau:
-                lep_out_trk = ROOT.Trk()
-                lep_out_trk.id = mc_trk_id
-                mc_trk_id += 1
-                lep_out_trk.mother_id = 0
-                lep_out_trk.type = sec_lep_type
-                lep_out_trk.pos.set(*vtx_pos)
-                mom = np.array(
-                    [event.lepOut_Px, event.lepOut_Py, event.lepOut_Pz])
-                p_dir = R.apply(mom / np.linalg.norm(mom))
-                lep_out_trk.dir.set(*p_dir)
-                lep_out_trk.E = event.lepOut_E
-                lep_out_trk.t = timestamp
-                aafile.evt.mc_trks.push_back(lep_out_trk)
+        # bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
+        nu_in_trk.setusr('bx', bjorkenx[mc_event_id])
+        nu_in_trk.setusr('by', bjorkeny[mc_event_id])
+        nu_in_trk.setusr('ichan', ichan)
+        nu_in_trk.setusr("cc", is_cc)
 
-            # bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
-            nu_in_trk.setusr('bx', bjorkenx[i])
-            nu_in_trk.setusr('by', bjorkeny[i])
-            nu_in_trk.setusr('ichan', ichan)
-            nu_in_trk.setusr("cc", is_cc)
+        aafile.evt.mc_trks.push_back(nu_in_trk)
 
-            aafile.evt.mc_trks.push_back(nu_in_trk)
+        if tau_secondaries is not None:
+            event_tau_sec = tau_secondaries[mc_event_id]
+            add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp)
+            mc_trk_id += len(event_tau_sec.E)
 
-            if tau_secondaries is not None:
-                event_tau_sec = tau_secondaries[i]
-                add_particles(event_tau_sec, vtx_pos, R)
+        add_particles(event, vtx_pos, R, mc_trk_id, timestamp)
 
-            add_particles(event, vtx_pos, R)
-
-            aafile.write()
+        aafile.write()
 
     del aafile
