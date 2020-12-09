@@ -6,8 +6,8 @@ thepipe
 particle
 click
 f90nml
-uproot4
-awkward1>=0.4.4
+uproot>=4.0.0
+awkward>=1.0.0
 pandas
 mendeleev
 proposal

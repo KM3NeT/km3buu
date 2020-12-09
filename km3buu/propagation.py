@@ -16,7 +16,7 @@ import numpy as np
 import scipy.constants as const
 import proposal as pp
 from particle import Particle
-import awkward1 as ak
+import awkward as ak
 from collections import defaultdict
 
 from .config import Config
@@ -61,7 +61,7 @@ def propagate_lepton(lepout_data, pdgid):
 
     Parameters
     ----------
-    lepout_data: awkward1.highlevel.Array
+    lepout_data: awkward.highlevel.Array
         Lepton data in the GiBUU output shape containing the fields 
         'lepOut_E, lepOut_Px, lepOut_Py, lepOut_Pz'
     pdgid:
@@ -69,7 +69,7 @@ def propagate_lepton(lepout_data, pdgid):
 
     Returns
     -------
-    awkward1.highlevel.Array (E, Px, Py, Pz, x, y, z)
+    awkward.highlevel.Array (E, Px, Py, Pz, x, y, z)
     """
     lepton_info = Particle.from_pdgid(pdgid)
     prop_range = const.c * lepton_info.lifetime * 1e11 * np.max(

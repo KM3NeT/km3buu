@@ -13,7 +13,7 @@ __status__ = "Development"
 import csv
 import unittest
 import numpy as np
-import uproot4
+import uproot
 from os.path import abspath, join, dirname
 from thepipe.logger import get_logger
 from km3net_testdata import data_path
@@ -34,7 +34,7 @@ class TestTauPropagation(unittest.TestCase):
         log.setLevel("INFO")
         self.gibuu_output = GiBUUOutput(TESTDATA_DIR)
         fname = join(TESTDATA_DIR, self.gibuu_output.root_pert_files[0])
-        fobj = uproot4.open(fname)
+        fobj = uproot.open(fname)
         data = fobj["RootTuple"].arrays()
         self.sec = propagate_lepton(data, 15)
 

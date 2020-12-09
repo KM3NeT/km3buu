@@ -18,8 +18,8 @@ from io import StringIO
 from os import listdir
 from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
-import awkward1
-import uproot4
+import awkward as ak
+import uproot
 from scipy.interpolate import UnivariateSpline
 from scipy.spatial.transform import Rotation
 import scipy.constants as constants
@@ -202,7 +202,7 @@ class GiBUUOutput:
 
         Parameters
         ----------
-            roottuple_data: awkward1.highlevel.Array                
+            roottuple_data: awkward.highlevel.Array                
         """
         d = roottuple_data
         k_in = np.vstack([
@@ -233,7 +233,7 @@ class GiBUUOutput:
 
         Parameters
         ----------
-            roottuple_data: awkward1.highlevel.Array                
+            roottuple_data: awkward.highlevel.Array                
         """
         d = roottuple_data
         y = 1 - np.divide(np.array(d.lepOut_E), np.array(d.lepIn_E))
@@ -257,7 +257,7 @@ class GiBUUOutput:
         GiBUU output data in pandas dataframe format
         """
         import pandas as pd
-        df = awkward1.to_pandas(self.arrays)
+        df = ak.to_pandas(self.arrays)
         sec_df = df[df.index.get_level_values(1) == 0].copy()
         sec_df.loc[:, "E"] = sec_df.lepOut_E
         sec_df.loc[:, "Px"] = sec_df.lepOut_Px
@@ -275,11 +275,11 @@ class GiBUUOutput:
     @property
     def arrays(self):
         """
-        GiBUU output data in awkward1 format
+        GiBUU output data in awkward format
         """
         retval = None
         for ifile in self.root_pert_files:
-            fobj = uproot4.open(join(self.data_path, ifile))
+            fobj = uproot.open(join(self.data_path, ifile))
             if retval is None:
                 retval = fobj["RootTuple"].arrays()
             else:
