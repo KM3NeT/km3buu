@@ -257,9 +257,8 @@ class GiBUUOutput:
         GiBUU output data in pandas dataframe format
         """
         import pandas as pd
-        df = None
         df = awkward1.to_pandas(self.arrays)
-        sec_df = df[df.index.get_level_values(1) == 0]
+        sec_df = df[df.index.get_level_values(1) == 0].copy()
         sec_df.loc[:, "E"] = sec_df.lepOut_E
         sec_df.loc[:, "Px"] = sec_df.lepOut_Px
         sec_df.loc[:, "Py"] = sec_df.lepOut_Py
