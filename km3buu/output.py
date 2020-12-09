@@ -15,7 +15,7 @@ __status__ = "Development"
 import re
 import numpy as np
 from io import StringIO
-from os import listdir
+from os import listdir, environ
 from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
 import awkward1
@@ -27,6 +27,12 @@ import mendeleev
 
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 from .config import read_default_media_compositions
+
+try:
+    import ROOT
+    ROOT.gSystem.Load(join(environ("KM3NET_LIB", "libKM3NeTROOT.so")))
+except:
+    pass
 
 EVENT_FILENAME = "FinalEvents.dat"
 ROOT_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.root"
@@ -299,7 +305,7 @@ def write_detector_file(gibuu_output,
                         livetime=3.156e7,
                         propagate_tau=True):  # pragma: no cover
     """
-    Convert the GiBUU output to a KM3NeT MC (AANET) file
+    Convert the GiBUU output to a KM3NeT MC (OfflineFormat) file
 
     Parameters
     ----------
@@ -313,15 +319,16 @@ def write_detector_file(gibuu_output,
     livetime: float
         The data livetime
     """
-    import aa, ROOT
 
-    aafile = ROOT.EventFile()
-    aafile.set_output(ofile)
+    evt = ROOT.Evt()
+    outfile = ROOT.TFile.Open(ofile, "RECREATE")
+    tree = ROOT.TTree("E", "KM3NeT Evt Tree")
+    tree.Branch("Evt", evt, 32000, 4)
     mc_trk_id = 0
 
     def add_particles(particle_data, pos_offset, rotation, start_mc_trk_id,
                       timestamp):
-        nonlocal aafile
+        nonlocal evt
         for i in range(len(particle_data.E)):
             trk = ROOT.Trk()
             trk.id = start_mc_trk_id + i
@@ -343,7 +350,7 @@ def write_detector_file(gibuu_output,
             trk.mother_id = 0
             trk.type = int(particle_data.barcode[i])
             trk.E = particle_data.E[i]
-            aafile.evt.mc_trks.push_back(trk)
+            evt.mc_trks.push_back(trk)
 
     is_cc = False
 
@@ -382,13 +389,13 @@ def write_detector_file(gibuu_output,
     w2 = gibuu_output.w2weights(can_volume, targets_per_volume, 4 * np.pi)
 
     for mc_event_id, event in enumerate(event_data):
-        aafile.evt.clear()
-        aafile.evt.id = mc_event_id
-        aafile.evt.mc_run_id = mc_event_id
+        evt.clear()
+        evt.id = mc_event_id
+        evt.mc_run_id = mc_event_id
         # Weights
-        aafile.evt.w.push_back(can_volume)  #w1 (can volume)
-        aafile.evt.w.push_back(w2[mc_event_id])  #w2
-        aafile.evt.w.push_back(-1.0)  #w3 (= w2*flux)
+        evt.w.push_back(can_volume)  #w1 (can volume)
+        evt.w.push_back(w2[mc_event_id])  #w2
+        evt.w.push_back(-1.0)  #w3 (= w2*flux)
         # Vertex Position
         r = can[2] * np.sqrt(np.random.uniform(0, 1))
         phi = np.random.uniform(0, 2 * np.pi)
@@ -433,7 +440,7 @@ def write_detector_file(gibuu_output,
             lep_out_trk.dir.set(*p_dir)
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
-            aafile.evt.mc_trks.push_back(lep_out_trk)
+            evt.mc_trks.push_back(lep_out_trk)
 
         # bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
         nu_in_trk.setusr('bx', bjorkenx[mc_event_id])
@@ -441,7 +448,7 @@ def write_detector_file(gibuu_output,
         nu_in_trk.setusr('ichan', ichan)
         nu_in_trk.setusr("cc", is_cc)
 
-        aafile.evt.mc_trks.push_back(nu_in_trk)
+        evt.mc_trks.push_back(nu_in_trk)
 
         if tau_secondaries is not None:
             event_tau_sec = tau_secondaries[mc_event_id]
@@ -450,6 +457,7 @@ def write_detector_file(gibuu_output,
 
         add_particles(event, vtx_pos, R, mc_trk_id, timestamp)
 
-        aafile.write()
-
-    del aafile
+        tree.Fill()
+    outfile.Write()
+    outfile.Close()
+    del outfile
