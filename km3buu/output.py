@@ -26,13 +26,17 @@ import scipy.constants as constants
 import mendeleev
 
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
-from .config import read_default_media_compositions
+from .config import Config, read_default_media_compositions
 
 try:
     import ROOT
-    ROOT.gSystem.Load(join(environ("KM3NET_LIB", "libKM3NeTROOT.so")))
+    libpath = environ.get("KM3NET_LIB")
+    if libpath:
+        libpath = Config().km3net_lib_path
+    ROOT.gSystem.Load(join(libpath, "libKM3NeTROOT.so"))
 except:
-    pass
+    import warnings
+    warnings.warn("KM3NeT dataformat library was not loaded.", ImportWarning)
 
 EVENT_FILENAME = "FinalEvents.dat"
 ROOT_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.root"
