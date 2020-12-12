@@ -37,7 +37,7 @@ GIBUU_IMAGE_PATH_KEY = "image_path"
 PROPOSAL_SECTION = "PROPOSAL"
 PROPOSAL_ITP_PATH_KEY = "itp_table_path"
 
-GSEAGEN_SECTION = "gSeagen"
+GSEAGEN_SECTION = "gSeaGen"
 GSEAGEN_PATH_KEY = "path"
 
 GSEAGEN_MEDIA_COMPOSITION_FILE = "MediaComposition.xml"
@@ -71,6 +71,7 @@ class Config(object):
 
     @property
     def gibuu_image_path(self):
+        key = GIBUU_IMAGE_PATH_KEY
         image_path = self.get(GIBUU_SECTION, GIBUU_IMAGE_PATH_KEY)
         if image_path is None or not isfile(image_path):
             dev_path = abspath(join(dirname(__file__), os.pardir, IMAGE_NAME))
@@ -117,11 +118,11 @@ class Config(object):
 
     @property
     def km3net_lib_path(self):
-        return self.set(GENERAL_SECTION, KM3NET_LIB_PATH_KEY, None)
+        return self.get(GENERAL_SECTION, KM3NET_LIB_PATH_KEY, None)
 
     @km3net_lib_path.setter
     def km3net_lib_path(self, value):
-        return self.get(GENERAL_SECTION, KM3NET_LIB_PATH_KEY, value)
+        self.set(GENERAL_SECTION, KM3NET_LIB_PATH_KEY, value)
 
 
 def read_media_compositions(filename):
