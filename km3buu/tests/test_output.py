@@ -31,7 +31,7 @@ try:
     if libpath is None:
         libpath = Config().km3net_lib_path
     KM3NET_LIB_AVAILABLE = (ROOT.gSystem.Load(join(libpath,
-                                                   "libKM3NeTROOT.so")) == 0)
+                                                   "libKM3NeTROOT.so")) >= 0)
 except ModuleNotFoundError:
     KM3NET_LIB_AVAILABLE = False
 
