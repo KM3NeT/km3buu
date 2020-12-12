@@ -31,7 +31,7 @@ from .config import Config, read_default_media_compositions
 try:
     import ROOT
     libpath = environ.get("KM3NET_LIB")
-    if libpath:
+    if libpath is None:
         libpath = Config().km3net_lib_path
     if ROOT.gSystem.Load(join(libpath, "libKM3NeTROOT.so")) != 0:
         raise ModuleNotFoundError("KM3NeT dataformat library not found!")
