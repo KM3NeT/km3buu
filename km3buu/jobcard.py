@@ -94,13 +94,13 @@ def read_jobcard(filepath):
 
 
 def generate_neutrino_jobcard_template(
-    process,
-    flavour,
-    energy,
-    target,
-    write_events=False,
-    do_decay=False,
-    input_path=INPUT_PATH):  # pragma: no cover
+        process,
+        flavour,
+        energy,
+        target,
+        write_events=False,
+        do_decay=False,
+        input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
 
