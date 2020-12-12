@@ -28,9 +28,18 @@ CONFIG_PATH = os.path.expanduser("~/.km3buu/config")
 
 log = get_logger(__name__)
 
+GENERAL_SECTION = "General"
+KM3NET_LIB_PATH_KEY = "km3net_lib_path"
+
 GIBUU_SECTION = "GiBUU"
+GIBUU_IMAGE_PATH_KEY = "image_path"
+
 PROPOSAL_SECTION = "PROPOSAL"
-GSEAGEN_SECTION = "gSeagen"
+PROPOSAL_ITP_PATH_KEY = "itp_table_path"
+
+GSEAGEN_SECTION = "gSeaGen"
+GSEAGEN_PATH_KEY = "path"
+
 GSEAGEN_MEDIA_COMPOSITION_FILE = "MediaComposition.xml"
 
 
@@ -62,8 +71,8 @@ class Config(object):
 
     @property
     def gibuu_image_path(self):
-        key = "image_path"
-        image_path = self.get(GIBUU_SECTION, key)
+        key = GIBUU_IMAGE_PATH_KEY
+        image_path = self.get(GIBUU_SECTION, GIBUU_IMAGE_PATH_KEY)
         if image_path is None or not isfile(image_path):
             dev_path = abspath(join(dirname(__file__), os.pardir, IMAGE_NAME))
             if isfile(dev_path):
@@ -86,26 +95,34 @@ class Config(object):
 
     @gibuu_image_path.setter
     def gibuu_image_path(self, value):
-        section = "GiBUU"
-        key = "image_path"
+        section = GIBUU_SECTION
+        key = GIBUU_IMAGE_PATH_KEY
         self.set(section, key, value)
 
     @property
     def proposal_itp_tables(self):
         default_path = abspath(join(dirname(__file__), "../.tables"))
-        return self.get(PROPOSAL_SECTION, "itp_table_path", default_path)
+        return self.get(PROPOSAL_SECTION, PROPOSAL_ITP_PATH_KEY, default_path)
 
     @proposal_itp_tables.setter
     def proposal_itp_tables(self, value):
-        self.set(PROPOSAL_SECTION, "itp_table_path", value)
+        self.set(PROPOSAL_SECTION, PROPOSAL_ITP_PATH_KEY, value)
 
     @property
     def gseagen_path(self):
-        return self.get(GSEAGEN_SECTION, "path")
+        return self.get(GSEAGEN_SECTION, GSEAGEN_PATH_KEY)
 
     @gseagen_path.setter
     def gseagen_path(self, value):
-        self.set(GIBUU_SECTION, "path", value)
+        self.set(GIBUU_SECTION, GSEAGEN_PATH_KEY, value)
+
+    @property
+    def km3net_lib_path(self):
+        return self.get(GENERAL_SECTION, KM3NET_LIB_PATH_KEY, None)
+
+    @km3net_lib_path.setter
+    def km3net_lib_path(self, value):
+        self.set(GENERAL_SECTION, KM3NET_LIB_PATH_KEY, value)
 
 
 def read_media_compositions(filename):

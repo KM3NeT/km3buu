@@ -15,19 +15,25 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 import km3io
-from km3buu.output import *
-from os import listdir
+from os import listdir, environ
 from os.path import abspath, join, dirname
 from km3net_testdata import data_path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
+from km3buu.output import *
+from km3buu.config import Config
+
 TESTDATA_DIR = data_path("gibuu")
 
 try:
-    import aa, ROOT
-    AANET_AVAILABLE = True
-except ImportError:
-    AANET_AVAILABLE = False
+    import ROOT
+    libpath = environ.get("KM3NET_LIB")
+    if libpath is None:
+        libpath = Config().km3net_lib_path
+    KM3NET_LIB_AVAILABLE = (ROOT.gSystem.Load(join(libpath,
+                                                   "libKM3NeTROOT.so")) >= 0)
+except ModuleNotFoundError:
+    KM3NET_LIB_AVAILABLE = False
 
 
 class TestXSection(unittest.TestCase):
@@ -73,7 +79,8 @@ class TestGiBUUOutput(unittest.TestCase):
             w2[:3], [7.63360911e+01, 3.60997502e-01, 1.13273189e+03])
 
 
-@pytest.mark.skipif(not AANET_AVAILABLE, reason="aanet required")
+@pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
+                    reason="KM3NeT dataformat required")
 class TestAANET(unittest.TestCase):
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
