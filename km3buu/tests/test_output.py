@@ -95,7 +95,7 @@ class TestAANET(unittest.TestCase):
 
     def test_firstevent(self):
         evt = self.fobj.events[0]
-        np.testing.assert_array_equal(evt.mc_tracks.type,
+        np.testing.assert_array_equal(evt.mc_tracks.pdgid,
                                       [12, 2212, 111, 211, -211])
         np.testing.assert_array_almost_equal(
             evt.mc_tracks.E,
