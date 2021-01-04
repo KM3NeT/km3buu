@@ -87,6 +87,33 @@ EVENT_TYPE = {
 
 ROOTTUPLE_KEY = "RootTuple"
 
+EMPTY_KM3NET_HEADER_DICT = {
+    "start_run": "0",
+    "XSecFile": "",
+    "drawing": "",
+    "detector": "",
+    "depth": "2475.0",
+    "muon_desc_file": "",
+    "target": "",
+    "cut_primary": "0 0 0 0",
+    "cut_seamuon": "0 0 0 0",
+    "cut_in": "0 0 0 0",
+    "cut_nu": "0 0 0 0",
+    "spectrum": "0",
+    "can": "0 0 0",
+    "flux": "0 0 0",
+    "fixedcan": "0 0 0 0 0",
+    "genvol": "0 0 0 0 0",
+    "coord_origin": "0 0 0",
+    "genhencut": "0 0",
+    "norma": "0 0",
+    "livetime": "0 0",
+    "seabottom": "0",
+    "DAQ": "0",
+    "tgen": "0",
+    "primary": "0"
+}
+
 
 def read_nu_abs_xsection(filepath):
     """
@@ -302,9 +329,23 @@ class GiBUUOutput:
         retval["By"] = GiBUUOutput.bjorken_y(retval)
         return retval
 
+    @property
+    def energy_min(self):
+        return np.min(self.flux_data["energy"])
+
+    @property
+    def energy_max(self):
+        return np.max(self.flux_data["energy"])
+
+    @property
+    def generated_events(self):
+        energy_min = np.min(self.flux_data["energy"])
+        energy_max = np.max(self.flux_data["energy"])
+        return int(self.flux_interpolation.integral(energy_min, energy_max))
+
 
 def write_detector_file(gibuu_output,
-                        ofile="gibuu.aanet.root",
+                        ofile="gibuu.offline.root",
                         can=(0, 476.5, 403.4),
                         livetime=3.156e7,
                         propagate_tau=True):  # pragma: no cover
@@ -392,6 +433,21 @@ def write_detector_file(gibuu_output,
     can_volume = np.pi * (can[1] - can[0]) * np.power(can[2], 2)
     w2 = gibuu_output.w2weights(can_volume, targets_per_volume, 4 * np.pi)
 
+    head = ROOT.Head()
+    header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
+
+    header_dct["can"] = "{:.1f} {:.1f} {:.1f}".format(*can)
+    header_dct["tgen"] = "{:.1f}".format(livetime)
+    header_dct["flux"] = "{:d} 0 0".format(nu_type)
+    header_dct["genvol"] = "0 {:.1f} {:.1f} {:.1f} {:d}".format(
+        can[1], can[2], can_volume, gibuu_output.generated_events)
+    header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
+                                                       gibuu_output.energy_max)
+
+    for k, v in header_dct.items():
+        head.set_line(k, v)
+    head.Write("Head")
+
     for mc_event_id, event in enumerate(event_data):
         evt.clear()
         evt.id = mc_event_id
@@ -460,7 +516,6 @@ def write_detector_file(gibuu_output,
             mc_trk_id += len(event_tau_sec.E)
 
         add_particles(event, vtx_pos, R, mc_trk_id, timestamp)
-
         tree.Fill()
     outfile.Write()
     outfile.Close()
