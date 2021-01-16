@@ -194,14 +194,9 @@ class GiBUUOutput:
 
     def _event_xsec(self, root_tupledata):
         weights = np.array(root_tupledata.weight)
-        deltaE = np.mean(self.flux_data['energy'][1:] -
-                         self.flux_data['energy'][:-1])
-        energy_min = np.min(self.flux_data["energy"])
-        energy_max = np.max(self.flux_data["energy"])
-        total_flux_events = self.flux_interpolation.integral(
-            energy_min, energy_max)
+        total_events = np.sum(self.flux_data["events"])
         n_files = len(self.root_pert_files)
-        xsec = np.divide(total_flux_events * weights, deltaE * n_files)
+        xsec = np.divide(total_events * weights, n_files)
         return xsec
 
     def w2weights(self, volume, target_density, solid_angle):
@@ -339,9 +334,7 @@ class GiBUUOutput:
 
     @property
     def generated_events(self):
-        energy_min = np.min(self.flux_data["energy"])
-        energy_max = np.max(self.flux_data["energy"])
-        return int(self.flux_interpolation.integral(energy_min, energy_max))
+        return int(np.sum(self.flux_data["events"]))
 
 
 def write_detector_file(gibuu_output,
