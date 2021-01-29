@@ -76,7 +76,9 @@ class TestGiBUUOutput(unittest.TestCase):
     def test_w2weights(self):
         w2 = self.output.w2weights(123.0, 2.6e28, 4 * np.pi)
         np.testing.assert_array_almost_equal(
-            w2[:3], [7.64011311e+01, 3.61305080e-01, 1.13369700e+03], decimal=5)
+            w2[:3], [7.64011311e+01, 3.61305080e-01, 1.13369700e+03],
+            decimal=5)
+
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
