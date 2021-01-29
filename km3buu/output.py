@@ -434,7 +434,7 @@ def write_detector_file(gibuu_output,
 
     timestamp = datetime.now()
     header_dct["simul"] = "KM3BUU %s %s".format(version,
-                                                now.strftime("%Y%m%d %H%M%S"))
+                                                timestamp.strftime("%Y%m%d %H%M%S"))
     header_dct["can"] = "{:.1f} {:.1f} {:.1f}".format(*can)
     header_dct["tgen"] = "{:.1f}".format(livetime)
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
