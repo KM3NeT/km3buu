@@ -24,9 +24,11 @@ from scipy.interpolate import UnivariateSpline
 from scipy.spatial.transform import Rotation
 import scipy.constants as constants
 import mendeleev
+from datetime import datetime
 
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 from .config import Config, read_default_media_compositions
+from .__version__ import version
 
 try:
     import ROOT
@@ -111,7 +113,8 @@ EMPTY_KM3NET_HEADER_DICT = {
     "seabottom": "0",
     "DAQ": "0",
     "tgen": "0",
-    "primary": "0"
+    "primary": "0",
+    "simul": ""
 }
 
 
@@ -429,6 +432,9 @@ def write_detector_file(gibuu_output,
     head = ROOT.Head()
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
+    timestamp = datetime.now()
+    header_dct["simul"] = "KM3BUU %s %s".format(version,
+                                                now.strftime("%Y%m%d %H%M%S"))
     header_dct["can"] = "{:.1f} {:.1f} {:.1f}".format(*can)
     header_dct["tgen"] = "{:.1f}".format(livetime)
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
