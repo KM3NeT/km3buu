@@ -433,7 +433,7 @@ def write_detector_file(gibuu_output,
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
     timestamp = datetime.now()
-    header_dct["simul"] = "KM3BUU %s %s".format(version,
+    header_dct["simul"] = "KM3BUU {} {}".format(version,
                                                 timestamp.strftime("%Y%m%d %H%M%S"))
     header_dct["can"] = "{:.1f} {:.1f} {:.1f}".format(*can)
     header_dct["tgen"] = "{:.1f}".format(livetime)
