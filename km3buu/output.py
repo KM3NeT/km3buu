@@ -92,7 +92,7 @@ ROOTTUPLE_KEY = "RootTuple"
 EMPTY_KM3NET_HEADER_DICT = {
     "start_run": "0",
     "XSecFile": "",
-    "drawing": "",
+    "drawing": "volume",
     "detector": "",
     "depth": "2475.0",
     "muon_desc_file": "",
