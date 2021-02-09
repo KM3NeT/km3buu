@@ -30,18 +30,18 @@ From: debian:stretch
     cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. &&\
     make; make install
 
-    wget https://gibuu.hepforge.org/downloads?f=buuinput2019.tar.gz && \
-    tar xvzf downloads?f=buuinput2019.tar.gz && \
-    wget https://gibuu.hepforge.org/downloads?f=release2019.tar.gz && \
-    tar xvzf downloads?f=release2019.tar.gz && \
+    wget https://gibuu.hepforge.org/downloads?f=buuinput2021.tar.gz && \
+    tar xvzf downloads?f=buuinput2021.tar.gz && \
+    wget https://gibuu.hepforge.org/downloads?f=release2021.tar.gz && \
+    tar xvzf downloads?f=release2021.tar.gz && \
     ls -ahl && \
-    cd release2019 && \
+    cd release2021 && \
     cp /opt/RootTuple-1.0.0/build/src/libRootTuple.a ./objects/LIB/lib/libRootTuple.100.a && \
     make -j withROOT=1 && \
     rm -rf /opt/*.tar.gz
 
 %environment
-    export CONTAINER_GIBUU_EXEC=/opt/release2019/objects/GiBUU.x && \
+    export CONTAINER_GIBUU_EXEC=/opt/release2021/objects/GiBUU.x && \
     export LD_LIBRARY_PATH=/usr/local/lib
 
 

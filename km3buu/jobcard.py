@@ -20,7 +20,7 @@ try:
 except ImportError:
     from io import StringIO
 
-INPUT_PATH = "/opt/buuinput2019/"
+INPUT_PATH = "/opt/buuinput2021/"
 
 DEFAULT_JOBCARD_FILENAME = "jobcard.job"
 

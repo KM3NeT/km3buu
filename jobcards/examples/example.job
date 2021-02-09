@@ -34,7 +34,7 @@
 	LRF_equals_CALC_frame = .true.	! if .false.: 
 					! no offshelltransport
 					! possible
-	path_to_input = '/opt/buuinput2019' 	! needs to be
+	path_to_input = '/opt/buuinput2021' 	! needs to be
 					! changed to actual path
 /
 
