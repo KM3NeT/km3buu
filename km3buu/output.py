@@ -118,21 +118,21 @@ EMPTY_KM3NET_HEADER_DICT = {
 }
 
 PARTICLE_MC_STATUS = {
-    "kIStUndefined": -1,
-    "kIStInitialState": 0,  # generator-level initial state
-    "kIStStableFinalState":
+    "Undefined": -1,
+    "InitialState": 0,  # generator-level initial state
+    "StableFinalState":
     1,  # generator-level final state: particles to be tracked by detector-level MC 
-    "kIStIntermediateState": 2,
-    "kIStDecayedState": 3,
-    "kIStCorrelatedNucleon": 10,
-    "kIStNucleonTarget": 11,
-    "kIStDISPreFragmHadronicState": 12,
-    "kIStPreDecayResonantState": 13,
-    "kIStHadronInTheNucleus":
+    "IntermediateState": 2,
+    "DecayedState": 3,
+    "CorrelatedNucleon": 10,
+    "NucleonTarget": 11,
+    "DISPreFragmHadronicState": 12,
+    "PreDecayResonantState": 13,
+    "HadronInTheNucleus":
     14,  # hadrons inside the nucleus: marked for hadron transport modules to act on
-    "kIStFinalStateNuclearRemnant":
+    "FinalStateNuclearRemnant":
     15,  # low energy nuclear fragments entering the record collectively as a 'hadronic blob' pseudo-particle
-    "kIStNucleonClusterTarget": 16
+    "NucleonClusterTarget": 16
 }
 
 
@@ -386,7 +386,7 @@ def write_detector_file(gibuu_output,
     mc_trk_id = 0
 
     def add_particles(particle_data, pos_offset, rotation, start_mc_trk_id,
-                      timestamp):
+                      timestamp, status):
         nonlocal evt
         for i in range(len(particle_data.E)):
             trk = ROOT.Trk()
@@ -409,6 +409,7 @@ def write_detector_file(gibuu_output,
             trk.mother_id = 0
             trk.type = int(particle_data.barcode[i])
             trk.E = particle_data.E[i]
+            trk.status = status
             evt.mc_trks.push_back(trk)
 
     is_cc = False
@@ -451,8 +452,8 @@ def write_detector_file(gibuu_output,
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
     timestamp = datetime.now()
-    header_dct["simul"] = "KM3BUU {} {}".format(version,
-                                                timestamp.strftime("%Y%m%d %H%M%S"))
+    header_dct["simul"] = "KM3BUU {} {}".format(
+        version, timestamp.strftime("%Y%m%d %H%M%S"))
     header_dct["can"] = "{:.1f} {:.1f} {:.1f}".format(*can)
     header_dct["tgen"] = "{:.1f}".format(livetime)
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
@@ -504,6 +505,7 @@ def write_detector_file(gibuu_output,
         nu_in_trk.dir.set(*direction)
         nu_in_trk.E = event.lepIn_E
         nu_in_trk.t = timestamp
+        nu_in_trk.status = PARTICLE_MC_STATUS["InitialState"]
 
         if not propagate_tau:
             lep_out_trk = ROOT.Trk()
@@ -517,6 +519,7 @@ def write_detector_file(gibuu_output,
             lep_out_trk.dir.set(*p_dir)
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
+            lep_out_trk.status = PARTICLE_MC_STATUS["StableFinalState"]
             evt.mc_trks.push_back(lep_out_trk)
 
         # bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
@@ -532,7 +535,8 @@ def write_detector_file(gibuu_output,
             add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp)
             mc_trk_id += len(event_tau_sec.E)
 
-        add_particles(event, vtx_pos, R, mc_trk_id, timestamp)
+        add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
+                      PARTICLE_MC_STATUS["StableFinalState"])
         tree.Fill()
     outfile.Write()
     outfile.Close()
