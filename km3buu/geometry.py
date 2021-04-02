@@ -1,4 +1,4 @@
-# Filename: detector.py
+# Filename: geometry.py
 """
 Detector geometry related functionalities
 """
@@ -14,11 +14,12 @@ __status__ = "Development"
 import numpy as np
 from abc import ABC, abstractmethod
 
-class DetectorGeometry(ABC):
+
+class DetectorVolume(ABC):
     """
     Detector geometry class
     """
-    def __init__(self)
+    def __init__(self):
         self._volume = -1.0
 
     @abstractmethod
@@ -44,7 +45,7 @@ class DetectorGeometry(ABC):
         return self._volume
 
 
-class Can(DetectorGeometry):
+class CanVolume(DetectorVolume):
     """
     Cylindrical detector geometry
 
@@ -63,9 +64,9 @@ class Can(DetectorGeometry):
         self._zmin = zmin
         self._zmax = zmax
         self._volume = self._calc_volume()
-        
+
     def _calc_volume(self):
-        return np.pi * (self._zmax - self.zmax) * np.power(self._radius, 2)
+        return np.pi * (self._zmax - self._zmin) * np.power(self._radius, 2)
 
     def random_pos(self):
         r = self._radius * np.sqrt(np.random.uniform(0, 1))
@@ -76,7 +77,7 @@ class Can(DetectorGeometry):
         return (pos_x, pos_y, pos_z)
 
 
-class Sphere(DetectorGeometry):
+class SphericalVolume(DetectorVolume):
     """
     Spherical detector geometry
     
@@ -95,14 +96,14 @@ class Sphere(DetectorGeometry):
         self._volume = self._calc_volume()
 
     def _calc_volume(self):
-        return  4/3 * np.pi * np.power(self._radius)
+        return 4 / 3 * np.pi * np.power(self._radius, 3)
 
     def random_pos(self):
-        r = np.power(self._radius, 1/3)
+        r = np.power(self._radius, 1 / 3)
         phi = np.random.uniform(0, np.pi)
-        cosTheta = np.random.uniform(-1,1)
-        pos_x = r * np.cos(phi) * np.sqrt(1-np.power(cosTheta,2))
-        pos_y = r * np.sin(phi) * np.sqrt(1-np.power(cosTheta,2))
+        cosTheta = np.random.uniform(-1, 1)
+        pos_x = r * np.cos(phi) * np.sqrt(1 - np.power(cosTheta, 2))
+        pos_y = r * np.sin(phi) * np.sqrt(1 - np.power(cosTheta, 2))
         pos_z = r * cosTheta
         pos = (pos_x, pos_y, pos_z)
-        return tuple(np.add(center, pos))
+        return tuple(np.add(self._center, pos))
