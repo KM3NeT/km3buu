@@ -92,29 +92,16 @@ ROOTTUPLE_KEY = "RootTuple"
 
 EMPTY_KM3NET_HEADER_DICT = {
     "start_run": "0",
-    "XSecFile": "",
     "drawing": "volume",
-    "detector": "",
     "depth": "2475.0",
-    "muon_desc_file": "",
     "target": "",
-    "cut_primary": "0 0 0 0",
-    "cut_seamuon": "0 0 0 0",
-    "cut_in": "0 0 0 0",
     "cut_nu": "0 0 0 0",
     "spectrum": "0",
     "can": "0 0 0",
     "flux": "0 0 0",
-    "fixedcan": "0 0 0 0 0",
-    "genvol": "0 0 0 0 0",
     "coord_origin": "0 0 0",
-    "genhencut": "0 0",
     "norma": "0 0",
-    "livetime": "0 0",
-    "seabottom": "0",
-    "DAQ": "0",
     "tgen": "0",
-    "primary": "0",
     "simul": ""
 }
 
@@ -441,8 +428,8 @@ def write_detector_file(gibuu_output,
 
     media = read_default_media_compositions()
     density = media["SeaWater"]["density"]
-    symbol = mendeleev.element(gibuu_output.Z).symbol
-    target = media["SeaWater"]["elements"][symbol]
+    element = mendeleev.element(gibuu_output.Z)
+    target = media["SeaWater"]["elements"][element.symbol]
     target_density = 1e3 * density * target[1]
     targets_per_volume = target_density * (1e3 * constants.Avogadro /
                                            target[0].atomic_weight)
@@ -452,16 +439,18 @@ def write_detector_file(gibuu_output,
     head = ROOT.Head()
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
+    header_dct["target"] = element.name
+    key, value = geometry.header_entry()
+    header_dct[key] = value
+    header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
+    header_dct["flux"] = "{:d} 0 0".format(nu_type)
+    header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
+                                                       gibuu_output.energy_max)
+    header_dct["tgen"] = "{:.1f}".format(livetime)
+    header_dct["norma"] = "0 {}".format(gibuu_output.generated_events)
     timestamp = datetime.now()
     header_dct["simul"] = "KM3BUU {} {}".format(
         version, timestamp.strftime("%Y%m%d %H%M%S"))
-    # header_dct["can"] = "{:.1f} {:.1f} {:.1f}".format(*can)
-    header_dct["tgen"] = "{:.1f}".format(livetime)
-    header_dct["flux"] = "{:d} 0 0".format(nu_type)
-    # header_dct["genvol"] = "0 {:.1f} {:.1f} {:.1f} {:d}".format(
-    #     can[1], can[2], can_volume, gibuu_output.generated_events)
-    header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
-                                                       gibuu_output.energy_max)
 
     for k, v in header_dct.items():
         head.set_line(k, v)

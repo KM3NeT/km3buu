@@ -21,6 +21,7 @@ class DetectorVolume(ABC):
     """
     def __init__(self):
         self._volume = -1.0
+        self._coord_origin = (0., 0., 0.)
 
     @abstractmethod
     def random_pos(self):
@@ -34,15 +35,38 @@ class DetectorVolume(ABC):
         """
         pass
 
+    @abstractmethod
+    def header_entry(self):
+        """
+        Returns the header information for the detector volume geometry
+
+        Returns
+        -------
+        tuple (header_key, header_information)
+        """
+        pass
+
     @property
     def volume(self):
         """
+        Detector volume
+
         Returns
         -------
         float [m^3] 
-           The detector volume
         """
         return self._volume
+
+    @property
+    def coord_origin(self):
+        """
+        Coordinate origin
+
+        Returns
+        -------
+        tuple [m] (x, y, z)
+        """
+        return self._coord_origin
 
 
 class CanVolume(DetectorVolume):
@@ -76,6 +100,11 @@ class CanVolume(DetectorVolume):
         pos_z = np.random.uniform(self._zmin, self._zmax)
         return (pos_x, pos_y, pos_z)
 
+    def header_entry(self):
+        key = "can"
+        value = "{} {} {}".format(self._zmin, self._zmax, self._radius)
+        return key, value
+
 
 class SphericalVolume(DetectorVolume):
     """
@@ -89,10 +118,10 @@ class SphericalVolume(DetectorVolume):
         Coordinate center of the sphere
         (x, y, z)
     """
-    def __init__(self, radius, center=(0, 0, 0)):
+    def __init__(self, radius, coord_origin=(0, 0, 0)):
         super().__init__()
         self._radius = radius
-        self._center = center
+        self._coord_origin = coord_origin
         self._volume = self._calc_volume()
 
     def _calc_volume(self):
@@ -106,4 +135,11 @@ class SphericalVolume(DetectorVolume):
         pos_y = r * np.sin(phi) * np.sqrt(1 - np.power(cosTheta, 2))
         pos_z = r * cosTheta
         pos = (pos_x, pos_y, pos_z)
-        return tuple(np.add(self._center, pos))
+        return tuple(np.add(self._coord_origin, pos))
+
+    def header_entry(self):
+        key = "sphere"
+        value = "radius: {} center_x: {} center_y: {} center_z: {}".format(
+            self._radius, self._coord_origin[0], self._coord_origin[1],
+            self._coord_origin[2])
+        return key, value

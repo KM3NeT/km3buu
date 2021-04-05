@@ -20,8 +20,6 @@ class TestGeneralGeometry(unittest.TestCase):
         with self.assertRaises(TypeError) as ctx:
             d = DetectorVolume()
 
-        self.assertTrue('method random_pos' in str(ctx.exception))
-
 
 class TestSphere(unittest.TestCase):
     def setUp(self):
