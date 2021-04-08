@@ -132,10 +132,10 @@ def generate_neutrino_jobcard(events,
 
     # NEUTRINO
     jc["neutrino_induced"]["process_ID"] = PROCESS_LOOKUP[process.lower()]
-    jc["neutrino_induced"]["flavour_ID"] = FLAVOR_LOOKUP[flavour.lower()]
+    jc["neutrino_induced"]["flavor_ID"] = FLAVOR_LOOKUP[flavour.lower()]
     # TARGET
-    jc["target"]["Z"] = target[0]
-    jc["target"]["A"] = target[1]
+    jc["target"]["target_Z"] = target[0]
+    jc["target"]["target_A"] = target[1]
     # EVENTS
     run_events = int(100000 / target[1])
     if events < run_events:
