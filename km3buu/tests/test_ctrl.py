@@ -33,9 +33,9 @@ class TestCTRLbyJobcardFile(unittest.TestCase):
             ene = np.linspace(0.1, 20, 100)
             writer = csv.writer(f, delimiter=' ')
             writer.writerows(zip(ene, np.power(ene, -1)))
-        self.retval = run_jobcard(self.filename,
-                                  self.output_dir.name,
-                                  fluxfile=self.flux_file.name)
+        jc = read_jobcard(self.filename)
+        jc["neutrino_induced"]["FileNameFlux"] = self.flux_file.name
+        self.retval = run_jobcard(jc, self.output_dir.name)
         log = get_logger("ctrl.py")
         log.setLevel("INFO")
 

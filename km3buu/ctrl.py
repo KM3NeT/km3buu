@@ -12,7 +12,7 @@ __maintainer__ = "Johannes Schumann"
 __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
-import os
+from shutil import copy
 from spython.main import Client
 from os.path import join, abspath, basename, isdir, isfile
 from tempfile import NamedTemporaryFile, TemporaryDirectory
@@ -47,7 +47,7 @@ $CONTAINER_GIBUU_EXEC < {1};
 """
 
 
-def run_jobcard(jobcard, outdir, fluxfile=None):
+def run_jobcard(jobcard, outdir):
     """
     Method for run
 
@@ -58,8 +58,6 @@ def run_jobcard(jobcard, outdir, fluxfile=None):
         of a jobcard object or a path to a jobcard
     outdir: str 
         The path to the directory the output should be written to.
-    fluxfile: str
-        Filepath of the custom flux file if initNeutrino/nuExp = 99
     """
     input_dir = TemporaryDirectory()
     outdir = abspath(outdir)
@@ -73,10 +71,11 @@ def run_jobcard(jobcard, outdir, fluxfile=None):
 
     if "neutrino_induced" in jobcard and "nuexp" in jobcard[
             "neutrino_induced"] and jobcard["neutrino_induced"]["nuexp"] == 99:
+        fluxfile = jobcard["neutrino_induced"]["FileNameflux"]
         if fluxfile is None or not isfile(fluxfile):
             raise IOError("Fluxfile not found!")
         tmp_fluxfile = join(input_dir.name, basename(fluxfile))
-        os.system("cp %s %s" % (fluxfile, tmp_fluxfile))
+        copy(abspath(fluxfile), tmp_fluxfile)
         log.info("Set FileNameFlux to: %s" % tmp_fluxfile)
         jobcard["neutrino_induced"]["FileNameflux"] = tmp_fluxfile
     with open(jobcard_fpath, "w") as f:
