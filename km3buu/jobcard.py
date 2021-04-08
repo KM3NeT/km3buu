@@ -13,7 +13,7 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import f90nml
-from os.path import basename
+from os.path import basename, dirname, abspath, join, isfile
 
 try:
     from StringIO import StringIO
@@ -58,18 +58,14 @@ class Jobcard(f90nml.Namelist):
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
-    def __init__(self, *args, **kwargs):
-        if "filename" in kwargs:
-            self.filename = kwargs["filename"]
-            del kwargs["filename"]
-        else:
-            self.filename = DEFAULT_JOBCARD_FILENAME
+    def __init__(self,
+                 *args,
+                 filename=DEFAULT_JOBCARD_FILENAME,
+                 input_path=INPUT_PATH,
+                 **kwargs):
         super(Jobcard, self).__init__(*args, **kwargs)
-        if "input_path" in kwargs:
-            self.input_path = str(input_path)
-            del kwargs["input_path"]
-        else:
-            self.input_path = INPUT_PATH
+        self.filename = filename
+        self.input_path = INPUT_PATH
         self.__getitem__("input")["path_to_input"] = self.input_path
 
     def __getitem__(self, key):
@@ -93,19 +89,24 @@ def read_jobcard(filepath):
     return Jobcard(f90nml.read(filepath), filename=basename(filepath))
 
 
-def generate_neutrino_jobcard_template(
-        process,
-        flavour,
-        energy,
-        target,
-        write_events=False,
-        do_decay=False,
-        input_path=INPUT_PATH):  # pragma: no cover
+def generate_neutrino_jobcard(events,
+                              process,
+                              flavour,
+                              energy,
+                              target,
+                              write_pert=True,
+                              write_real=False,
+                              do_decay=False,
+                              photon_propagation=True,
+                              fluxfile=None,
+                              input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
 
     Parameters
     ----------
+    events: int
+        Simulated number of neutrino events
     process: str
         Interaction channel ["CC", "NC", "antiCC", "antiNC"]
     flavour: str
@@ -113,41 +114,53 @@ def generate_neutrino_jobcard_template(
     energy: float
         Initial energy of the neutrino in GeV
     target: (int, int)
-        (Z, A) describing the target nukleon
+        (Z, A) describing the target nucleon
+    write_pert: boolean (default: True)
+        Write perturbative particles
+    write_real: boolean (default: False)
+        Write real particles
+    do_decay: boolean (default: False)
+        Decay final state particles using PYTHIA
+    photon_propagation: boolean (default: True)
+        Propagate photons and write it out
+    fluxfile: str (default: None)
+        Fluxfile, 1st col energy [GeV] and 2nd col flux [A.U.]
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
-    jc = Jobcard(input_path)
+    jc = read_jobcard(join(dirname(abspath(__file__)), "data/template.job"))
+
     # NEUTRINO
     jc["neutrino_induced"]["process_ID"] = PROCESS_LOOKUP[process.lower()]
     jc["neutrino_induced"]["flavour_ID"] = FLAVOR_LOOKUP[flavour.lower()]
-    jc["neutrino_induced"]["nuXsectionMode"] = 6
-    jc["neutrino_induced"]["includeDIS"] = True
-    jc["neutrino_induced"]["includeDELTA"] = True
-    jc["neutrino_induced"]["includeRES"] = True
-    jc["neutrino_induced"]["includeQE"] = True
-    jc["neutrino_induced"]["include1pi"] = True
-    jc["neutrino_induced"]["include2p2hQE"] = True
-    jc["neutrino_induced"]["include2pi"] = False
-    jc["neutrino_induced"]["include2p2hDelta"] = False
-    jc["neutrino_inducted"]["printAbsorptionXS"] = True
-    # INPUT
-    jc["input"]["numTimeSteps"] = 0
-    jc["input"]["eventtype"] = 5
-    jc["input"]["numEnsembles"] = 100000
-    jc["input"]["delta_T"] = 0.2
-    jc["input"]["localEnsemble"] = True
-    jc["input"]["num_runs_SameEnergy"] = 1
     # TARGET
     jc["target"]["Z"] = target[0]
     jc["target"]["A"] = target[1]
+    # EVENTS
+    run_events = int(100000 / target[1])
+    if events < run_events:
+        run_events = events
+        runs = 1
+    else:
+        runs = events // run_events
+    jc["input"]["numEnsembles"] = run_events
+    jc["input"]["num_runs_SameEnergy"] = runs
     # DECAY
     if do_decay:
         for i in DECAYED_HADRONS:
             key = "stabilityFlag({:d})".format(i)
             jc["ModifyParticles"][key] = 4
         jc["pythia"]["MDCY(102,1)"] = 1
+    # FLUX
+    if fluxfile is not None:
+        if not isfile(fluxfile):
+            raise IOError("Fluxfile {} not found!")
+        jc["neutrino_induced"]["nuexp"] = 99
+        jc["neutrino_induced"]["FileNameflux"] = fluxfile
+    # OUTPUT
+    jc["eventoutput"]["writeperturbativeparticles"] = write_pert
+    jc["eventoutput"]["writerealparticles"] = write_real
     # MISC
-    jc["neutrinoAnalysis"]["outputEvents"] = write_events
-    jc["insertion"]["propagateNoPhoton"] = False
+    jc["insertion"]["propagateNoPhoton"] = not photon_propagation
+
     return jc
