@@ -111,8 +111,8 @@ def generate_neutrino_jobcard(events,
         Interaction channel ["CC", "NC", "antiCC", "antiNC"]
     flavour: str
         Flavour ["electron", "muon", "tau"]
-    energy: float
-        Initial energy of the neutrino in GeV
+    energy: tuple
+        Initial energy range of the neutrino in GeV
     target: (int, int)
         (Z, A) describing the target nucleon
     write_pert: boolean (default: True)
@@ -129,6 +129,7 @@ def generate_neutrino_jobcard(events,
         The input path pointing to the GiBUU lookup data which should be used
     """
     jc = read_jobcard(join(dirname(abspath(__file__)), "data/template.job"))
+    jc["input"]["path_to_input"] = input_path
 
     # NEUTRINO
     jc["neutrino_induced"]["process_ID"] = PROCESS_LOOKUP[process.lower()]
@@ -145,6 +146,9 @@ def generate_neutrino_jobcard(events,
         runs = events // run_events
     jc["input"]["numEnsembles"] = run_events
     jc["input"]["num_runs_SameEnergy"] = runs
+    # ENERGY
+    jc["nl_neutrino_energyflux"]["eflux_min"] = energy[0]
+    jc["nl_neutrino_energyflux"]["eflux_max"] = energy[1]
     # DECAY
     if do_decay:
         for i in DECAYED_HADRONS:
