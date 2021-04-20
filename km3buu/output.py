@@ -27,6 +27,7 @@ import mendeleev
 from datetime import datetime
 
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
+from .geometry import DetectorVolume, CanVolume
 from .config import Config, read_default_media_compositions
 from .__version__ import version
 
@@ -91,29 +92,16 @@ ROOTTUPLE_KEY = "RootTuple"
 
 EMPTY_KM3NET_HEADER_DICT = {
     "start_run": "0",
-    "XSecFile": "",
     "drawing": "volume",
-    "detector": "",
     "depth": "2475.0",
-    "muon_desc_file": "",
     "target": "",
-    "cut_primary": "0 0 0 0",
-    "cut_seamuon": "0 0 0 0",
-    "cut_in": "0 0 0 0",
     "cut_nu": "0 0 0 0",
     "spectrum": "0",
     "can": "0 0 0",
     "flux": "0 0 0",
-    "fixedcan": "0 0 0 0 0",
-    "genvol": "0 0 0 0 0",
     "coord_origin": "0 0 0",
-    "genhencut": "0 0",
     "norma": "0 0",
-    "livetime": "0 0",
-    "seabottom": "0",
-    "DAQ": "0",
     "tgen": "0",
-    "primary": "0",
     "simul": ""
 }
 
@@ -360,7 +348,7 @@ class GiBUUOutput:
 
 def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
-                        can=(0, 476.5, 403.4),
+                        geometry=CanVolume(),
                         livetime=3.156e7,
                         propagate_tau=True):  # pragma: no cover
     """
@@ -372,12 +360,13 @@ def write_detector_file(gibuu_output,
         Output object which wraps the information from the GiBUU output files
     ofile: str
         Output filename
-    can: tuple
-        The can dimensions which are used to distribute the events 
-        (z_min, z_max, radius)
+    geometry: DetectorVolume
+        The detector geometry which should be used
     livetime: float
         The data livetime
     """
+    if not isinstance(geometry, DetectorVolume):
+        raise TypeError("Geometry needs to be a DetectorVolume")
 
     evt = ROOT.Evt()
     outfile = ROOT.TFile.Open(ofile, "RECREATE")
@@ -439,28 +428,29 @@ def write_detector_file(gibuu_output,
 
     media = read_default_media_compositions()
     density = media["SeaWater"]["density"]
-    symbol = mendeleev.element(gibuu_output.Z).symbol
-    target = media["SeaWater"]["elements"][symbol]
+    element = mendeleev.element(gibuu_output.Z)
+    target = media["SeaWater"]["elements"][element.symbol]
     target_density = 1e3 * density * target[1]
     targets_per_volume = target_density * (1e3 * constants.Avogadro /
                                            target[0].atomic_weight)
 
-    can_volume = np.pi * (can[1] - can[0]) * np.power(can[2], 2)
-    w2 = gibuu_output.w2weights(can_volume, targets_per_volume, 4 * np.pi)
+    w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume, 4 * np.pi)
 
     head = ROOT.Head()
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
+    header_dct["target"] = element.name
+    key, value = geometry.header_entry()
+    header_dct[key] = value
+    header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
+    header_dct["flux"] = "{:d} 0 0".format(nu_type)
+    header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
+                                                       gibuu_output.energy_max)
+    header_dct["tgen"] = "{:.1f}".format(livetime)
+    header_dct["norma"] = "0 {}".format(gibuu_output.generated_events)
     timestamp = datetime.now()
     header_dct["simul"] = "KM3BUU {} {}".format(
         version, timestamp.strftime("%Y%m%d %H%M%S"))
-    header_dct["can"] = "{:.1f} {:.1f} {:.1f}".format(*can)
-    header_dct["tgen"] = "{:.1f}".format(livetime)
-    header_dct["flux"] = "{:d} 0 0".format(nu_type)
-    header_dct["genvol"] = "0 {:.1f} {:.1f} {:.1f} {:d}".format(
-        can[1], can[2], can_volume, gibuu_output.generated_events)
-    header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
-                                                       gibuu_output.energy_max)
 
     for k, v in header_dct.items():
         head.set_line(k, v)
@@ -471,16 +461,11 @@ def write_detector_file(gibuu_output,
         evt.id = mc_event_id
         evt.mc_run_id = mc_event_id
         # Weights
-        evt.w.push_back(can_volume)  #w1 (can volume)
+        evt.w.push_back(geometry.volume)  #w1 (can volume)
         evt.w.push_back(w2[mc_event_id])  #w2
         evt.w.push_back(-1.0)  #w3 (= w2*flux)
         # Vertex Position
-        r = can[2] * np.sqrt(np.random.uniform(0, 1))
-        phi = np.random.uniform(0, 2 * np.pi)
-        pos_x = r * np.cos(phi)
-        pos_y = r * np.sin(phi)
-        pos_z = np.random.uniform(can[0], can[1])
-        vtx_pos = np.array([pos_x, pos_y, pos_z])
+        vtx_pos = np.array(geometry.random_pos())
         # Direction
         phi = np.random.uniform(0, 2 * np.pi)
         cos_theta = np.random.uniform(-1, 1)
