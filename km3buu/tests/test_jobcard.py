@@ -12,7 +12,8 @@ __status__ = "Development"
 
 import unittest
 import numpy as np
-from km3buu.jobcard import Jobcard, INPUT_PATH
+from km3buu.jobcard import *
+from tempfile import TemporaryFile
 
 
 class TestJobcard(unittest.TestCase):
@@ -42,3 +43,53 @@ class TestJobcard(unittest.TestCase):
         expected_line = "def = 42"
         assert ctnt.find("&ABC") == -1
         assert ctnt.find(expected_line) == -1
+
+
+class TestNeutrinoJobcard(unittest.TestCase):
+    def setUp(self):
+        self.test_fluxfile = TemporaryFile()
+        self.test_Z = np.random.randint(0, 100)
+        self.test_A = np.random.randint(0, 100)
+        self.test_energy_min = np.random.uniform(0.0, 100.0)
+        self.test_energy_max = np.random.uniform(self.test_energy_min, 100.0)
+        self.photon_propagation_flag = np.random.choice([True, False])
+        self.do_decay = np.random.choice([True, False])
+        self.test_jobcard = generate_neutrino_jobcard(
+            1000,
+            "CC",
+            "electron", (self.test_energy_min, self.test_energy_max),
+            (self.test_Z, self.test_A),
+            do_decay=self.do_decay,
+            photon_propagation=self.photon_propagation_flag,
+            fluxfile=self.test_fluxfile.name,
+            input_path="/test")
+
+    def test_input_path(self):
+        self.assertEqual("/test", self.test_jobcard["input"]["path_to_input"])
+
+    def test_target(self):
+        self.assertEqual(self.test_Z, self.test_jobcard["target"]["target_Z"])
+        self.assertEqual(self.test_A, self.test_jobcard["target"]["target_A"])
+
+    def test_energy(self):
+        self.assertAlmostEqual(
+            self.test_energy_min,
+            self.test_jobcard["nl_neutrino_energyflux"]["eflux_min"])
+        self.assertAlmostEqual(
+            self.test_energy_max,
+            self.test_jobcard["nl_neutrino_energyflux"]["eflux_max"])
+
+    def test_flux(self):
+        self.assertEqual(self.test_fluxfile.name,
+                         self.test_jobcard["neutrino_induced"]["FileNameflux"])
+        self.assertEqual(self.test_jobcard["neutrino_induced"]["nuexp"], 99)
+        # Test flat flux
+        flat_flux_jobcard = generate_neutrino_jobcard(
+            1000, "CC", "electron",
+            (self.test_energy_min, self.test_energy_max),
+            (self.test_Z, self.test_A))
+        self.assertEqual(flat_flux_jobcard["neutrino_induced"]["nuexp"], 10)
+
+    def test_photon_propagation_flag(self):
+        self.assertEqual(self.test_jobcard["insertion"]["propagateNoPhoton"],
+                         not self.photon_propagation_flag)

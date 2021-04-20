@@ -1,0 +1,48 @@
+&input
+    numtimesteps = 200
+    eventtype = 5
+    delta_t = 0.2
+    localensemble = .true.
+    freezerealparticles = .true.
+    lrf_equals_calc_frame = .true.
+/
+
+&neutrino_induced
+    nuxsectionmode = 16
+    includedis = .true.
+    includedelta = .true.
+    includeres = .true.
+    includeqe = .true.
+    include1pi = .true.
+    include2p2hqe = .true.
+    include2pi = .false.
+    include2p2hdelta = .false.
+    printabsorptionxs = .true.
+    nuexp = 10
+/
+
+
+&nl_fluxcuts
+    energylimit_for_qsrec = .true.
+/
+
+&nl_neutrino_energyflux
+    eflux_min = 0.1
+    eflux_max = 50.0
+/
+
+&neutrinoanalysis
+    outputevents = .false.
+/
+
+&pythia
+    parp(91) = 0.44
+/
+
+&eventoutput
+    eventformat = 4
+/
+
+&propagation
+    rungekuttaorder = 2
+/
