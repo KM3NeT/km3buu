@@ -130,7 +130,6 @@ def generate_neutrino_jobcard(events,
     """
     jc = read_jobcard(join(dirname(abspath(__file__)), "data/template.job"))
     jc["input"]["path_to_input"] = input_path
-
     # NEUTRINO
     jc["neutrino_induced"]["process_ID"] = PROCESS_LOOKUP[process.lower()]
     jc["neutrino_induced"]["flavor_ID"] = FLAVOR_LOOKUP[flavour.lower()]
