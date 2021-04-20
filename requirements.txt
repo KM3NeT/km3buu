@@ -10,4 +10,4 @@ uproot>=4.0.0
 awkward>=1.0.0
 pandas
 mendeleev
-proposal
+proposal==6.1.6
