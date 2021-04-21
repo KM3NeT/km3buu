@@ -48,8 +48,8 @@ class TestJobcard(unittest.TestCase):
 class TestNeutrinoJobcard(unittest.TestCase):
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
-        self.test_Z = np.random.randint(0, 100)
-        self.test_A = np.random.randint(0, 100)
+        self.test_Z = np.random.randint(1, 100)
+        self.test_A = np.random.randint(self.test_Z, 100)
         self.test_energy_min = np.random.uniform(0.0, 100.0)
         self.test_energy_max = np.random.uniform(self.test_energy_min, 100.0)
         self.photon_propagation_flag = np.random.choice([True, False])
