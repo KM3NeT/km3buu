@@ -123,6 +123,31 @@ PARTICLE_MC_STATUS = {
     "NucleonClusterTarget": 16
 }
 
+W2LIST_LOOKUP = {
+    "PS": 0,
+    "EG": 1,
+    "XSEC_MEAN": 2,
+    "COLUMN_DEPTH": 3,
+    "P_EARTH": 4,
+    "WATER_INT_LEN": 5,
+    "P_SCALE": 6,
+    "BX": 7,
+    "BY": 8,
+    "ICHAN": 9,
+    "CC": 10,
+    "DISTAMAX": 11,
+    "WATERXSEC": 12,
+    "XSEC": 13,
+    "DXSEC": 14,
+    "TARGETA": 15,
+    "TARGETZ": 16,
+    "VERINCAN": 17,
+    "LEPINCAN": 18,
+    "N_RETRIES": 19
+}
+
+W2LIST_LENGTH = len(W2LIST_LOOKUP)
+
 
 def read_nu_abs_xsection(filepath):
     """
@@ -464,6 +489,16 @@ def write_detector_file(gibuu_output,
         evt.w.push_back(geometry.volume)  #w1 (can volume)
         evt.w.push_back(w2[mc_event_id])  #w2
         evt.w.push_back(-1.0)  #w3 (= w2*flux)
+        # Event Information (w2list)
+        evt.w2list.resize(W2LIST_LENGTH)
+
+        evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
+        evt.w2list[W2LIST_LOOKUP["TARGETZ"]] = gibuu_output.Z
+        evt.w2list[W2LIST_LOOKUP["BX"]] = bjorkenx[mc_event_id]
+        evt.w2list[W2LIST_LOOKUP["BY"]] = bjorkeny[mc_event_id]
+        evt.w2list[W2LIST_LOOKUP["CC"]] = ichan
+        evt.w2list[W2LIST_LOOKUP["ICHAN"]] = event.evType
+
         # Vertex Position
         vtx_pos = np.array(geometry.random_pos())
         # Direction
@@ -506,12 +541,6 @@ def write_detector_file(gibuu_output,
             lep_out_trk.t = timestamp
             lep_out_trk.status = PARTICLE_MC_STATUS["StableFinalState"]
             evt.mc_trks.push_back(lep_out_trk)
-
-        # bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
-        nu_in_trk.setusr('bx', bjorkenx[mc_event_id])
-        nu_in_trk.setusr('by', bjorkeny[mc_event_id])
-        nu_in_trk.setusr('ichan', ichan)
-        nu_in_trk.setusr("cc", is_cc)
 
         evt.mc_trks.push_back(nu_in_trk)
 
