@@ -219,7 +219,7 @@ class GiBUUOutput:
                                          weights=weights,
                                          bins=np.logspace(
                                              np.log10(Emin), np.log10(Emax),
-                                             20))
+                                             15))
         deltaE = np.mean(self.flux_data["energy"][1:] -
                          self.flux_data["energy"][:-1])
         bin_events = np.array([
