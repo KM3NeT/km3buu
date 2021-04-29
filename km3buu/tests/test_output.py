@@ -118,7 +118,7 @@ class TestAANET(unittest.TestCase):
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
         usr = evt.mc_tracks.usr[0]
         # XSEC
-        np.testing.assert_almost_equal(evt.w2list[2], 40.62418521597373)
+        np.testing.assert_almost_equal(evt.w2list[13], 40.62418521597373)
         # Bx
         np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
         # By
