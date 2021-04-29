@@ -102,7 +102,8 @@ EMPTY_KM3NET_HEADER_DICT = {
     "coord_origin": "0 0 0",
     "norma": "0 0",
     "tgen": "0",
-    "simul": ""
+    "simul": "",
+    "primary": "0"
 }
 
 PARTICLE_MC_STATUS = {
@@ -503,6 +504,7 @@ def write_detector_file(gibuu_output,
     timestamp = datetime.now()
     header_dct["simul"] = "KM3BUU {} {}".format(
         version, timestamp.strftime("%Y%m%d %H%M%S"))
+    header_dct["primary"] = "{:d}".format(nu_type)
 
     for k, v in header_dct.items():
         head.set_line(k, v)
