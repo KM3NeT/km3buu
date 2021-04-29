@@ -102,7 +102,7 @@ EMPTY_KM3NET_HEADER_DICT = {
     "coord_origin": "0 0 0",
     "norma": "0 0",
     "tgen": "0",
-    "simul": ""
+    "simul": "",
     "primary": "0"
 }
 
