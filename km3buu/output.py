@@ -126,7 +126,7 @@ PARTICLE_MC_STATUS = {
 W2LIST_LOOKUP = {
     "PS": 0,
     "EG": 1,
-    "XSEC": 2,
+    "XSEC_MEAN": 2,
     "COLUMN_DEPTH": 3,
     "P_EARTH": 4,
     "WATER_INT_LEN": 5,
@@ -137,6 +137,7 @@ W2LIST_LOOKUP = {
     "CC": 10,
     "DISTAMAX": 11,
     "WATERXSEC": 12,
+    "XSEC": 13,
     "TARGETA": 15,
     "TARGETZ": 16,
     "VERINCAN": 17,
@@ -507,6 +508,8 @@ def write_detector_file(gibuu_output,
         head.set_line(k, v)
     head.Write("Head")
 
+    mean_xsec_func = gibuu_output.mean_xsec
+
     for mc_event_id, event in enumerate(event_data):
         evt.clear()
         evt.id = mc_event_id
@@ -517,6 +520,7 @@ def write_detector_file(gibuu_output,
         evt.w.push_back(-1.0)  #w3 (= w2*flux)
         # Event Information (w2list)
         evt.w2list.resize(W2LIST_LENGTH)
+        evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(event.lepIn_E)
         evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
         evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
         evt.w2list[W2LIST_LOOKUP["TARGETZ"]] = gibuu_output.Z
