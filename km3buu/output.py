@@ -20,7 +20,7 @@ from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
 import awkward as ak
 import uproot
-from scipy.interpolate import UnivariateSpline
+from scipy.interpolate import UnivariateSpline, interp1d
 from scipy.spatial.transform import Rotation
 import scipy.constants as constants
 import mendeleev
@@ -207,6 +207,34 @@ class GiBUUOutput:
         n_files = len(self.root_pert_files)
         xsec = np.divide(total_events * weights, n_files)
         return xsec
+
+    @property
+    def mean_xsec(self):
+        root_tupledata = self.arrays
+        energies = np.array(root_tupledata.lepIn_E)
+        weights = self._event_xsec(root_tupledata)
+        Emin = np.min(energies)
+        Emax = np.max(energies)
+        xsec, energy_bins = np.histogram(energies,
+                                         weights=weights,
+                                         bins=np.logspace(
+                                             np.log10(Emin), np.log10(Emax),
+                                             15))
+        deltaE = np.mean(self.flux_data["energy"][1:] -
+                         self.flux_data["energy"][:-1])
+        bin_events = np.array([
+            self.flux_interpolation.integral(energy_bins[i],
+                                             energy_bins[i + 1]) / deltaE
+            for i in range(len(energy_bins) - 1)
+        ])
+        x = (energy_bins[1:] + energy_bins[:-1]) / 2
+        y = xsec / bin_events / x
+        xsec_interp = interp1d(x,
+                               y,
+                               kind="linear",
+                               fill_value=(y[0], y[-1]),
+                               bounds_error=False)
+        return lambda e: xsec_interp(e) * e
 
     def w2weights(self, volume, target_density, solid_angle):
         """
