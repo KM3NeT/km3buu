@@ -559,8 +559,13 @@ def write_detector_file(gibuu_output,
         nu_in_trk.E = event.lepIn_E
         nu_in_trk.t = timestamp
         nu_in_trk.status = PARTICLE_MC_STATUS["InitialState"]
+        evt.mc_trks.push_back(nu_in_trk)
 
-        if not propagate_tau:
+        if tau_secondaries is not None:
+            event_tau_sec = tau_secondaries[mc_event_id]
+            add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp)
+            mc_trk_id += len(event_tau_sec.E)
+        else:
             lep_out_trk = ROOT.Trk()
             lep_out_trk.id = mc_trk_id
             mc_trk_id += 1
@@ -575,12 +580,6 @@ def write_detector_file(gibuu_output,
             lep_out_trk.status = PARTICLE_MC_STATUS["StableFinalState"]
             evt.mc_trks.push_back(lep_out_trk)
 
-        evt.mc_trks.push_back(nu_in_trk)
-
-        if tau_secondaries is not None:
-            event_tau_sec = tau_secondaries[mc_event_id]
-            add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp)
-            mc_trk_id += len(event_tau_sec.E)
 
         add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
                       PARTICLE_MC_STATUS["StableFinalState"])
