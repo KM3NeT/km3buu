@@ -580,7 +580,6 @@ def write_detector_file(gibuu_output,
             lep_out_trk.status = PARTICLE_MC_STATUS["StableFinalState"]
             evt.mc_trks.push_back(lep_out_trk)
 
-
         add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
                       PARTICLE_MC_STATUS["StableFinalState"])
         tree.Fill()
