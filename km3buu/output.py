@@ -143,7 +143,6 @@ W2LIST_LOOKUP = {
     "TARGETZ": 16,
     "VERINCAN": 17,
     "LEPINCAN": 18,
-    "N_RETRIES": 19
 }
 
 W2LIST_LENGTH = len(W2LIST_LOOKUP)
@@ -530,6 +529,8 @@ def write_detector_file(gibuu_output,
         evt.w2list[W2LIST_LOOKUP["BY"]] = bjorkeny[mc_event_id]
         evt.w2list[W2LIST_LOOKUP["CC"]] = ichan
         evt.w2list[W2LIST_LOOKUP["ICHAN"]] = event.evType
+        evt.w2list[W2LIST_LOOKUP["VERINCAN"]] = 1
+        evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
 
         # Vertex Position
         vtx_pos = np.array(geometry.random_pos())
