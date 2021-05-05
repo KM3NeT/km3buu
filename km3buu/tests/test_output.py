@@ -120,11 +120,13 @@ class TestAANET(unittest.TestCase):
         np.testing.assert_allclose(evt.mc_tracks.pos_y, -122.54421157)
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
         usr = evt.mc_tracks.usr[0]
+        # XSEC
+        np.testing.assert_almost_equal(evt.w2list[13], 40.62418521597373)
         # Bx
-        np.testing.assert_almost_equal(usr[0], 0.35479262672400624)
+        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
         # By
-        np.testing.assert_almost_equal(usr[1], 0.8167222969153614)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.8167222969153614)
         # iChannel
-        np.testing.assert_equal(usr[2], 2)
+        np.testing.assert_equal(evt.w2list[9], 34)
         # CC/NC
-        np.testing.assert_equal(usr[3], 1)
+        np.testing.assert_equal(evt.w2list[10], 2)

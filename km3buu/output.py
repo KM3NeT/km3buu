@@ -20,7 +20,7 @@ from os.path import isfile, join, abspath
 from tempfile import TemporaryDirectory
 import awkward as ak
 import uproot
-from scipy.interpolate import UnivariateSpline
+from scipy.interpolate import UnivariateSpline, interp1d
 from scipy.spatial.transform import Rotation
 import scipy.constants as constants
 import mendeleev
@@ -102,7 +102,8 @@ EMPTY_KM3NET_HEADER_DICT = {
     "coord_origin": "0 0 0",
     "norma": "0 0",
     "tgen": "0",
-    "simul": ""
+    "simul": "",
+    "primary": "0"
 }
 
 PARTICLE_MC_STATUS = {
@@ -122,6 +123,29 @@ PARTICLE_MC_STATUS = {
     15,  # low energy nuclear fragments entering the record collectively as a 'hadronic blob' pseudo-particle
     "NucleonClusterTarget": 16
 }
+
+W2LIST_LOOKUP = {
+    "PS": 0,
+    "EG": 1,
+    "XSEC_MEAN": 2,
+    "COLUMN_DEPTH": 3,
+    "P_EARTH": 4,
+    "WATER_INT_LEN": 5,
+    "P_SCALE": 6,
+    "BX": 7,
+    "BY": 8,
+    "ICHAN": 9,
+    "CC": 10,
+    "DISTAMAX": 11,
+    "WATERXSEC": 12,
+    "XSEC": 13,
+    "TARGETA": 15,
+    "TARGETZ": 16,
+    "VERINCAN": 17,
+    "LEPINCAN": 18,
+}
+
+W2LIST_LENGTH = len(W2LIST_LOOKUP)
 
 
 def read_nu_abs_xsection(filepath):
@@ -207,6 +231,34 @@ class GiBUUOutput:
         n_files = len(self.root_pert_files)
         xsec = np.divide(total_events * weights, n_files)
         return xsec
+
+    @property
+    def mean_xsec(self):
+        root_tupledata = self.arrays
+        energies = np.array(root_tupledata.lepIn_E)
+        weights = self._event_xsec(root_tupledata)
+        Emin = np.min(energies)
+        Emax = np.max(energies)
+        xsec, energy_bins = np.histogram(energies,
+                                         weights=weights,
+                                         bins=np.logspace(
+                                             np.log10(Emin), np.log10(Emax),
+                                             15))
+        deltaE = np.mean(self.flux_data["energy"][1:] -
+                         self.flux_data["energy"][:-1])
+        bin_events = np.array([
+            self.flux_interpolation.integral(energy_bins[i],
+                                             energy_bins[i + 1]) / deltaE
+            for i in range(len(energy_bins) - 1)
+        ])
+        x = (energy_bins[1:] + energy_bins[:-1]) / 2
+        y = xsec / bin_events / x
+        xsec_interp = interp1d(x,
+                               y,
+                               kind="linear",
+                               fill_value=(y[0], y[-1]),
+                               bounds_error=False)
+        return lambda e: xsec_interp(e) * e
 
     def w2weights(self, volume, target_density, solid_angle):
         """
@@ -451,10 +503,13 @@ def write_detector_file(gibuu_output,
     timestamp = datetime.now()
     header_dct["simul"] = "KM3BUU {} {}".format(
         version, timestamp.strftime("%Y%m%d %H%M%S"))
+    header_dct["primary"] = "{:d}".format(nu_type)
 
     for k, v in header_dct.items():
         head.set_line(k, v)
     head.Write("Head")
+
+    mean_xsec_func = gibuu_output.mean_xsec
 
     for mc_event_id, event in enumerate(event_data):
         evt.clear()
@@ -464,6 +519,19 @@ def write_detector_file(gibuu_output,
         evt.w.push_back(geometry.volume)  #w1 (can volume)
         evt.w.push_back(w2[mc_event_id])  #w2
         evt.w.push_back(-1.0)  #w3 (= w2*flux)
+        # Event Information (w2list)
+        evt.w2list.resize(W2LIST_LENGTH)
+        evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(event.lepIn_E)
+        evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
+        evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
+        evt.w2list[W2LIST_LOOKUP["TARGETZ"]] = gibuu_output.Z
+        evt.w2list[W2LIST_LOOKUP["BX"]] = bjorkenx[mc_event_id]
+        evt.w2list[W2LIST_LOOKUP["BY"]] = bjorkeny[mc_event_id]
+        evt.w2list[W2LIST_LOOKUP["CC"]] = ichan
+        evt.w2list[W2LIST_LOOKUP["ICHAN"]] = event.evType
+        evt.w2list[W2LIST_LOOKUP["VERINCAN"]] = 1
+        evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
+
         # Vertex Position
         vtx_pos = np.array(geometry.random_pos())
         # Direction
@@ -506,12 +574,6 @@ def write_detector_file(gibuu_output,
             lep_out_trk.t = timestamp
             lep_out_trk.status = PARTICLE_MC_STATUS["StableFinalState"]
             evt.mc_trks.push_back(lep_out_trk)
-
-        # bjorken_y = 1.0 - float(event.lepOut_E / event.lepIn_E)
-        nu_in_trk.setusr('bx', bjorkenx[mc_event_id])
-        nu_in_trk.setusr('by', bjorkeny[mc_event_id])
-        nu_in_trk.setusr('ichan', ichan)
-        nu_in_trk.setusr("cc", is_cc)
 
         evt.mc_trks.push_back(nu_in_trk)
 
