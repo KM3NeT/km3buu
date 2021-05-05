@@ -103,15 +103,14 @@ class TestAANET(unittest.TestCase):
             11.90433897, 2.1818, 1.45689677, 0.49284856, 8.33975778, 0.28362369
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
-            0.18255849, -0.309836, 0.48623089, 0.23767571, 0.24971059,
-            0.11284916
+            0.18255849, -0.2469, 0.48623089, 0.23767571, 0.24971059, 0.11284916
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.80816248, -0.377270, -0.49241334, -0.84679953, -0.83055629,
+            -0.80816248, -0.619212, -0.49241334, -0.84679953, -0.83055629,
             -0.82624071
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            0.55995162, 0.872737, 0.72187854, 0.47585798, 0.4978161,
+            0.55995162, 0.745398, 0.72187854, 0.47585798, 0.4978161,
             -0.55189796
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
