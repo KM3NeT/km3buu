@@ -51,5 +51,12 @@ RUN cd /km3buu && \
     pip3 install pytest-runner && \
     pip3 install -e .
 
+ENV ROOTSYS /usr/local
+ENV PATH="${ROOTSYS}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="${ROOTSYS}/lib:${LD_LIBRARY_PATH}"
+
+RUN cd /km3buu/externals/km3net-dataformat/ && \
+    make
+    
 ENV CONTAINER_GIBUU_EXEC=/opt/release2021/objects/GiBUU.x 
 ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
