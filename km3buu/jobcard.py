@@ -88,6 +88,9 @@ class Jobcard(f90nml.Namelist):
 def read_jobcard(filepath):
     return Jobcard(f90nml.read(filepath), filename=basename(filepath))
 
+def write_jobcard(jobcard,filepath):
+    with open(filepath, 'w') as nml_file:
+        f90nml.write(jobcard, nml_file)
 
 def generate_neutrino_jobcard(events,
                               process,
