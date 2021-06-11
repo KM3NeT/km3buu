@@ -13,6 +13,7 @@ __status__ = "Development"
 import unittest
 
 from km3buu.geometry import *
+import numpy as np
 
 
 class TestGeneralGeometry(unittest.TestCase):
@@ -38,6 +39,8 @@ class TestSphere(unittest.TestCase):
             assert pos[0] < 22.0
             assert pos[1] < 22.0
             assert pos[2] < 22.0
+            radius = np.sqrt(np.sum(np.power((np.array(pos) - 2), 2)))
+            assert radius <= 20
 
 
 class TestCan(unittest.TestCase):
