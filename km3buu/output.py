@@ -107,21 +107,49 @@ EMPTY_KM3NET_HEADER_DICT = {
 }
 
 PARTICLE_MC_STATUS = {
-    "Undefined": -1,
-    "InitialState": 0,  # generator-level initial state
-    "StableFinalState":
-    1,  # generator-level final state: particles to be tracked by detector-level MC 
-    "IntermediateState": 2,
-    "DecayedState": 3,
-    "CorrelatedNucleon": 10,
-    "NucleonTarget": 11,
-    "DISPreFragmHadronicState": 12,
-    "PreDecayResonantState": 13,
-    "HadronInTheNucleus":
-    14,  # hadrons inside the nucleus: marked for hadron transport modules to act on
-    "FinalStateNuclearRemnant":
-    15,  # low energy nuclear fragments entering the record collectively as a 'hadronic blob' pseudo-particle
-    "NucleonClusterTarget": 16
+    "TRK_MOTHER_UNDEFINED":
+    -1,  # mother id was not defined for this MC track (all reco tracks have this value)
+    "TRK_MOTHER_NONE": -2,  # mother id of a particle if it has no parent
+    "TRK_ST_UNDEFINED":
+    0,  # status was not defined for this MC track (all reco tracks have this value)
+    "TRK_ST_FINALSTATE":
+    1,  # particle to be tracked by detector-level MC ('track_in' tag in evt files from gseagen, genhen, mupage).
+    "TRK_ST_PRIMARYNEUTRINO":
+    100,  # initial state neutrino ('neutrino' tag in evt files from gseagen and genhen).
+    "TRK_ST_PRIMARYCOSMIC":
+    200,  # initial state cosmic ray ('track_primary' tag in evt files from corant).
+    "TRK_ST_ININUCLEI": 5,  # Initial state nuclei (gseagen)
+    "TRK_ST_INTERSTATE":
+    2,  # Intermidiate state particles produced in hadronic showers (gseagen)
+    "TRK_ST_DECSTATE":
+    3,  # Short-lived particles that are forced to decay, like pi0 (gseagen)
+    "TRK_ST_NUCTGT": 11,  # Nucleon target (gseagen)
+    "TRK_ST_PREHAD": 12,  # DIS pre-fragmentation hadronic state (gseagen)
+    "TRK_ST_PRERES": 13,  # resonant pre-decayed state (gseagen)
+    "TRK_ST_HADNUC": 14,  # Hadrons inside the nucleus before FSI (gseagen)
+    "TRK_ST_NUCLREM": 15,  #Low energy nuclear fragments (gseagen)
+    "TRK_ST_NUCLCLT":
+    16,  #For composite nucleons before phase space decay (gseagen)
+    "TRK_ST_FAKECORSIKA":
+    21,  # fake particle from corant/CORSIKA to add parent information (gseagen)
+    "TRK_ST_FAKECORSIKA_DEC_MU_START":
+    22,  # fake particle from CORSIKA: decaying mu at start (gseagen)
+    "TRK_ST_FAKECORSIKA_DEC_MU_END":
+    23,  # fake particle from CORSIKA: decaying mu at end (gseagen)
+    "TRK_ST_FAKECORSIKA_ETA_2GAMMA":
+    24,  # fake particle from CORSIKA: eta -> 2 gamma (gseagen)
+    "TRK_ST_FAKECORSIKA_ETA_3PI0":
+    25,  # fake particle from CORSIKA: eta -> 3 pi0 (gseagen)
+    "TRK_ST_FAKECORSIKA_ETA_PIP_PIM_PI0":
+    26,  # fake particle from CORSIKA: eta -> pi+ pi- pi0 (gseagen)
+    "TRK_ST_FAKECORSIKA_ETA_2PI_GAMMA":
+    27,  # fake particle from CORSIKA: eta -> pi+ pi- gamma (gseagen)
+    "TRK_ST_FAKECORSIKA_CHERENKOV_GAMMA":
+    28,  # fake particle from CORSIKA: Cherenkov photons on particle output file (gseagen)
+    "TRK_ST_PROPLEPTON":
+    1001,  # lepton propagated that reaches the can (gseagen)
+    "TRK_ST_PROPDECLEPTON":
+    2001  # lepton propagated and decayed before got to the can (gseagen)
 }
 
 W2LIST_LOOKUP = {
@@ -558,7 +586,7 @@ def write_detector_file(gibuu_output,
         nu_in_trk.dir.set(*direction)
         nu_in_trk.E = event.lepIn_E
         nu_in_trk.t = timestamp
-        nu_in_trk.status = PARTICLE_MC_STATUS["InitialState"]
+        nu_in_trk.status = PARTICLE_MC_STATUS["TRK_ST_PRIMARYNEUTRINO"]
         evt.mc_trks.push_back(nu_in_trk)
 
         if tau_secondaries is not None:
@@ -577,11 +605,11 @@ def write_detector_file(gibuu_output,
             lep_out_trk.dir.set(*p_dir)
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
-            lep_out_trk.status = PARTICLE_MC_STATUS["StableFinalState"]
+            lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"]
             evt.mc_trks.push_back(lep_out_trk)
 
         add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
-                      PARTICLE_MC_STATUS["StableFinalState"])
+                      PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
         tree.Fill()
     outfile.Write()
     outfile.Close()

@@ -98,7 +98,8 @@ class TestAANET(unittest.TestCase):
         evt = self.fobj.events[0]
         np.testing.assert_array_equal(evt.mc_tracks.pdgid,
                                       [12, 11, 2212, 111, 211, -211])
-        np.testing.assert_array_equal(evt.mc_tracks.status, [0, 1, 1, 1, 1, 1])
+        np.testing.assert_array_equal(evt.mc_tracks.status,
+                                      [100, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
             11.90433897, 2.1818, 1.45689677, 0.49284856, 8.33975778, 0.28362369
         ])
