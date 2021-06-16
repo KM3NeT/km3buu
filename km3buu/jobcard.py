@@ -111,8 +111,8 @@ def generate_neutrino_jobcard(events,
         Interaction channel ["CC", "NC", "antiCC", "antiNC"]
     flavour: str
         Flavour ["electron", "muon", "tau"]
-    energy: tuple
-        Initial energy range of the neutrino in GeV
+    energy: float, tuple
+        Initial energy or energy range (emin, emax) of the primary neutrino in GeV
     target: (int, int)
         (Z, A) describing the target nucleon
     write_pert: boolean (default: True)
@@ -146,8 +146,11 @@ def generate_neutrino_jobcard(events,
     jc["input"]["numEnsembles"] = run_events
     jc["input"]["num_runs_SameEnergy"] = runs
     # ENERGY
-    jc["nl_neutrino_energyflux"]["eflux_min"] = energy[0]
-    jc["nl_neutrino_energyflux"]["eflux_max"] = energy[1]
+    if isinstance(energy, tuple):
+        jc["nl_neutrino_energyflux"]["eflux_min"] = energy[0]
+        jc["nl_neutrino_energyflux"]["eflux_max"] = energy[1]
+    else:
+        jc["nl_sigmamc"]["enu"] = energy
     # DECAY
     if do_decay:
         for i in DECAYED_HADRONS:
@@ -155,7 +158,7 @@ def generate_neutrino_jobcard(events,
             jc["ModifyParticles"][key] = 4
         jc["pythia"]["MDCY(102,1)"] = 1
     # FLUX
-    if fluxfile is not None:
+    if fluxfile is not None and isinstance(energy, tuple):
         if not isfile(fluxfile):
             raise IOError("Fluxfile {} not found!")
         jc["neutrino_induced"]["nuexp"] = 99

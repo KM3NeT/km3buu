@@ -216,8 +216,17 @@ class GiBUUOutput:
         ]
         self._read_xsection_file()
         self._read_root_output()
-        self._read_flux_file()
         self._read_jobcard()
+
+        self.flux_data = None
+        self._min_energy = np.nan
+        self._max_energy = np.nan
+        self._generated_events = -1
+
+        try:
+            self._read_flux_file()
+        except OSError:
+            self._read_single_energy()
 
     def _read_root_output(self):
         root_pert_regex = re.compile(ROOT_PERT_FILENAME)
@@ -247,46 +256,64 @@ class GiBUUOutput:
         else:
             self.jobcard = None
 
+    def _read_single_energy(self):
+        root_tupledata = self.arrays
+        energies = np.array(root_tupledata.lepIn_E)
+        if np.std(energies) > 1e-10:
+            raise NotImplementedError(
+                "Energy not constant; run data cannot be interpreted")
+        self._min_energy = np.mean(energies)
+        self._max_energy = self._max_energy
+        num_ensembles = int(self.jobcard["input"]["numensembles"])
+        num_runs = int(self.jobcard["input"]["num_runs_sameenergy"])
+        self._generated_events = num_ensembles * num_runs
+
     def _read_flux_file(self):
         fpath = join(self._data_path, FLUXDESCR_FILENAME)
         self.flux_data = np.loadtxt(fpath, dtype=FLUX_INFORMATION_DTYPE)
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
                                                    self.flux_data["events"])
+        self._energy_min = np.min(self.flux_data["energy"])
+        self._energy_max = np.max(self.flux_data["energy"])
+        self._generated_events = int(np.sum(self.flux_data["events"]))
 
     def _event_xsec(self, root_tupledata):
         weights = np.array(root_tupledata.weight)
-        total_events = np.sum(self.flux_data["events"])
+        total_events = self._generated_events
         n_files = len(self.root_pert_files)
         xsec = np.divide(total_events * weights, n_files)
         return xsec
 
     @property
     def mean_xsec(self):
-        root_tupledata = self.arrays
-        energies = np.array(root_tupledata.lepIn_E)
-        weights = self._event_xsec(root_tupledata)
-        Emin = np.min(energies)
-        Emax = np.max(energies)
-        xsec, energy_bins = np.histogram(energies,
-                                         weights=weights,
-                                         bins=np.logspace(
-                                             np.log10(Emin), np.log10(Emax),
-                                             15))
-        deltaE = np.mean(self.flux_data["energy"][1:] -
-                         self.flux_data["energy"][:-1])
-        bin_events = np.array([
-            self.flux_interpolation.integral(energy_bins[i],
-                                             energy_bins[i + 1]) / deltaE
-            for i in range(len(energy_bins) - 1)
-        ])
-        x = (energy_bins[1:] + energy_bins[:-1]) / 2
-        y = xsec / bin_events / x
-        xsec_interp = interp1d(x,
-                               y,
-                               kind="linear",
-                               fill_value=(y[0], y[-1]),
-                               bounds_error=False)
-        return lambda e: xsec_interp(e) * e
+        if self.flux_data is None:
+            return lambda energy: self.xsection["sum"]
+        else:
+            root_tupledata = self.arrays
+            energies = np.array(root_tupledata.lepIn_E)
+            weights = self._event_xsec(root_tupledata)
+            Emin = np.min(energies)
+            Emax = np.max(energies)
+            xsec, energy_bins = np.histogram(energies,
+                                             weights=weights,
+                                             bins=np.logspace(
+                                                 np.log10(Emin),
+                                                 np.log10(Emax), 15))
+            deltaE = np.mean(self.flux_data["energy"][1:] -
+                             self.flux_data["energy"][:-1])
+            bin_events = np.array([
+                self.flux_interpolation.integral(energy_bins[i],
+                                                 energy_bins[i + 1]) / deltaE
+                for i in range(len(energy_bins) - 1)
+            ])
+            x = (energy_bins[1:] + energy_bins[:-1]) / 2
+            y = xsec / bin_events / x
+            xsec_interp = interp1d(x,
+                                   y,
+                                   kind="linear",
+                                   fill_value=(y[0], y[-1]),
+                                   bounds_error=False)
+            return lambda e: xsec_interp(e) * e
 
     def w2weights(self, volume, target_density, solid_angle):
         """
@@ -303,18 +330,19 @@ class GiBUUOutput:
             
         """
         root_tupledata = self.arrays
-        energy_min = np.min(self.flux_data["energy"])
-        energy_max = np.max(self.flux_data["energy"])
-        energy_phase_space = self.flux_interpolation.integral(
-            energy_min, energy_max)
         xsec = self._event_xsec(
             root_tupledata
         ) * self.A  #xsec_per_nucleon * no_nucleons in the core
-        inv_gen_flux = np.power(
-            self.flux_interpolation(root_tupledata.lepIn_E), -1)
-        phase_space = solid_angle * energy_phase_space
+        if self.flux_data is not None:
+            inv_gen_flux = np.power(
+                self.flux_interpolation(root_tupledata.lepIn_E), -1)
+            energy_phase_space = self.flux_interpolation.integral(
+                self._energy_min, self._energy_max)
+            energy_factor = energy_phase_space * inv_gen_flux
+        else:
+            energy_factor = 1
         env_factor = volume * SECONDS_PER_YEAR
-        retval = env_factor * phase_space * inv_gen_flux * xsec * 10**-42 * target_density
+        retval = env_factor * solid_angle * energy_factor * xsec * 10**-42 * target_density
         return retval
 
     @staticmethod
@@ -415,15 +443,15 @@ class GiBUUOutput:
 
     @property
     def energy_min(self):
-        return np.min(self.flux_data["energy"])
+        return self._min_energy
 
     @property
     def energy_max(self):
-        return np.max(self.flux_data["energy"])
+        return self._max_energy
 
     @property
     def generated_events(self):
-        return int(np.sum(self.flux_data["events"]))
+        return self._generated_events
 
 
 def write_detector_file(gibuu_output,
@@ -591,7 +619,8 @@ def write_detector_file(gibuu_output,
 
         if tau_secondaries is not None:
             event_tau_sec = tau_secondaries[mc_event_id]
-            add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp)
+            add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp,
+                          PARTICLE_MC_STATUS["StableFinalState"])
             mc_trk_id += len(event_tau_sec.E)
         else:
             lep_out_trk = ROOT.Trk()
