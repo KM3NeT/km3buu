@@ -129,7 +129,7 @@ class SphericalVolume(DetectorVolume):
 
     def random_pos(self):
         r = self._radius * np.power(np.random.random(), 1 / 3)
-        phi = np.random.uniform(0, 2*np.pi)
+        phi = np.random.uniform(0, 2 * np.pi)
         cosTheta = np.random.uniform(-1, 1)
         pos_x = r * np.cos(phi) * np.sqrt(1 - np.power(cosTheta, 2))
         pos_y = r * np.sin(phi) * np.sqrt(1 - np.power(cosTheta, 2))
