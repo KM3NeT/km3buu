@@ -45,7 +45,7 @@ class TestJobcard(unittest.TestCase):
         assert ctnt.find(expected_line) == -1
 
 
-class TestNeutrinoJobcard(unittest.TestCase):
+class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
         self.test_Z = np.random.randint(1, 100)
@@ -89,6 +89,40 @@ class TestNeutrinoJobcard(unittest.TestCase):
             (self.test_energy_min, self.test_energy_max),
             (self.test_Z, self.test_A))
         self.assertEqual(flat_flux_jobcard["neutrino_induced"]["nuexp"], 10)
+
+    def test_photon_propagation_flag(self):
+        self.assertEqual(self.test_jobcard["insertion"]["propagateNoPhoton"],
+                         not self.photon_propagation_flag)
+
+
+class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
+    def setUp(self):
+        self.test_fluxfile = TemporaryFile()
+        self.test_Z = np.random.randint(1, 100)
+        self.test_A = np.random.randint(self.test_Z, 100)
+        self.test_energy = np.random.uniform(0.0, 100.0)
+        self.photon_propagation_flag = np.random.choice([True, False])
+        self.do_decay = np.random.choice([True, False])
+        self.test_jobcard = generate_neutrino_jobcard(
+            1000,
+            "CC",
+            "electron",
+            self.test_energy, (self.test_Z, self.test_A),
+            do_decay=self.do_decay,
+            photon_propagation=self.photon_propagation_flag,
+            fluxfile=self.test_fluxfile.name,
+            input_path="/test")
+
+    def test_input_path(self):
+        self.assertEqual("/test", self.test_jobcard["input"]["path_to_input"])
+
+    def test_target(self):
+        self.assertEqual(self.test_Z, self.test_jobcard["target"]["target_Z"])
+        self.assertEqual(self.test_A, self.test_jobcard["target"]["target_A"])
+
+    def test_energy(self):
+        self.assertAlmostEqual(self.test_energy,
+                               self.test_jobcard["nl_sigmamc"]["enu"])
 
     def test_photon_propagation_flag(self):
         self.assertEqual(self.test_jobcard["insertion"]["propagateNoPhoton"],
