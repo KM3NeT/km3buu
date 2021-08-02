@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM rootproject/root:6.24.02-ubuntu20.04
 
 RUN apt-get update -qq && \
     apt-get upgrade -qq -y
@@ -10,17 +10,6 @@ RUN  cd /opt && \
      mkdir -p cmake-3.18 && wget -qO- "https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C cmake-3.18
 
 ENV  PATH="/opt/cmake-3.18/bin:$PATH"
-
-RUN  cd /opt && \
-     wget https://root.cern.ch/download/root_v6.20.04.source.tar.gz && \
-     tar xvzf root_v6.20.04.source.tar.gz
-
-RUN  cd /opt/root-6.20.04 && \
-     mkdir -p obj && \
-     cd obj && \
-     cmake -DCMAKE_INSTALL_PREFIX=/usr/local -Dpyroot=OFF -Dpyroot_experimental=OFF -Dx11=OFF -Dxft=OFF ..  && \
-     make -j4; make install && \
-     rm -rf /opt/root-6.20.04*
 
 RUN  cd /opt && \
      wget http://www.hepforge.org/archive/roottuple/RootTuple-1.0.0.tar.gz && \
@@ -50,10 +39,6 @@ RUN cd /km3buu && \
     pip3 install setuptools-scm && \
     pip3 install pytest-runner && \
     pip3 install -e .
-
-ENV ROOTSYS /usr/local
-ENV PATH="${ROOTSYS}/bin:${PATH}"
-ENV LD_LIBRARY_PATH="${ROOTSYS}/lib:${LD_LIBRARY_PATH}"
 
 RUN cd /km3buu/externals/km3net-dataformat/ && \
     make
