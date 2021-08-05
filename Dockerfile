@@ -1,17 +1,9 @@
-FROM rootproject/root:6.24.02-ubuntu20.04
+FROM docker.km3net.de/base/centos7-bundle:2021.03.01
 
-RUN apt-get update -qq && \
-    apt-get upgrade -qq -y
+RUN  yum install -y -e 0 devtoolset-10
 
-RUN apt-get install -qq -y gfortran make libbz2-dev wget g++ git && \
-    apt-get install -qq -y python3-dev python3-pip python3-tk python3-lxml python3-six
-
-RUN  cd /opt && \
-     mkdir -p cmake-3.18 && wget -qO- "https://cmake.org/files/v3.18/cmake-3.18.2-Linux-x86_64.tar.gz" | tar --strip-components=1 -xz -C cmake-3.18
-
-ENV  PATH="/opt/cmake-3.18/bin:$PATH"
-
-RUN  cd /opt && \
+RUN  source /opt/rh/devtoolset-10/enable && \
+     cd /opt && \
      wget http://www.hepforge.org/archive/roottuple/RootTuple-1.0.0.tar.gz && \
      tar -xzvf RootTuple-1.0.0.tar.gz && \
      cd RootTuple-1.0.0 && \
@@ -21,7 +13,8 @@ RUN  cd /opt && \
      cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
      make; make install
 
-RUN cd /opt && \
+RUN  source /opt/rh/devtoolset-10/enable && \
+    cd /opt && \
     wget https://gibuu.hepforge.org/downloads?f=buuinput2021.tar.gz && \
     tar xvzf downloads?f=buuinput2021.tar.gz && \
     wget https://gibuu.hepforge.org/downloads?f=release2021.tar.gz && \
