@@ -15,6 +15,7 @@ __status__ = "Development"
 from shutil import copy
 import subprocess
 from spython.main import Client
+import os
 from os.path import join, abspath, basename, isdir, isfile
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from thepipe.logger import get_logger
@@ -22,14 +23,9 @@ from thepipe.logger import get_logger
 from . import IMAGE_NAME
 from .config import Config
 from .jobcard import Jobcard, read_jobcard
-from .environment import is_singularity_version_greater, MIN_SINGULARITY_VERSION
+from .environment import check_singularity_version
 
 log = get_logger(basename(__file__))
-
-if not is_singularity_version_greater(
-        MIN_SINGULARITY_VERSION):  # pragma: no cover
-    log.error("Singularity version lower than %s" % MIN_SINGULARITY_VERSION)
-    raise OSError("Singularity version below %s" % MIN_SINGULARITY_VERSION)
 
 GIBUU_SHELL = """
 #!/bin/bash
@@ -84,6 +80,7 @@ def run_jobcard(jobcard, outdir, container=False):
     with open(jobcard_fpath, "w") as f:
         f.write(str(jobcard))
     if container:
+        check_singularity_version()
         log.info("Create temporary file for associated runscript")
         script_fpath = join(input_dir.name, "run.sh")
         with open(script_fpath, "w") as f:
@@ -106,6 +103,7 @@ def run_jobcard(jobcard, outdir, container=False):
         return output["return_code"]
     else:
         p = subprocess.Popen(
-            [os.environ["CONTAINER_GIBUU_EXEC"], "<", jobcard_fpath],
+            "%s < %s" % (os.environ["CONTAINER_GIBUU_EXEC"], jobcard_fpath),
+            shell=True,
             cwd=outdir)
         return p.wait()
