@@ -162,5 +162,7 @@ def read_default_media_compositions():
     try:
         fpath = join(cfg.gseagen_path, "dat", GSEAGEN_MEDIA_COMPOSITION_FILE)
     except:
-        fpath = abspath(join(dirname(__file__), "../config/", GSEAGEN_MEDIA_COMPOSITION_FILE))
+        fpath = abspath(
+            join(dirname(__file__), "../config/",
+                 GSEAGEN_MEDIA_COMPOSITION_FILE))
     return read_media_compositions(fpath)
