@@ -151,6 +151,9 @@ def generate_neutrino_jobcard(events,
         jc["nl_neutrino_energyflux"]["eflux_max"] = energy[1]
     else:
         jc["nl_sigmamc"]["enu"] = energy
+        jc["neutrino_induced"]["nuXsectionMode"] = XSECTIONMODE_LOOKUP[
+            "dSigmaMC"]
+        jc["neutrino_induced"]["nuExp"] = 0
     # DECAY
     if do_decay:
         for i in DECAYED_HADRONS:
