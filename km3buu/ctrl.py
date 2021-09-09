@@ -79,6 +79,8 @@ def run_jobcard(jobcard, outdir, container=False):
         jobcard["neutrino_induced"]["FileNameflux"] = tmp_fluxfile
     with open(jobcard_fpath, "w") as f:
         f.write(str(jobcard))
+    with open(join(outdir, jobcard.filename), "w") as f:
+        f.write(str(jobcard))
     if container:
         check_singularity_version()
         log.info("Create temporary file for associated runscript")
@@ -92,8 +94,6 @@ def run_jobcard(jobcard, outdir, container=False):
             bind=[outdir, input_dir.name],
             return_result=True,
         )
-        with open(join(outdir, jobcard.filename), "w") as f:
-            f.write(str(jobcard))
         msg = output["message"]
         if isinstance(msg, str):
             log.info("GiBUU output:\n %s" % msg)
