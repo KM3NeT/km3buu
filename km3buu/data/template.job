@@ -26,11 +26,6 @@
     energylimit_for_qsrec = .true.
 /
 
-&nl_neutrino_energyflux
-    eflux_min = 0.1
-    eflux_max = 50.0
-/
-
 &neutrinoanalysis
     outputevents = .false.
 /
