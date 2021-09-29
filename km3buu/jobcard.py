@@ -132,7 +132,8 @@ def generate_neutrino_jobcard(events,
     fluxfile: str (default: None)
         Fluxfile, 1st col energy [GeV] and 2nd col flux [A.U.]
     seed: int (default: 0)
-        Input seed for the random number generator in GiBUU
+        Input seed for the random number generator in GiBUU 
+        (0: some seed will be drawn based on system time)
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
