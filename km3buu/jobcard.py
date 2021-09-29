@@ -104,6 +104,7 @@ def generate_neutrino_jobcard(events,
                               do_decay=False,
                               photon_propagation=True,
                               fluxfile=None,
+                              seed=0,
                               input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
@@ -130,6 +131,8 @@ def generate_neutrino_jobcard(events,
         Propagate photons and write it out
     fluxfile: str (default: None)
         Fluxfile, 1st col energy [GeV] and 2nd col flux [A.U.]
+    seed: int (default: 0)
+        Input seed for the random number generator in GiBUU
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
@@ -175,6 +178,7 @@ def generate_neutrino_jobcard(events,
     jc["eventoutput"]["writeperturbativeparticles"] = write_pert
     jc["eventoutput"]["writerealparticles"] = write_real
     # MISC
+    jc["initRandom"]["Seed"] = seed
     jc["insertion"]["propagateNoPhoton"] = not photon_propagation
 
     return jc
