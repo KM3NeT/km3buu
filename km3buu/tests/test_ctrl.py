@@ -35,7 +35,7 @@ class TestCTRLbyJobcardFile(unittest.TestCase):
             writer.writerows(zip(ene, np.power(ene, -1)))
         jc = read_jobcard(self.filename)
         jc["neutrino_induced"]["FileNameFlux"] = self.flux_file.name
-        self.retval = run_jobcard(jc, self.output_dir.name)
+        self.retval = run_jobcard(jc, self.output_dir.name, container=True)
         log = get_logger("ctrl.py")
         log.setLevel("INFO")
 
@@ -78,7 +78,9 @@ class TestCTRLbyJobcardObject(unittest.TestCase):
         self.test_jobcard["neutrinoAnalysis"]["outputEvents"] = True
         self.test_jobcard["pythia"]["PARP(91)"] = 0.44
         self.output_dir = TemporaryDirectory()
-        self.retval = run_jobcard(self.test_jobcard, self.output_dir.name)
+        self.retval = run_jobcard(self.test_jobcard,
+                                  self.output_dir.name,
+                                  container=True)
         # raise Exception(self.test_jobcard)
 
     def test_output(self):

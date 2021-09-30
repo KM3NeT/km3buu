@@ -13,7 +13,9 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 from shutil import copy
+import subprocess
 from spython.main import Client
+import os
 from os.path import join, abspath, basename, isdir, isfile
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from thepipe.logger import get_logger
@@ -21,14 +23,9 @@ from thepipe.logger import get_logger
 from . import IMAGE_NAME
 from .config import Config
 from .jobcard import Jobcard, read_jobcard
-from .environment import is_singularity_version_greater, MIN_SINGULARITY_VERSION
+from .environment import check_singularity_version
 
 log = get_logger(basename(__file__))
-
-if not is_singularity_version_greater(
-        MIN_SINGULARITY_VERSION):  # pragma: no cover
-    log.error("Singularity version lower than %s" % MIN_SINGULARITY_VERSION)
-    raise OSError("Singularity version below %s" % MIN_SINGULARITY_VERSION)
 
 GIBUU_SHELL = """
 #!/bin/bash
@@ -47,7 +44,7 @@ $CONTAINER_GIBUU_EXEC < {1};
 """
 
 
-def run_jobcard(jobcard, outdir):
+def run_jobcard(jobcard, outdir, container=False):
     """
     Method for run
 
@@ -58,6 +55,8 @@ def run_jobcard(jobcard, outdir):
         of a jobcard object or a path to a jobcard
     outdir: str 
         The path to the directory the output should be written to.
+    container: boolean
+        Call GiBUU inside container environment
     """
     input_dir = TemporaryDirectory()
     outdir = abspath(outdir)
@@ -80,23 +79,31 @@ def run_jobcard(jobcard, outdir):
         jobcard["neutrino_induced"]["FileNameflux"] = tmp_fluxfile
     with open(jobcard_fpath, "w") as f:
         f.write(str(jobcard))
-    log.info("Create temporary file for associated runscript")
-    script_fpath = join(input_dir.name, "run.sh")
-    with open(script_fpath, "w") as f:
-        ctnt = GIBUU_SHELL.format(outdir, jobcard_fpath)
-        f.write(ctnt)
-    output = Client.execute(
-        Config().gibuu_image_path,
-        ["/bin/sh", script_fpath],
-        bind=[outdir, input_dir.name],
-        return_result=True,
-    )
     with open(join(outdir, jobcard.filename), "w") as f:
         f.write(str(jobcard))
-    msg = output["message"]
-    if isinstance(msg, str):
-        log.info("GiBUU output:\n %s" % msg)
+    if container:
+        check_singularity_version()
+        log.info("Create temporary file for associated runscript")
+        script_fpath = join(input_dir.name, "run.sh")
+        with open(script_fpath, "w") as f:
+            ctnt = GIBUU_SHELL.format(outdir, jobcard_fpath)
+            f.write(ctnt)
+        output = Client.execute(
+            Config().gibuu_image_path,
+            ["/bin/sh", script_fpath],
+            bind=[outdir, input_dir.name],
+            return_result=True,
+        )
+        msg = output["message"]
+        if isinstance(msg, str):
+            log.info("GiBUU output:\n %s" % msg)
+        else:
+            log.info("GiBUU output:\n %s" % msg[0])
+            log.error("GiBUU stacktrace:\n%s" % msg[1])
+        return output["return_code"]
     else:
-        log.info("GiBUU output:\n %s" % msg[0])
-        log.error("GiBUU stacktrace:\n%s" % msg[1])
-    return output["return_code"]
+        p = subprocess.Popen(
+            "%s < %s" % (os.environ["CONTAINER_GIBUU_EXEC"], jobcard_fpath),
+            shell=True,
+            cwd=outdir)
+        return p.wait()

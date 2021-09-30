@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<media_comp>
+
+<!--
+Definition of the interaction media composition
+
+-->
+
+<!--
+  // media composition: SeaWater, Rock, Mantle, Core
+-->
+
+  <param_set media="SeaWater" density="1.03975">
+     <param name="O">    0.8584        </param>
+     <param name="H">    0.1082        </param>
+     <param name="Cl">   1.94E-2       </param>
+     <param name="Na">   1.08E-2       </param>
+     <param name="Mg">   0.1292E-2     </param>
+     <param name="S">    0.091E-2      </param>
+     <param name="Ca">   0.04E-2       </param>
+     <param name="K">    0.04E-2       </param>
+     <param name="Br">   0.0067E-2     </param>
+     <param name="C">    0.0028E-2     </param>
+  </param_set>
+
+
+  <param_set media="Rock" density="2.65">
+     <param name="O">    0.463	  </param>
+     <param name="Si">   0.282	  </param>
+     <param name="Al">   0.0823	  </param>
+     <param name="Fe">   0.0563	  </param>
+     <param name="Ca">   0.0415	  </param>
+     <param name="Na">   0.0236	  </param>
+     <param name="Mg">   0.0233	  </param>
+     <param name="K">    0.0209	  </param>
+     <param name="Ti">   0.0057	  </param>
+     <param name="H">    0.0014	  </param>
+  </param_set>
+
+
+  <param_set media="Mantle">
+     <param name="O">    0.4522        </param>
+     <param name="Mg">   0.2283        </param>
+     <param name="Si">   0.2149        </param>
+     <param name="Fe">   0.0597        </param>
+     <param name="Al">   0.0225        </param>
+     <param name="Ca">   0.0224        </param>
+  </param_set>
+
+
+  <param_set media="Core">
+     <param name="Fe">    0.9        </param>
+     <param name="Ni">    0.1        </param>
+  </param_set>
+
+</media_comp>
+

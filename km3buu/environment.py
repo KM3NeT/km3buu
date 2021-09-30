@@ -26,6 +26,13 @@ log = get_logger(basename(__file__))
 MIN_SINGULARITY_VERSION = "3.3"
 
 
+def check_singularity_version():  # pragma: no cover
+    if not is_singularity_version_greater(MIN_SINGULARITY_VERSION):
+        log.error("Singularity version lower than %s" %
+                  MIN_SINGULARITY_VERSION)
+        raise OSError("Singularity version below %s" % MIN_SINGULARITY_VERSION)
+
+
 def is_singularity_version_greater(min_version):  # pragma: no cover
     singularity_version = LooseVersion(get_singularity_version().split()[-1])
     retval = singularity_version > LooseVersion(MIN_SINGULARITY_VERSION)
