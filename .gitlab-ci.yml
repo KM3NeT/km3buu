@@ -44,6 +44,7 @@ reset_test_image:
   if [ ! -f GiBUU.simg ]; then make buildremote; fi
   make install-dev
   pip list
+  date
 
 .junit_template: &junit_definition
     artifacts:
