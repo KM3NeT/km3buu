@@ -1,3 +1,5 @@
 [submodule "externals/km3net-dataformat"]
 	path = externals/km3net-dataformat
-	url = git@git.km3net.de:common/km3net-dataformat.git
+	url = ../../common/km3net-dataformat.git
+        branch = master
+        ignore = dirty
