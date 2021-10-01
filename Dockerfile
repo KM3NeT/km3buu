@@ -4,7 +4,7 @@ RUN  yum install -y -e 0 devtoolset-10
 
 RUN  source /opt/rh/devtoolset-10/enable && \
      cd /opt && \
-     wget http://www.hepforge.org/archive/roottuple/RootTuple-1.0.0.tar.gz && \
+     wget https://roottuple.hepforge.org/downloads?f=RootTuple-1.0.0.tar.gz && \
      tar -xzvf RootTuple-1.0.0.tar.gz && \
      cd RootTuple-1.0.0 && \
      sed -i 's/SHARED/STATIC/g' ./src/CMakeLists.txt && \
