@@ -12,8 +12,11 @@ __status__ = "Development"
 
 import unittest
 import numpy as np
+from itertools import combinations
 from km3buu.jobcard import *
-from tempfile import TemporaryFile
+from km3buu.ctrl import run_jobcard
+from km3buu.output import GiBUUOutput
+from tempfile import TemporaryFile, TemporaryDirectory
 
 
 class TestJobcard(unittest.TestCase):
@@ -127,3 +130,22 @@ class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
     def test_photon_propagation_flag(self):
         self.assertEqual(self.test_jobcard["insertion"]["propagateNoPhoton"],
                          not self.photon_propagation_flag)
+
+
+class TestJobcardSeed(unittest.TestCase):
+    def setUp(self):
+        jc = generate_neutrino_jobcard(100,
+                                       "CC",
+                                       "electron", (1.0, 2.0), (1, 1),
+                                       do_decay=False,
+                                       photon_propagation=False,
+                                       seed=1234)
+        self.dfs = []
+        for i in range(2):
+            output_dir = TemporaryDirectory()
+            run_jobcard(jc, output_dir.name, container=True)
+            self.dfs.append(GiBUUOutput(output_dir.name).df)
+
+    def test_output(self):
+        for a, b in combinations(self.dfs,2):
+            assert all((a == b).all(1))
