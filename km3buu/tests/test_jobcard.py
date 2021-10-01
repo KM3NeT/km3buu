@@ -147,5 +147,5 @@ class TestJobcardSeed(unittest.TestCase):
             self.dfs.append(GiBUUOutput(output_dir.name).df)
 
     def test_output(self):
-        for a, b in combinations(self.dfs,2):
+        for a, b in combinations(self.dfs, 2):
             assert all((a == b).all(1))
