@@ -98,7 +98,7 @@ def write_jobcard(jobcard, filepath):
         f90nml.write(jobcard, nml_file)
 
 
-def generate_neutrino_jobcard(events,
+def generate_neutrino_jobcard(ensembles,
                               process,
                               flavour,
                               energy,
@@ -116,8 +116,8 @@ def generate_neutrino_jobcard(events,
 
     Parameters
     ----------
-    events: int
-        Simulated number of neutrino events
+    ensembles: int
+        Simulated number of ensembles per nucleon, which will result in #events < ensembles
     process: str
         Interaction channel ["CC", "NC", "antiCC", "antiNC"]
     flavour: str
@@ -153,17 +153,17 @@ def generate_neutrino_jobcard(events,
     # TARGET
     jc["target"]["z"] = target[1]
     jc["target"]["a"] = target[0]
-    # EVENTS
-    run_events = int(100000 / target[1])
     # FSI
     if timesteps >= 0:
         jc["input"]["numTimeSteps"] = timesteps
-    if events < run_events:
-        run_events = events
+    # EVENTS
+    run_ensembles = int(100000 / target[1])
+    if ensembles < run_ensembles:
+        run_ensembles = ensembles
         runs = 1
     else:
-        runs = events // run_events
-    jc["input"]["numEnsembles"] = run_events
+        runs = ensembles // run_ensembles
+    jc["input"]["numEnsembles"] = run_ensembles
     jc["input"]["num_runs_SameEnergy"] = runs
     # ENERGY
     if isinstance(energy, tuple):
