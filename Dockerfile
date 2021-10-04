@@ -1,10 +1,10 @@
 FROM docker.km3net.de/base/centos7-bundle:2021.03.01
 
-RUN  yum install -y -e 0 devtoolset-10
+RUN  yum install -y -e 0 devtoolset-10 ca-certificates
 
 RUN  source /opt/rh/devtoolset-10/enable && \
      cd /opt && \
-     wget https://roottuple.hepforge.org/downloads?f=RootTuple-1.0.0.tar.gz && \
+     wget -O RootTuple-1.0.0.tar.gz https://roottuple.hepforge.org/downloads?f=RootTuple-1.0.0.tar.gz && \
      tar -xzvf RootTuple-1.0.0.tar.gz && \
      cd RootTuple-1.0.0 && \
      sed -i 's/SHARED/STATIC/g' ./src/CMakeLists.txt && \
