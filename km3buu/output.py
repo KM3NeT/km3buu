@@ -346,13 +346,10 @@ class GiBUUOutput:
         return retval
 
     @staticmethod
-    def bjorken_x(roottuple_data):
+    def _q(roottuple_data):
         """
-        Calculate Bjorken x variable for the GiBUU events
-
-        Parameters
-        ----------
-            roottuple_data: awkward.highlevel.Array                
+        Calculate the difference of the four vectors from 
+        in and out going lepton (k_in - k_out)
         """
         d = roottuple_data
         k_in = np.vstack([
@@ -368,8 +365,39 @@ class GiBUUOutput:
             np.array(d.lepOut_Pz)
         ])
         q = k_in - k_out
+        return q
+
+    @staticmethod
+    def Qsquared(roottuple_data):
+        """
+        Calculate the passed energy from the neutrino interaction to the 
+        nucleus denoted by the variable Q²
+
+        Parameters
+        ----------
+            roottuple_data: awkward.highlevel.Array                
+
+        Returns
+        -------
+            
+        """
+        q = GiBUUOutput._q(roottuple_data)
         qtmp = np.power(q, 2)
         q2 = qtmp[0, :] - np.sum(qtmp[1:4, :], axis=0)
+        return q2
+
+    @staticmethod
+    def bjorken_x(roottuple_data):
+        """
+        Calculate Bjorken x variable for the GiBUU events
+
+        Parameters
+        ----------
+            roottuple_data: awkward.highlevel.Array                
+        """
+        d = roottuple_data
+        q = GiBUUOutput._q(d)
+        q2 = GiBUUOutput.Qsquared(d)
         pq = q[0, :] * d.nuc_E - q[1, :] * d.nuc_Px - q[2, :] * d.nuc_Py - q[
             3, :] * d.nuc_Pz
         x = np.divide(-q2, 2 * pq)
@@ -439,6 +467,7 @@ class GiBUUOutput:
         retval["xsec"] = self._event_xsec(retval)
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
         retval["By"] = GiBUUOutput.bjorken_y(retval)
+        retval["Q2"] = GiBUUOutput.Qsquared(retval)
         return retval
 
     @property
