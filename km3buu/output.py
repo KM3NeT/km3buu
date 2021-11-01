@@ -201,6 +201,7 @@ W2LIST_LOOKUP = {
     "TARGETZ": 16,
     "VERINCAN": 17,
     "LEPINCAN": 18,
+    "GIBUU_WEIGHT": 19
 }
 
 W2LIST_LENGTH = len(W2LIST_LOOKUP)
@@ -646,6 +647,7 @@ def write_detector_file(gibuu_output,
         evt.w2list[W2LIST_LOOKUP["ICHAN"]] = event.evType
         evt.w2list[W2LIST_LOOKUP["VERINCAN"]] = 1
         evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
+        evt.w2list[W2LIST_LOOKUP["GIBUU_WEIGHT"]] = event.weight
 
         # Vertex Position
         vtx_pos = np.array(geometry.random_pos())
