@@ -70,11 +70,11 @@ Theory
 In order to retrieve correct results and provide correct KM3NeT weights (w2)
 the treatment of the GiBUU weights is an important step. A brief description 
 of the GiBUU weights and how to calculate actual cross sections is given on the
-`GiBUU Homepage<https://gibuu.hepforge.org/trac/wiki/perWeight>`__ and
+`GiBUU Homepage <https://gibuu.hepforge.org/trac/wiki/perWeight>`__ and
 a more detailed description of the calculation can be found in the `PhD Thesis
-of Tina Leitner<https://inspirehep.net/literature/849921>`__ in Chapter 8.3.
+of Tina Leitner <https://inspirehep.net/literature/849921>`__ in Chapter 8.3.
 As it is mentioned in the description of the output flux file in the
-`documentation<https://gibuu.hepforge.org/Documentation/code/init/neutrino/initNeutrino_f90.html#robo1685>`__ this is not taken somehow into account inside the weights.
+`documentation <https://gibuu.hepforge.org/Documentation/code/init/neutrino/initNeutrino_f90.html#robo1685>`__ this is not taken somehow into account inside the weights.
 Following the description the GiBUU event weight can be converted to a binned
 cross section via
 
