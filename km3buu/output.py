@@ -206,6 +206,12 @@ W2LIST_LOOKUP = {
 
 W2LIST_LENGTH = len(W2LIST_LOOKUP)
 
+GIBUU_FIELDNAMES = [
+    'weight', 'barcode', 'Px', 'Py', 'Pz', 'E', 'evType', 'lepIn_E',
+    'lepIn_Px', 'lepIn_Py', 'lepIn_Pz', 'lepOut_E', 'lepOut_Px', 'lepOut_Py',
+    'lepOut_Pz', 'nuc_E', 'nuc_Px', 'nuc_Py', 'nuc_Pz'
+]
+
 
 def read_nu_abs_xsection(filepath):
     """
@@ -467,6 +473,8 @@ class GiBUUOutput:
         """
         import pandas as pd
         df = ak.to_pandas(self.arrays)
+        if len(df) == 0:
+            return df
         sec_df = df[df.index.get_level_values(1) == 0].copy()
         sec_df.loc[:, "E"] = sec_df.lepOut_E
         sec_df.loc[:, "Px"] = sec_df.lepOut_Px
@@ -494,6 +502,8 @@ class GiBUUOutput:
             else:
                 tmp = fobj["RootTuple"].arrays()
                 retval = np.concatenate((retval, tmp))
+        if len(retval) == 0:
+            retval = ak.Array(np.recarray((0,), dtype=list(zip(GIBUU_FIELDNAMES, len(GIBUU_FIELDNAMES)*[float]))))
         # Calculate additional information
         retval["xsec"] = self._event_xsec(retval)
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
