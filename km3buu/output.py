@@ -49,6 +49,7 @@ FLUXDESCR_FILENAME = "neutrino_initialized_energyFlux.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 
 SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
+SECONDS_WEIGHT_TIMESPAN = 1
 
 PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "barcode"]
 EVENTINFO_COLUMNS = [
@@ -378,7 +379,7 @@ class GiBUUOutput:
             energy_factor = energy_phase_space * inv_gen_flux
         else:
             energy_factor = 1
-        env_factor = volume * SECONDS_PER_YEAR
+        env_factor = volume * SECONDS_WEIGHT_TIMESPAN
         retval = env_factor * solid_angle * energy_factor * xsec * 10**-42 * target_density
         return retval
 
