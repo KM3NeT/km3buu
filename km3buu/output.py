@@ -353,6 +353,15 @@ class GiBUUOutput:
                                    bounds_error=False)
             return lambda e: xsec_interp(e) * e
 
+    def global_generation_weight(solid_angle):
+        # I_E * I_theta * t_gen (* #NuTypes)
+        if self.flux_data is not None:
+            energy_phase_space = self.flux_interpolation.integral(
+                self._energy_min, self._energy_max)
+        else:
+            energy_phase_space = 1
+        return solid_angle * energy_phase_space * SECONDS_WEIGHT_TIMESPAN
+
     def w2weights(self, volume, target_density, solid_angle):
         """
         Calculate w2weights
@@ -614,6 +623,7 @@ def write_detector_file(gibuu_output,
                                            target[0].atomic_weight)
 
     w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume, 4 * np.pi)
+    global_generation_weight = gibuu_output.global_generation_weight(4 * np.pi)
 
     head = ROOT.Head()
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
@@ -648,6 +658,7 @@ def write_detector_file(gibuu_output,
         evt.w.push_back(-1.0)  #w3 (= w2*flux)
         # Event Information (w2list)
         evt.w2list.resize(W2LIST_LENGTH)
+        evt.w2list[W2LIST_LOOKUP["PS"]] = global_generation_weight
         evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(event.lepIn_E)
         evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
         evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
