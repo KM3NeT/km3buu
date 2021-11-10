@@ -136,4 +136,4 @@ class TestAANET(unittest.TestCase):
         # CC/NC
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
-        np.testing.assert_almost_equal(evt.w2list[19], 0.8167222969153614)
+        np.testing.assert_almost_equal(evt.w2list[19], 0.004062418521597373)
