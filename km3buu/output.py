@@ -205,7 +205,7 @@ W2LIST_LOOKUP = {
     "GIBUU_WEIGHT": 19
 }
 
-W2LIST_LENGTH = len(W2LIST_LOOKUP)
+W2LIST_LENGTH = max(W2LIST_LOOKUP.values()) + 1
 
 GIBUU_FIELDNAMES = [
     'weight', 'barcode', 'Px', 'Py', 'Pz', 'E', 'evType', 'lepIn_E',
