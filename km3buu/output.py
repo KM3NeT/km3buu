@@ -513,7 +513,11 @@ class GiBUUOutput:
                 tmp = fobj["RootTuple"].arrays()
                 retval = np.concatenate((retval, tmp))
         if len(retval) == 0:
-            retval = ak.Array(np.recarray((0,), dtype=list(zip(GIBUU_FIELDNAMES, len(GIBUU_FIELDNAMES)*[float]))))
+            retval = ak.Array(
+                np.recarray((0, ),
+                            dtype=list(
+                                zip(GIBUU_FIELDNAMES,
+                                    len(GIBUU_FIELDNAMES) * [float]))))
         # Calculate additional information
         retval["xsec"] = self._event_xsec(retval)
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
