@@ -353,7 +353,7 @@ class GiBUUOutput:
                                    bounds_error=False)
             return lambda e: xsec_interp(e) * e
 
-    def global_generation_weight(solid_angle):
+    def global_generation_weight(self, solid_angle):
         # I_E * I_theta * t_gen (* #NuTypes)
         if self.flux_data is not None:
             energy_phase_space = self.flux_interpolation.integral(
