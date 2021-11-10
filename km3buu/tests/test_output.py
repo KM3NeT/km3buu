@@ -79,6 +79,11 @@ class TestGiBUUOutput(unittest.TestCase):
             w2[:3], [2.42100575e-06, 1.14490671e-08, 3.59246902e-05],
             decimal=5)
 
+    def test_global_generation_weight(self):
+        self.assertAlmostEqual(self.output.global_generation_weight(4 * np.pi),
+                               2511.13458,
+                               places=2)
+
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
