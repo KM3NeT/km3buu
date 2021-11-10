@@ -615,12 +615,12 @@ def write_detector_file(gibuu_output,
         tau_secondaries = propagate_lepton(event_data, np.sign(nu_type) * 15)
 
     media = read_default_media_compositions()
-    density = media["SeaWater"]["density"]
+    density = media["SeaWater"]["density"]  # [g/cm^3]
     element = mendeleev.element(gibuu_output.Z)
     target = media["SeaWater"]["elements"][element.symbol]
-    target_density = 1e3 * density * target[1]
-    targets_per_volume = target_density * (1e3 * constants.Avogadro /
-                                           target[0].atomic_weight)
+    target_density = 1e3 * density * target[1]  # [kg/m^3]
+    targets_per_volume = target_density / target[
+        0].atomic_weight / constants.atomic_mass
 
     w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume, 4 * np.pi)
     global_generation_weight = gibuu_output.global_generation_weight(4 * np.pi)
