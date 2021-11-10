@@ -49,6 +49,7 @@ FLUXDESCR_FILENAME = "neutrino_initialized_energyFlux.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 
 SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
+SECONDS_WEIGHT_TIMESPAN = 1
 
 PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "barcode"]
 EVENTINFO_COLUMNS = [
@@ -204,7 +205,7 @@ W2LIST_LOOKUP = {
     "GIBUU_WEIGHT": 19
 }
 
-W2LIST_LENGTH = len(W2LIST_LOOKUP)
+W2LIST_LENGTH = max(W2LIST_LOOKUP.values()) + 1
 
 GIBUU_FIELDNAMES = [
     'weight', 'barcode', 'Px', 'Py', 'Pz', 'E', 'evType', 'lepIn_E',
@@ -352,6 +353,15 @@ class GiBUUOutput:
                                    bounds_error=False)
             return lambda e: xsec_interp(e) * e
 
+    def global_generation_weight(self, solid_angle):
+        # I_E * I_theta * t_gen (* #NuTypes)
+        if self.flux_data is not None:
+            energy_phase_space = self.flux_interpolation.integral(
+                self._energy_min, self._energy_max)
+        else:
+            energy_phase_space = 1
+        return solid_angle * energy_phase_space * SECONDS_WEIGHT_TIMESPAN
+
     def w2weights(self, volume, target_density, solid_angle):
         """
         Calculate w2weights
@@ -378,7 +388,7 @@ class GiBUUOutput:
             energy_factor = energy_phase_space * inv_gen_flux
         else:
             energy_factor = 1
-        env_factor = volume * SECONDS_PER_YEAR
+        env_factor = volume * SECONDS_WEIGHT_TIMESPAN
         retval = env_factor * solid_angle * energy_factor * xsec * 10**-42 * target_density
         return retval
 
@@ -503,7 +513,11 @@ class GiBUUOutput:
                 tmp = fobj["RootTuple"].arrays()
                 retval = np.concatenate((retval, tmp))
         if len(retval) == 0:
-            retval = ak.Array(np.recarray((0,), dtype=list(zip(GIBUU_FIELDNAMES, len(GIBUU_FIELDNAMES)*[float]))))
+            retval = ak.Array(
+                np.recarray((0, ),
+                            dtype=list(
+                                zip(GIBUU_FIELDNAMES,
+                                    len(GIBUU_FIELDNAMES) * [float]))))
         # Calculate additional information
         retval["xsec"] = self._event_xsec(retval)
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
@@ -605,14 +619,15 @@ def write_detector_file(gibuu_output,
         tau_secondaries = propagate_lepton(event_data, np.sign(nu_type) * 15)
 
     media = read_default_media_compositions()
-    density = media["SeaWater"]["density"]
+    density = media["SeaWater"]["density"]  # [g/cm^3]
     element = mendeleev.element(gibuu_output.Z)
     target = media["SeaWater"]["elements"][element.symbol]
-    target_density = 1e3 * density * target[1]
-    targets_per_volume = target_density * (1e3 * constants.Avogadro /
-                                           target[0].atomic_weight)
+    target_density = 1e3 * density * target[1]  # [kg/m^3]
+    targets_per_volume = target_density / target[
+        0].atomic_weight / constants.atomic_mass
 
     w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume, 4 * np.pi)
+    global_generation_weight = gibuu_output.global_generation_weight(4 * np.pi)
 
     head = ROOT.Head()
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
@@ -647,6 +662,7 @@ def write_detector_file(gibuu_output,
         evt.w.push_back(-1.0)  #w3 (= w2*flux)
         # Event Information (w2list)
         evt.w2list.resize(W2LIST_LENGTH)
+        evt.w2list[W2LIST_LOOKUP["PS"]] = global_generation_weight
         evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(event.lepIn_E)
         evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
         evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A

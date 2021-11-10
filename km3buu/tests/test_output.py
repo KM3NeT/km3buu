@@ -76,8 +76,13 @@ class TestGiBUUOutput(unittest.TestCase):
     def test_w2weights(self):
         w2 = self.output.w2weights(123.0, 2.6e28, 4 * np.pi)
         np.testing.assert_array_almost_equal(
-            w2[:3], [7.64011311e+01, 3.61305080e-01, 1.13369700e+03],
+            w2[:3], [2.42100575e-06, 1.14490671e-08, 3.59246902e-05],
             decimal=5)
+
+    def test_global_generation_weight(self):
+        self.assertAlmostEqual(self.output.global_generation_weight(4 * np.pi),
+                               2511.13458,
+                               places=2)
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
@@ -131,4 +136,4 @@ class TestAANET(unittest.TestCase):
         # CC/NC
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
-        np.testing.assert_almost_equal(evt.w2list[19], 0.8167222969153614)
+        np.testing.assert_almost_equal(evt.w2list[19], 0.004062418521597373)

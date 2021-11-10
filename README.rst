@@ -64,6 +64,27 @@ This specific command runs all jobcards within the ``jobcards/examples`` folder
 and stores the output inside the folder ``output``. The folder structure
 is applied from the ``jobcards``\ folder.
 
+Theory
+------
+
+In order to retrieve correct results and provide correct KM3NeT weights (w2)
+the treatment of the GiBUU weights is an important step. A brief description 
+of the GiBUU weights and how to calculate actual cross sections is given on the
+`GiBUU Homepage <https://gibuu.hepforge.org/trac/wiki/perWeight>`__ and
+a more detailed description of the calculation can be found in the `PhD Thesis
+of Tina Leitner <https://inspirehep.net/literature/849921>`__ in Chapter 8.3.
+As it is mentioned in the description of the output flux file in the
+`documentation <https://gibuu.hepforge.org/Documentation/code/init/neutrino/initNeutrino_f90.html#robo1685>`__ this is not taken somehow into account inside the weights.
+Following the description the GiBUU event weight can be converted to a binned
+cross section via
+
+.. math::
+    \frac{d\sigma}{E} = \frac{\sum_{i\in I_\text{bin}} w_i}{\Delta E}\cdot\frac{1}{E\Phi},
+
+where :math:`\Phi`__ is the simulated flux
+As the weights are given for each run individually the weight also has to be divided
+by the number of runs.
+
 Tutorial
 --------
 The python framework is build around the GiBUU workflow, i.e. a jobcard is 
