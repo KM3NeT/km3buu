@@ -15,6 +15,7 @@ from . import IMAGE_NAME
 from .environment import build_image
 import mendeleev
 import xml.etree.ElementTree as ElementTree
+import tempfile
 
 __author__ = "Johannes Schumann"
 __copyright__ = "Copyright 2020, Johannes Schumann and the KM3NeT collaboration."
@@ -101,7 +102,7 @@ class Config(object):
 
     @property
     def proposal_itp_tables(self):
-        default_path = abspath(join(dirname(__file__), "../.tables"))
+        default_path = tempfile.gettempdir()
         return self.get(PROPOSAL_SECTION, PROPOSAL_ITP_PATH_KEY, default_path)
 
     @proposal_itp_tables.setter
