@@ -18,6 +18,7 @@ import proposal as pp
 from particle import Particle
 import awkward as ak
 from collections import defaultdict
+import pathlib
 
 from .config import Config
 
@@ -36,23 +37,34 @@ PROPOSAL_LEPTON_DEFINITIONS = {
     -16: pp.particle.NuTauBarDef
 }
 
+PROPOSAL_TARGET = pp.medium.AntaresWater()
 
-def _setup_propagator(max_distance, lepton_definition):
-    sector = pp.SectorDefinition()
-    sector.medium = pp.medium.AntaresWater(1.0)
-    geometry = pp.geometry.Sphere(pp.Vector3D(), max_distance, 0)
-    sector.geometry = geometry
-    sector.scattering_model = pp.scattering.ScatteringModel.Highland
 
-    cfg = Config()
-    interpolation = pp.InterpolationDef()
-    interpolation.path_to_tables = cfg.proposal_itp_tables
-    interpolation.path_to_tables_readonly = cfg.proposal_itp_tables
+def _setup_propagator(max_distance, particle_definition):
+    itp_table_path = Config().proposal_itp_tables
+    pathlib.Path(itp_table_path).mkdir(parents=True, exist_ok=True)
+    pp.InterpolationSettings.tables_path = itp_table_path
+    crosssection = pp.crosssection.make_std_crosssection(
+        particle_def=particle_definition,
+        target=PROPOSAL_TARGET,
+        interpolate=True,
+        cuts=pp.EnergyCutSettings(np.inf, 0.05, False))
+    collection = pp.PropagationUtilityCollection()
+    collection.displacement = pp.make_displacement(crosssection, True)
+    collection.interaction = pp.make_interaction(crosssection, True)
+    collection.decay = pp.make_decay(crosssection, particle_definition, True)
+    collection.time = pp.make_time(crosssection, particle_definition, True)
 
-    return pp.Propagator(sector_defs=[sector],
-                         particle_def=lepton_definition,
-                         detector=geometry,
-                         interpolation_def=interpolation)
+    utility = pp.PropagationUtility(collection=collection)
+
+    geometry = pp.geometry.Sphere(pp.Cartesian3D(), max_distance)
+    density_distr = pp.density_distribution.density_homogeneous(
+        PROPOSAL_TARGET.mass_density)
+
+    propagator = pp.Propagator(particle_definition,
+                               [(geometry, utility, density_distr)])
+
+    return propagator
 
 
 def propagate_lepton(lepout_data, pdgid):
@@ -76,28 +88,30 @@ def propagate_lepton(lepout_data, pdgid):
         lepout_data.lepOut_E) / lepton_info.mass  #[cm]
 
     lepton_def = PROPOSAL_LEPTON_DEFINITIONS[pdgid]()
-    lepton = pp.particle.DynamicData(lepton_def.particle_type)
-    propagated_data = defaultdict(list)
 
     propagator = _setup_propagator(10 * prop_range, lepton_def)
 
-    for entry in lepout_data:
-        lepton.energy = entry.lepOut_E * 1e3
-        lepton.position = pp.Vector3D(0, 0, 0)
-        lepton.direction = pp.Vector3D(entry.lepOut_Px, entry.lepOut_Py,
-                                       entry.lepOut_Pz)
-        lepton.direction.normalize()
-        secondaries = propagator.propagate(lepton, 5 * prop_range)
+    propagated_data = defaultdict(list)
 
-        E = np.array(secondaries.energy) / 1e3
-        pdgid = [p.type for p in secondaries.particles]
-        Px = [p.direction.x * p.momentum / 1e3 for p in secondaries.particles]
-        Py = [p.direction.y * p.momentum / 1e3 for p in secondaries.particles]
-        Pz = [p.direction.z * p.momentum / 1e3 for p in secondaries.particles]
-        x = [p.position.x / 100 for p in secondaries.particles]
-        y = [p.position.y / 100 for p in secondaries.particles]
-        z = [p.position.z / 100 for p in secondaries.particles]
-        dt = [p.time for p in secondaries.particles]
+    for entry in lepout_data:
+        init_state = pp.particle.ParticleState()
+        init_state.energy = entry.lepOut_E * 1e3
+        init_state.position = pp.Cartesian3D(0, 0, 0)
+        init_state.direction = pp.Cartesian3D(entry.lepOut_Px, entry.lepOut_Py,
+                                              entry.lepOut_Pz)
+        init_state.direction.normalize()
+        track = propagator.propagate(init_state, 5 * prop_range)
+        secondaries = track.decay_products()
+
+        E = [s.energy / 1e3 for s in secondaries]
+        pdgid = [p.type for p in secondaries]
+        Px = [p.direction.x * p.momentum / 1e3 for p in secondaries]
+        Py = [p.direction.y * p.momentum / 1e3 for p in secondaries]
+        Pz = [p.direction.z * p.momentum / 1e3 for p in secondaries]
+        x = [p.position.x / 100 for p in secondaries]
+        y = [p.position.y / 100 for p in secondaries]
+        z = [p.position.z / 100 for p in secondaries]
+        dt = [p.time for p in secondaries]
 
         propagated_data["E"].append(E)
         propagated_data["Px"].append(Px)
