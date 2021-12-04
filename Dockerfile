@@ -28,7 +28,8 @@ RUN  source /opt/rh/devtoolset-10/enable && \
 
 ADD . /km3buu
 
-RUN cd /km3buu && \
+RUN source /opt/rh/devtoolset-10/enable && \
+    cd /km3buu && \
     pip3 install setuptools-scm && \
     pip3 install pytest-runner && \
     pip3 install -e .
