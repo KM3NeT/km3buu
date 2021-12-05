@@ -15,11 +15,11 @@ DESCRIPTION = 'GiBUU tools for KM3NeT'
 __author__ = 'Johannes Schumann'
 __email__ = 'jschumann@km3net.de'
 
-with open('requirements.txt') as fobj:
-    REQUIREMENTS = [l.strip() for l in fobj.readlines()]
 
-with open('requirements-dev.txt') as fobj:
-    DEV_REQUIREMENTS = [l.strip() for l in fobj.readlines()]
+def read_requirements(kind):
+    with open(os.path.join('requirements', kind + '.txt')) as fobj:
+        requirements = [l.strip() for l in fobj.readlines()]
+    return requirements
 
 setup(
     name=PACKAGE_NAME,
@@ -35,8 +35,11 @@ setup(
         'write_to': '{}/version.txt'.format(PACKAGE_NAME),
         'tag_regex': r'^(?P<prefix>v)?(?P<version>[^\+]+)(?P<suffix>.*)?$',
     },
-    install_requires=REQUIREMENTS,
-    extras_require={'dev': DEV_REQUIREMENTS},
+    install_requires=read_requirements("install"),
+    extras_require={
+        kind: read_requirements(kind)
+        for kind in ["dev", "extras"]
+    },
     python_requires='>=3.0',
     entry_points={'console_scripts': ['km3buu=km3buu.cmd:main']},
     classifiers=[

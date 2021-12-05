@@ -42,6 +42,7 @@ install:
 
 install-dev:
 	pip install -e ".[dev]"
+	pip install -e ".[extras]"	
 
 test:
 	python -m pytest --junitxml=./reports/junit.xml -o junit_suite_name=$(PKGNAME) $(PKGNAME)

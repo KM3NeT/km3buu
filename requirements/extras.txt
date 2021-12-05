@@ -1,0 +1,3 @@
+docopt
+type-docopt
+tqdm
