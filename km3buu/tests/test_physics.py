@@ -53,7 +53,7 @@ class TestVisibleEnergyWeights(unittest.TestCase):
     def test_proton_weight(self):
         vfunc = np.vectorize(proton_weight)
         val = vfunc(self.ref_values[0, :])
-        assert np.allclose(self.ref_values[6, :], val, rtol=0.05)
+        assert np.allclose(self.ref_values[6, :], val, atol=0.05)
 
     def test_neutron_weight(self):
         vfunc = np.vectorize(neutron_weight)
