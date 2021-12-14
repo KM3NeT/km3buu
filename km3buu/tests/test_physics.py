@@ -12,18 +12,40 @@ __status__ = "Development"
 
 import unittest
 from unittest.mock import patch
+import re
 import numpy as np
 import pytest
 from os.path import abspath, join, dirname
+from particle import Particle
 
 from km3buu.physics import *
 
-TESTFILE = join(dirname(__file__), "data/visible_energy_tables.txt")
+FUNCTIONS_TESTFILE = join(dirname(__file__),
+                          "data/visible_energy_weight_functions.txt")
+PARTICLE_TESTFILE = join(dirname(__file__),
+                         "data/visible_energy_particle_frac.txt")
 
 
-class TestVisibleEnergyWeights(unittest.TestCase):
+class TestVisEnergyParticle(unittest.TestCase):
     def setUp(self):
-        self.ref_values = np.loadtxt(TESTFILE).T
+        with open(PARTICLE_TESTFILE, "r") as f:
+            tmp = f.readline()
+            self.particles = [
+                int(p[2:-1]) for p in re.findall(r'\s\(-?\d+\)', tmp)
+            ]
+        self.ref_values = np.loadtxt(PARTICLE_TESTFILE).T
+
+    def test_particles(self):
+        for i, pdgid in enumerate(self.particles):
+            vfunc = np.vectorize(visible_energy_fraction)
+            val = vfunc(pdgid, self.ref_values[0, :])
+            np.testing.assert_array_almost_equal(self.ref_values[i + 1, :],
+                                                 val,
+                                                 decimal=3)
+
+class TestVisEnergyWeightFunctions(unittest.TestCase):
+    def setUp(self):
+        self.ref_values = np.loadtxt(FUNCTIONS_TESTFILE).T
 
     def test_ngamma_elec(self):
         vfunc = np.vectorize(number_photons_per_electron)
