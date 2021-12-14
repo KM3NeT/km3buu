@@ -15,6 +15,8 @@ __maintainer__ = "Johannes Schumann"
 __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
+import numpy as np
+
 ELEC_PARAMS = {
     "ELECa": 1.33356e5,
     "ELECb": 1.66113e2,
@@ -153,7 +155,7 @@ def number_photons_per_electron(energy):
 
 
 def pion_weight(energy):
-    norm = nphotons_per_electron(energy)
+    norm = number_photons_per_electron(energy)
     if energy < 6e-2:
         return 1e4 * PION_PARAMS["PIa"] / norm
     elif energy < 1.5e-1:
