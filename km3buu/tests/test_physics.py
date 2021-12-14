@@ -28,53 +28,39 @@ class TestVisibleEnergyWeights(unittest.TestCase):
     def test_ngamma_elec(self):
         vfunc = np.vectorize(number_photons_per_electron)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[1, :], val)
+        assert np.allclose(self.ref_values[1, :], val, rtol=0.05)
 
     def test_pion_weight(self):
         vfunc = np.vectorize(pion_weight)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[2, :],
-                                             val,
-                                             decimal=3)
+        assert np.allclose(self.ref_values[2, :], val, rtol=0.05)
 
     def test_kaon_weight(self):
         vfunc = np.vectorize(kaon_weight)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[3, :],
-                                             val,
-                                             decimal=3)
+        assert np.allclose(self.ref_values[3, :], val, rtol=0.05)
 
     def test_kshort_weight(self):
         vfunc = np.vectorize(kshort_weight)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[4, :],
-                                             val,
-                                             decimal=3)
+        assert np.allclose(self.ref_values[4, :], val, rtol=0.05)
 
     def test_klong_weight(self):
         vfunc = np.vectorize(klong_weight)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[5, :],
-                                             val,
-                                             decimal=3)
+        assert np.allclose(self.ref_values[5, :], val, rtol=0.05)
 
     def test_proton_weight(self):
         vfunc = np.vectorize(proton_weight)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[6, :],
-                                             val,
-                                             decimal=3)
+        assert np.allclose(self.ref_values[6, :], val, rtol=0.05)
 
     def test_neutron_weight(self):
         vfunc = np.vectorize(neutron_weight)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[7, :],
-                                             val,
-                                             decimal=3)
+        assert np.allclose(self.ref_values[7, :], val, rtol=0.05)
 
     def test_high_ene_weights(self):
         vfunc = np.vectorize(high_energy_weight)
         val = vfunc(self.ref_values[0, :])
-        np.testing.assert_array_almost_equal(self.ref_values[8, :],
-                                             val,
-                                             decimal=3)
+        assert np.allclose(self.ref_values[8, :], val, rtol=0.05)
