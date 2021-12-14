@@ -132,7 +132,7 @@ def visible_energy_fraction(pdgid, energy):
         weight = neutron_weight(tmp)
     elif pdgid == 2122:
         weight = proton_weight(tmp)
-    elif pdgid in [12, -13, 13, 113, 213]:
+    elif pdgid in [12,-12,14,-14,16,-16, -13, 13, 15, -15]:
         weight = 0.0
     else:
         weight = proton_weight(tmp)
