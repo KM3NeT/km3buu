@@ -2,6 +2,9 @@
 """
 Additional physics functionality
 
+Visible energy:
+* Implementation applied from JPP
+* Theory by M. Dentler https://inspirehep.net/literature/1321036
 """
 
 __author__ = "Johannes Schumann"
