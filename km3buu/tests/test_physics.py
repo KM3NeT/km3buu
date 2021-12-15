@@ -39,9 +39,11 @@ class TestVisEnergyParticle(unittest.TestCase):
         for i, pdgid in enumerate(self.particles):
             vfunc = np.vectorize(visible_energy_fraction)
             val = vfunc(pdgid, self.ref_values[0, :])
-            np.testing.assert_array_almost_equal(self.ref_values[i + 1, :],
-                                                 val,
-                                                 decimal=3)
+            assert np.allclose(self.ref_values[i + 1, :],
+                               val,
+                               rtol=0.05,
+                               atol=0.01)
+
 
 class TestVisEnergyWeightFunctions(unittest.TestCase):
     def setUp(self):
