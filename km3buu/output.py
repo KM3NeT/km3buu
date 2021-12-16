@@ -27,6 +27,7 @@ from scipy.optimize import curve_fit
 import mendeleev
 from datetime import datetime
 
+from .physics import visible_energy_fraction
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 from .geometry import DetectorVolume, CanVolume
 from .config import Config, read_default_media_compositions
@@ -561,10 +562,14 @@ class GiBUUOutput:
                                 zip(GIBUU_FIELDNAMES,
                                     len(GIBUU_FIELDNAMES) * [float]))))
         # Calculate additional information
+        counts = ak.num(retval.E)
         retval["xsec"] = self._event_xsec(retval)
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
         retval["By"] = GiBUUOutput.bjorken_y(retval)
         retval["Q2"] = GiBUUOutput.Qsquared(retval)
+        visEfrac = visible_energy_fraction(ak.flatten(retval.barcode),
+                                           ak.flatten(retval.E))
+        retval["visEfrac"] = ak.unflatten(visEfrac, counts)
         return retval
 
     @property

@@ -98,7 +98,7 @@ HE_PARAMS = {
     "Mkref": 2.698,
 }
 
-
+@np.vectorize
 def visible_energy_fraction(pdgid, energy):
     """
     Returns the visible energy fraction in the one particle approximation (OPA)
