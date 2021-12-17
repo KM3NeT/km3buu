@@ -16,6 +16,13 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import numpy as np
+from particle import Particle
+
+from .config import read_default_media_compositions
+
+DENSITY_SEA_WATER = read_default_media_compositions()["SeaWater"]["density"]
+
+MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7  #dx/dE [m/GeV]
 
 ELEC_PARAMS = {
     "ELECa": 1.33356e5,
@@ -251,3 +258,67 @@ def high_energy_weight(energy):
     lognp = num / denom
     Ee = 10.**(lognp - HE_PARAMS["Mkref"])
     return Ee / energy
+
+
+@np.vectorize
+def muon_range_seawater(start_energy, stop_energy):
+    """
+    Get distance muon propagates in seawater
+
+    Parameters
+    ----------
+    start_energy: float [GeV]
+        Start energy of the muon track
+    stop_energy: float [GeV]
+        Stop energy of the muon track
+
+    Return
+    ------
+    track_length: float [m]
+    """
+    muon_mass = Particle.from_string("mu").mass / 1e3
+    if start_energy <= muon_mass:
+        return 0
+
+    etmp = start_energy
+    dx = 0.0
+
+    params = np.array(
+        [(0., 2.3e-1 * DENSITY_SEA_WATER, 15.5e-4 * DENSITY_SEA_WATER),
+         (30., 2.67e-1 * DENSITY_SEA_WATER, 3.4e-4 * DENSITY_SEA_WATER),
+         (35.3e3, -6.5e-1 * DENSITY_SEA_WATER, 3.66e-4 * DENSITY_SEA_WATER)],
+        dtype=[("energy", "f8"), ("a", "f8"), ("b", "f8")])
+
+    mask_stages = (params["energy"] < stop_energy) & (np.append(
+        params["energy"][1:], np.inf) > start_energy)
+
+    energy_steps = np.append(params["energy"][mask_stages], stop_energy)
+    energy_steps[0] = start_energy
+
+    for i in np.where(mask_stages)[0]:
+        dx += muon_range(energy_steps[i], energy_steps[i + 1], params["a"][i],
+                         params["b"][i])
+
+    return dx
+
+
+def muon_range(start_energy, stop_energy, a, b):
+    """
+    Get distance muon propagates
+
+    Parameters
+    ----------
+    start_energy: float [GeV]
+        Start energy of the muon track
+    stop_energy: float [GeV]
+        Stop energy of the muon track
+    a: float [GeV/m]
+        Ionisation loss
+    b: float [m^-1]
+        Pair-Production and Bremsstrahlung
+
+    Return
+    ------
+    track_length: float [m]
+    """
+    return -np.log((a + b * stop_energy) / (a + b * start_energy)) / b
