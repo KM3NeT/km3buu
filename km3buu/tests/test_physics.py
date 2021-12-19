@@ -24,6 +24,18 @@ FUNCTIONS_TESTFILE = join(dirname(__file__),
                           "data/visible_energy_weight_functions.txt")
 PARTICLE_TESTFILE = join(dirname(__file__),
                          "data/visible_energy_particle_frac.txt")
+MUON_TESTFILE = join(dirname(__file__), "data/muon_range_seawater.txt")
+
+
+class TestMuonRangeSeaWater(unittest.TestCase):
+    def setUp(self):
+        self.ref_values = np.loadtxt(MUON_TESTFILE).T
+
+    def test_particles(self):
+        assert np.allclose(muon_range_seawater(self.ref_values[0, :],
+                                               self.ref_values[1, :]),
+                           self.ref_values[2, :],
+                           rtol=0.01)
 
 
 class TestVisEnergyParticle(unittest.TestCase):
