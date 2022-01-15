@@ -707,7 +707,7 @@ def write_detector_file(gibuu_output,
         if tau_secondaries is not None:
             event_tau_sec = tau_secondaries[mc_event_id]
             add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp,
-                          PARTICLE_MC_STATUS["StableFinalState"])
+                          PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
             mc_trk_id += len(event_tau_sec.E)
         else:
             lep_out_trk = ROOT.Trk()
