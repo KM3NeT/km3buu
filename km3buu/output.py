@@ -614,7 +614,7 @@ def write_detector_file(gibuu_output,
     bjorkeny = event_data.By
 
     tau_secondaries = None
-    if propagate_tau and abs(nu_type) == 16:
+    if propagate_tau and abs(nu_type) == 16 and ichan == 2:
         from .propagation import propagate_lepton
         tau_secondaries = propagate_lepton(event_data, np.sign(nu_type) * 15)
 
