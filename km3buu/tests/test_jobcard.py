@@ -20,6 +20,7 @@ from tempfile import TemporaryFile, TemporaryDirectory
 
 
 class TestJobcard(unittest.TestCase):
+
     def setUp(self):
         self.test_jobcard = Jobcard()
         # Insert some test elements
@@ -49,6 +50,7 @@ class TestJobcard(unittest.TestCase):
 
 
 class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
+
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
         self.test_Z = np.random.randint(1, 100)
@@ -99,6 +101,7 @@ class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
 
 
 class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
+
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
         self.test_Z = np.random.randint(1, 100)
@@ -133,6 +136,7 @@ class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
 
 
 class TestJobcardSeed(unittest.TestCase):
+
     def setUp(self):
         jc = generate_neutrino_jobcard(100,
                                        "CC",

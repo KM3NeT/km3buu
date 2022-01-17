@@ -19,6 +19,7 @@ from km3buu import DOCKER_URL, IMAGE_NAME
 
 
 class TestBuild(unittest.TestCase):
+
     def test_wrong_dir_path(self):
         wrong_path = "foobar"
         try:

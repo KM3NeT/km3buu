@@ -23,6 +23,7 @@ import uproot
 from scipy.interpolate import UnivariateSpline, interp1d
 from scipy.spatial.transform import Rotation
 import scipy.constants as constants
+from scipy.optimize import curve_fit
 import mendeleev
 from datetime import datetime
 
@@ -79,7 +80,7 @@ FLUX_INFORMATION_DTYPE = np.dtype([("energy", np.float64),
                                    ("flux", np.float64),
                                    ("events", np.float64)])
 
-EVENT_TYPE = {
+SCATTERING_TYPE = {
     1: "QE",
     2: "P33(1232)",
     3: "P11(1440)",
@@ -117,6 +118,46 @@ EVENT_TYPE = {
     35: "2p2h QE",
     36: "2p2h Delta",
     37: "2pi background",
+}
+
+SCATTERING_TYPE_TO_GENIE = {
+    1: 1,  # QE        -> kScQuasiElastic
+    2: 4,  # P33(1232) -> kScResonant  
+    3: 4,  # P11(1440) -> kScResonant
+    4: 4,  # S11(1535) -> kScResonant
+    5: 4,  # S11(1650) -> kScResonant
+    6: 4,  # S11(2090) -> kScResonant
+    7: 4,  # D13(1520) -> kScResonant
+    8: 4,  # D13(1700) -> kScResonant
+    9: 4,  # D13(2080) -> kScResonant
+    10: 4,  # D15(1675) -> kScResonant
+    11: 4,  # G17(2190) -> kScResonant
+    12: 4,  # P11(1710) -> kScResonant
+    13: 4,  # P11(2100) -> kScResonant
+    14: 4,  # P13(1720) -> kScResonant
+    15: 4,  # P13(1900) -> kScResonant
+    16: 4,  # F15(1680) -> kScResonant
+    17: 4,  # F15(2000) -> kScResonant
+    18: 4,  # F17(1990) -> kScResonant
+    19: 4,  # S31(1620) -> kScResonant
+    20: 4,  # S31(1900) -> kScResonant
+    21: 4,  # D33(1700) -> kScResonant
+    22: 4,  # D33(1940) -> kScResonant
+    23: 4,  # D35(1930) -> kScResonant
+    24: 4,  # D35(2350) -> kScResonant
+    25: 4,  # P31(1750) -> kScResonant
+    26: 4,  # P31(1910) -> kScResonant
+    27: 4,  # P33(1600) -> kScResonant
+    28: 4,  # P33(1920) -> kScResonant
+    29: 4,  # F35(1750) -> kScResonant
+    30: 4,  # F35(1905) -> kScResonant
+    31: 4,  # F37(1950) -> kScResonant
+    32: 0,  # pi neutron-background -> kScNull
+    33: 0,  # pi proton-background -> kScNull
+    34: 3,  # DIS -> kScDeepInelastic
+    35: 0,  # 2p2h QE -> kScNull
+    36: 0,  # 2p2h Delta -> kScNull
+    37: 0,  # 2pi background -> kScNull
 }
 
 ROOTTUPLE_KEY = "RootTuple"
@@ -190,19 +231,18 @@ W2LIST_LOOKUP = {
     "COLUMN_DEPTH": 3,
     "P_EARTH": 4,
     "WATER_INT_LEN": 5,
-    "P_SCALE": 6,
     "BX": 7,
     "BY": 8,
     "ICHAN": 9,
     "CC": 10,
-    "DISTAMAX": 11,
-    "WATERXSEC": 12,
     "XSEC": 13,
+    "DXSEC": 14,
     "TARGETA": 15,
     "TARGETZ": 16,
     "VERINCAN": 17,
     "LEPINCAN": 18,
-    "GIBUU_WEIGHT": 19
+    "GIBUU_WEIGHT": 23,
+    "GIBUU_SCAT_TYPE": 24
 }
 
 W2LIST_LENGTH = max(W2LIST_LOOKUP.values()) + 1
@@ -234,6 +274,7 @@ def read_nu_abs_xsection(filepath):
 
 
 class GiBUUOutput:
+
     def __init__(self, data_dir):
         """
         Class for parsing GiBUU output files
@@ -260,9 +301,11 @@ class GiBUUOutput:
         self._min_energy = np.nan
         self._max_energy = np.nan
         self._generated_events = -1
+        self._flux_index = np.nan
 
         try:
             self._read_flux_file()
+            self._determine_flux_index()
         except OSError:
             self._read_single_energy()
 
@@ -537,6 +580,26 @@ class GiBUUOutput:
     def generated_events(self):
         return self._generated_events
 
+    def _determine_flux_index(self):
+
+        def fluxfunc(x, a, b):
+            return a * x**b
+
+        lower_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.2)
+        upper_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.8)
+        mask = (self.flux_data["flux"] > lower_limit) & (self.flux_data["flux"]
+                                                         < upper_limit)
+        popt, pcov = curve_fit(fluxfunc,
+                               self.flux_data["energy"][mask],
+                               self.flux_data["flux"][mask],
+                               p0=[1, -1])
+
+        self._flux_index = popt[1]
+
+    @property
+    def flux_index(self):
+        return self._flux_index
+
 
 def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
@@ -663,6 +726,7 @@ def write_detector_file(gibuu_output,
         # Event Information (w2list)
         evt.w2list.resize(W2LIST_LENGTH)
         evt.w2list[W2LIST_LOOKUP["PS"]] = global_generation_weight
+        evt.w2list[W2LIST_LOOKUP["EG"]] = gibuu_output.flux_index
         evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(event.lepIn_E)
         evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
         evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
@@ -670,10 +734,17 @@ def write_detector_file(gibuu_output,
         evt.w2list[W2LIST_LOOKUP["BX"]] = bjorkenx[mc_event_id]
         evt.w2list[W2LIST_LOOKUP["BY"]] = bjorkeny[mc_event_id]
         evt.w2list[W2LIST_LOOKUP["CC"]] = ichan
-        evt.w2list[W2LIST_LOOKUP["ICHAN"]] = event.evType
+        evt.w2list[W2LIST_LOOKUP["ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
+            event.evType]
         evt.w2list[W2LIST_LOOKUP["VERINCAN"]] = 1
         evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
         evt.w2list[W2LIST_LOOKUP["GIBUU_WEIGHT"]] = event.weight
+        evt.w2list[W2LIST_LOOKUP["GIBUU_SCAT_TYPE"]] = event.evType
+        #TODO
+        evt.w2list[W2LIST_LOOKUP["DXSEC"]] = np.nan
+        evt.w2list[W2LIST_LOOKUP["COLUMN_DEPTH"]] = np.nan
+        evt.w2list[W2LIST_LOOKUP["P_EARTH"]] = np.nan
+        evt.w2list[W2LIST_LOOKUP["WATER_INT_LEN"]] = np.nan
 
         # Vertex Position
         vtx_pos = np.array(geometry.random_pos())
