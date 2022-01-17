@@ -19,6 +19,7 @@ class DetectorVolume(ABC):
     """
     Detector geometry class
     """
+
     def __init__(self):
         self._volume = -1.0
         self._coord_origin = (0., 0., 0.)
@@ -82,6 +83,7 @@ class CanVolume(DetectorVolume):
     zmax: float [m] (default: 476.5)
         Cylinder top z position
     """
+
     def __init__(self, radius=403.4, zmin=0.0, zmax=476.5):
         super().__init__()
         self._radius = radius
@@ -118,6 +120,7 @@ class SphericalVolume(DetectorVolume):
         Coordinate center of the sphere
         (x, y, z)
     """
+
     def __init__(self, radius, coord_origin=(0, 0, 0)):
         super().__init__()
         self._radius = radius

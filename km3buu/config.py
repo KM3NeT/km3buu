@@ -45,6 +45,7 @@ GSEAGEN_MEDIA_COMPOSITION_FILE = "MediaComposition.xml"
 
 
 class Config(object):
+
     def __init__(self, config_path=CONFIG_PATH):
         self.config = ConfigParser()
         self._config_path = config_path
