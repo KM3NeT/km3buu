@@ -1,5 +1,4 @@
 &input
-    numtimesteps = 200
     eventtype = 5
     delta_t = 0.2
     localensemble = .true.
