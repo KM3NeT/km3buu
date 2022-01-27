@@ -107,51 +107,89 @@ HE_PARAMS = {
 }
 
 
-@np.vectorize
 def _get_particle_rest_mass(pdgid):
-    return Particle.from_pdgid(pdgid).mass / 1e3
+    @np.vectorize
+    def vfunc(x):
+        mass = Particle.from_pdgid(x).mass
+        if mass is None:
+            return 0
+        return mass / 1e3
+
+    pdgids, invmap = np.unique(ak.to_numpy(pdgid), return_inverse=True)
+    masses = vfunc(pdgids)
+    return masses[invmap]
 
 
-def visible_energy_fraction(pdgid, energy):
+def get_kinetic_energy(energy, pdgid):
+    """
+    Returns the kinetic energy
+
+    Parameters
+    ----------
+    energy: float [GeV]
+        Total energy of the given particle 
+    pdgid: int
+        PDGID of the given particle
+    """
+    mass = np.array(_get_particle_rest_mass(pdgid))
+    return np.sqrt(ak.to_numpy(energy)**2 - mass**2)
+
+
+def visible_energy(energy, pdgid):
+    """
+    Returns the visible energy in the one particle approximation (OPA)
+    how it is used in JSirene (i.e. JPythia.hh)
+
+    Parameters
+    ----------
+    energy: float [GeV]
+        Total energy of the given particle 
+    pdgid: int
+        PDGID of the given particle
+    """
+    return get_kinetic_energy(energy, pdgid) * visible_energy_fraction(
+        energy, pdgid)
+
+
+def visible_energy_fraction(energy, pdgid):
     """
     Returns the visible energy fraction in the one particle approximation (OPA)
     how it is used in JSirene (i.e. JPythia.hh)
 
     Parameters
     ----------
-    pdgid: int
-        PDGID of the given particle
     energy: float [GeV]
         Total energy of the given particle 
+    pdgid: int
+        PDGID of the given particle
     """
     pdgid = ak.to_numpy(pdgid)
     retval = np.zeros_like(pdgid, dtype=np.float64)
     mask = np.isin(pdgid, [11, -11, 22, 111, 221])
     retval[mask] = 1.0
     mask = np.isin(pdgid, [-211, 211])
-    mass = np.array(_get_particle_rest_mass(pdgid[mask]))
-    tmp = np.sqrt(ak.to_numpy(energy)[mask]**2 - mass**2)
-    retval[mask] = high_energy_weight(tmp)
+    ekin = get_kinetic_energy(energy[mask], pdgid[mask])
+    retval[mask] = high_energy_weight(ekin)
     mask = np.isin(pdgid, [13])
     if np.any(mask):
         mass = Particle.from_pdgid(13).mass / 1e3
-        tmp = np.sqrt(ak.to_numpy(energy)[mask]**2 - mass**2)
-        retval[mask] = muon_range_seawater(tmp, mass) / 4.7
+        ekin = np.sqrt(ak.to_numpy(energy)[mask]**2 - mass**2)
+        retval[mask] = muon_range_seawater(ekin, mass) / 4.7
     return retval
 
 
 @np.vectorize
-def km3_opa_fraction(pdgid, energy):
+def km3_opa_fraction(energy, pdgid):
     """
     Returns the visible energy fraction in the one particle approximation (OPA)
     how it is used in KM3
 
     Parameters
     ----------
-    pdgid: int
-        PDGID of the given particle
     energy: float [GeV]
         Kinetic energy of the given particle 
+    pdgid: int
+        PDGID of the given particle
     """
 
     # Cover trivial cases, i.e. 'non-visible' particles and ultra-high energy
@@ -267,6 +305,7 @@ def neutron_weight(energy):
         return (1e3 * NEUTRON_PARAMS["Ng"] + 1e4 * NEUTRON_PARAMS["Nh"] *
                 energy + 1e4 * NEUTRON_PARAMS["Ni"] * energy**2 +
                 1e4 * NEUTRON_PARAMS["Nj"] * energy**3) / norm
+
 
 @np.vectorize
 def high_energy_weight(energy):

@@ -49,7 +49,7 @@ class TestVisEnergyParticle(unittest.TestCase):
 
     def test_particles(self):
         for i, pdgid in enumerate(self.particles):
-            val = km3_opa_fraction(pdgid, self.ref_values[0, :])
+            val = km3_opa_fraction(self.ref_values[0, :], pdgid)
             assert np.allclose(self.ref_values[i + 1, :],
                                val,
                                rtol=0.05,
