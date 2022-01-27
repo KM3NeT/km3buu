@@ -567,8 +567,8 @@ class GiBUUOutput:
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
         retval["By"] = GiBUUOutput.bjorken_y(retval)
         retval["Q2"] = GiBUUOutput.Qsquared(retval)
-        visEfrac = visible_energy_fraction(ak.flatten(retval.barcode),
-                                           ak.flatten(retval.E))
+        visEfrac = visible_energy_fraction(ak.flatten(retval.E),
+                                           ak.flatten(retval.barcode))
         retval["visEfrac"] = ak.unflatten(visEfrac, counts)
         return retval
 
