@@ -37,7 +37,6 @@ except ModuleNotFoundError:
 
 
 class TestXSection(unittest.TestCase):
-
     def test_xsection_all(self):
         filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
         xsection = read_nu_abs_xsection(filename)
@@ -48,7 +47,6 @@ class TestXSection(unittest.TestCase):
 
 
 class TestGiBUUOutput(unittest.TestCase):
-
     def setup_class(self):
         self.output = GiBUUOutput(TESTDATA_DIR)
 
@@ -93,7 +91,6 @@ class TestGiBUUOutput(unittest.TestCase):
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestAANET(unittest.TestCase):
-
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
@@ -138,8 +135,8 @@ class TestAANET(unittest.TestCase):
         # By
         np.testing.assert_almost_equal(evt.w2list[8], 0.8167222969153614)
         # iChannel
-        np.testing.assert_equal(evt.w2list[9], 34)
+        np.testing.assert_equal(evt.w2list[9], 3)
         # CC/NC
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
-        np.testing.assert_almost_equal(evt.w2list[19], 0.004062418521597373)
+        np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
