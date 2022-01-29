@@ -24,6 +24,7 @@ from .config import read_default_media_compositions
 DENSITY_SEA_WATER = read_default_media_compositions()["SeaWater"]["density"]
 
 MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7  #dx/dE [m/GeV]
+MUON_MASS = Particle.from_string("mu").mass / 1e3
 
 ELEC_PARAMS = {
     "ELECa": 1.33356e5,
@@ -172,9 +173,8 @@ def visible_energy_fraction(energy, pdgid):
     retval[mask] = high_energy_weight(ekin)
     mask = np.isin(pdgid, [13])
     if np.any(mask):
-        mass = Particle.from_pdgid(13).mass / 1e3
-        ekin = np.sqrt(ak.to_numpy(energy)[mask]**2 - mass**2)
-        retval[mask] = muon_range_seawater(ekin, mass) / 4.7
+        ekin = np.sqrt(ak.to_numpy(energy)[mask]**2 - MUON_MASS**2)
+        retval[mask] = muon_range_seawater(ekin, MUON_MASS) / 4.7
     return retval
 
 
@@ -350,8 +350,7 @@ def muon_range_seawater(start_energy, stop_energy):
     ------
     track_length: float [m]
     """
-    muon_mass = Particle.from_string("mu").mass / 1e3
-    if start_energy <= muon_mass:
+    if start_energy <= MUON_MASS:
         return 0
     elif start_energy < stop_energy:
         raise ValueError("Final energy must be smaller than initial energy.")
