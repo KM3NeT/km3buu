@@ -111,10 +111,10 @@ HE_PARAMS = {
 def _get_particle_rest_mass(pdgid):
     @np.vectorize
     def vfunc(x):
-        mass = Particle.from_pdgid(x).mass
-        if mass is None:
+        try:
+            return Particle.from_pdgid(x).mass * 1e-3
+        except:
             return 0
-        return mass / 1e3
 
     pdgids, invmap = np.unique(ak.to_numpy(pdgid), return_inverse=True)
     masses = vfunc(pdgids)
