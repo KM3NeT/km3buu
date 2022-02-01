@@ -28,6 +28,12 @@ def build_swim_xsec_label(flavor, process, anti, loglabel=False):
     f = flavor[0].lower()
     p = process.upper()
     a = "b" if anti else "u"
+
+
+def build_swim_xsec_label(flavor, process, anti, loglabel=False):
+    f = flavor[0].upper()
+    p = process.upper()
+    a = "u" if anti else "b"
     l = "log" if loglabel else ""
     return "gn{}{}_{}_{}E".format(a, f, p, l)
 
