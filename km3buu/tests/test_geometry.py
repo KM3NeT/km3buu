@@ -17,14 +17,12 @@ import numpy as np
 
 
 class TestGeneralGeometry(unittest.TestCase):
-
     def test_abstract_init(self):
         with self.assertRaises(TypeError) as ctx:
             d = DetectorVolume()
 
 
 class TestSphere(unittest.TestCase):
-
     def setUp(self):
         self.detector_geometry = SphericalVolume(20, (2, 2, 2))
 
@@ -46,7 +44,6 @@ class TestSphere(unittest.TestCase):
 
 
 class TestCan(unittest.TestCase):
-
     def setUp(self):
         self.detector_geometry = CanVolume()
 

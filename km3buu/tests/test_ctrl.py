@@ -25,7 +25,6 @@ TESTDATA_DIR = data_path("gibuu")
 
 
 class TestCTRLbyJobcardFile(unittest.TestCase):
-
     def setUp(self):
         self.filename = join(TESTDATA_DIR, "km3net_testdata.job")
         self.output_dir = TemporaryDirectory()
@@ -49,7 +48,6 @@ class TestCTRLbyJobcardFile(unittest.TestCase):
 
 
 class TestCTRLbyJobcardObject(unittest.TestCase):
-
     def setUp(self):
         log = get_logger("ctrl.py")
         log.setLevel("INFO")

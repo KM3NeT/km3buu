@@ -58,7 +58,6 @@ class Jobcard(f90nml.Namelist):
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
-
     def __init__(self,
                  *args,
                  filename=DEFAULT_JOBCARD_FILENAME,
