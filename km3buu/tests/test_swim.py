@@ -15,7 +15,6 @@ import numpy as np
 import pytest
 import uproot
 from tempfile import TemporaryFile
-
 from km3buu.swim import *
 
 try:

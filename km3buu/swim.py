@@ -13,7 +13,11 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import numpy as np
-import ROOT
+import warnings
+try:
+    import ROOT
+except:
+    warnings.warn("ROOT or PyROOT not available")
 
 ENERGY_RANGE = (0.1, 100)
 ENERGY_BINS = 40
