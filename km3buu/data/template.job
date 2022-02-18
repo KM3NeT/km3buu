@@ -14,7 +14,7 @@
     includeqe = .true.
     include1pi = .true.
     include2p2hqe = .true.
-    include2pi = .false.
+    include2pi = .true.
     include2p2hdelta = .false.
     printabsorptionxs = .true.
     nuexp = 10
