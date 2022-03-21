@@ -608,6 +608,7 @@ class GiBUUOutput:
 
 def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
+                        no_files=1,
                         geometry=CanVolume(),
                         livetime=3.156e7,
                         propagate_tau=True):  # pragma: no cover
@@ -620,6 +621,8 @@ def write_detector_file(gibuu_output,
         Output object which wraps the information from the GiBUU output files
     ofile: str
         Output filename
+    no_files: int (default: 1)
+        Number of output files written
     geometry: DetectorVolume
         The detector geometry which should be used
     livetime: float
@@ -627,12 +630,6 @@ def write_detector_file(gibuu_output,
     """
     if not isinstance(geometry, DetectorVolume):
         raise TypeError("Geometry needs to be a DetectorVolume")
-
-    evt = ROOT.Evt()
-    outfile = ROOT.TFile.Open(ofile, "RECREATE")
-    tree = ROOT.TTree("E", "KM3NeT Evt Tree")
-    tree.Branch("Evt", evt, 32000, 4)
-    mc_trk_id = 0
 
     def add_particles(particle_data, pos_offset, rotation, start_mc_trk_id,
                       timestamp, status):
@@ -678,6 +675,10 @@ def write_detector_file(gibuu_output,
         sec_lep_type *= -1
 
     event_data = gibuu_output.arrays
+
+    if no_files > len(event_data):
+        raise IndexError("More files to write than contained events!")
+
     bjorkenx = event_data.Bx
     bjorkeny = event_data.By
 
@@ -696,6 +697,7 @@ def write_detector_file(gibuu_output,
 
     w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume, 4 * np.pi)
     global_generation_weight = gibuu_output.global_generation_weight(4 * np.pi)
+    mean_xsec_func = gibuu_output.mean_xsec
 
     head = ROOT.Head()
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
@@ -714,95 +716,113 @@ def write_detector_file(gibuu_output,
         version, timestamp.strftime("%Y%m%d %H%M%S"))
     header_dct["primary"] = "{:d}".format(nu_type)
 
-    for k, v in header_dct.items():
-        head.set_line(k, v)
-    head.Write("Head")
+    for i in range(no_files):
+        start_id = 0
+        stop_id = len(event_data)
+        tmp_filename = ofile
+        if no_files > 1:
+            tmp_filename = ofile.replace(".root", ".{}.root".format(i + 1))
+            bunch_size = stop_id // no_files
+            start_id = i * bunch_size
+            stop_id = (i + 1) * bunch_size if i < (no_files - 1) else stop_id
 
-    mean_xsec_func = gibuu_output.mean_xsec
+        evt = ROOT.Evt()
+        outfile = ROOT.TFile.Open(tmp_filename, "RECREATE")
+        tree = ROOT.TTree("E", "KM3NeT Evt Tree")
+        tree.Branch("Evt", evt, 32000, 4)
+        mc_trk_id = 0
 
-    for mc_event_id, event in enumerate(event_data):
-        evt.clear()
-        evt.id = mc_event_id
-        evt.mc_run_id = mc_event_id
-        # Weights
-        evt.w.push_back(geometry.volume)  #w1 (can volume)
-        evt.w.push_back(w2[mc_event_id])  #w2
-        evt.w.push_back(-1.0)  #w3 (= w2*flux)
-        # Event Information (w2list)
-        evt.w2list.resize(W2LIST_LENGTH)
-        evt.w2list[W2LIST_LOOKUP["PS"]] = global_generation_weight
-        evt.w2list[W2LIST_LOOKUP["EG"]] = gibuu_output.flux_index
-        evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(event.lepIn_E)
-        evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
-        evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
-        evt.w2list[W2LIST_LOOKUP["TARGETZ"]] = gibuu_output.Z
-        evt.w2list[W2LIST_LOOKUP["BX"]] = bjorkenx[mc_event_id]
-        evt.w2list[W2LIST_LOOKUP["BY"]] = bjorkeny[mc_event_id]
-        evt.w2list[W2LIST_LOOKUP["CC"]] = ichan
-        evt.w2list[W2LIST_LOOKUP["ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
-            event.evType]
-        evt.w2list[W2LIST_LOOKUP["VERINCAN"]] = 1
-        evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
-        evt.w2list[W2LIST_LOOKUP["GIBUU_WEIGHT"]] = event.weight
-        evt.w2list[W2LIST_LOOKUP["GIBUU_SCAT_TYPE"]] = event.evType
-        #TODO
-        evt.w2list[W2LIST_LOOKUP["DXSEC"]] = np.nan
-        evt.w2list[W2LIST_LOOKUP["COLUMN_DEPTH"]] = np.nan
-        evt.w2list[W2LIST_LOOKUP["P_EARTH"]] = np.nan
-        evt.w2list[W2LIST_LOOKUP["WATER_INT_LEN"]] = np.nan
+        for k, v in header_dct.items():
+            head.set_line(k, v)
+        head.Write("Head")
 
-        # Vertex Position
-        vtx_pos = np.array(geometry.random_pos())
-        # Direction
-        phi = np.random.uniform(0, 2 * np.pi)
-        cos_theta = np.random.uniform(-1, 1)
-        sin_theta = np.sqrt(1 - cos_theta**2)
+        for mc_event_id, event in enumerate(event_data[start_id:stop_id]):
+            evt.clear()
+            evt.id = mc_event_id
+            evt.mc_run_id = mc_event_id
+            # Weights
+            evt.w.push_back(geometry.volume)  #w1 (can volume)
+            evt.w.push_back(w2[mc_event_id])  #w2
+            evt.w.push_back(-1.0)  #w3 (= w2*flux)
+            # Event Information (w2list)
+            evt.w2list.resize(W2LIST_LENGTH)
+            evt.w2list[W2LIST_LOOKUP["PS"]] = global_generation_weight
+            evt.w2list[W2LIST_LOOKUP["EG"]] = gibuu_output.flux_index
+            evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(
+                event.lepIn_E)
+            evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
+            evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
+            evt.w2list[W2LIST_LOOKUP["TARGETZ"]] = gibuu_output.Z
+            evt.w2list[W2LIST_LOOKUP["BX"]] = bjorkenx[mc_event_id]
+            evt.w2list[W2LIST_LOOKUP["BY"]] = bjorkeny[mc_event_id]
+            evt.w2list[W2LIST_LOOKUP["CC"]] = ichan
+            evt.w2list[W2LIST_LOOKUP["ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
+                event.evType]
+            evt.w2list[W2LIST_LOOKUP["VERINCAN"]] = 1
+            evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
+            evt.w2list[W2LIST_LOOKUP["GIBUU_WEIGHT"]] = event.weight
+            evt.w2list[W2LIST_LOOKUP["GIBUU_SCAT_TYPE"]] = event.evType
+            #TODO
+            evt.w2list[W2LIST_LOOKUP["DXSEC"]] = np.nan
+            evt.w2list[W2LIST_LOOKUP["COLUMN_DEPTH"]] = np.nan
+            evt.w2list[W2LIST_LOOKUP["P_EARTH"]] = np.nan
+            evt.w2list[W2LIST_LOOKUP["WATER_INT_LEN"]] = np.nan
 
-        dir_x = np.cos(phi) * sin_theta
-        dir_y = np.sin(phi) * sin_theta
-        dir_z = cos_theta
+            # Vertex Position
+            vtx_pos = np.array(geometry.random_pos())
+            # Direction
+            phi = np.random.uniform(0, 2 * np.pi)
+            cos_theta = np.random.uniform(-1, 1)
+            sin_theta = np.sqrt(1 - cos_theta**2)
 
-        direction = np.array([dir_x, dir_y, dir_z])
-        theta = np.arccos(cos_theta)
-        R = Rotation.from_euler("yz", [theta, phi])
+            dir_x = np.cos(phi) * sin_theta
+            dir_y = np.sin(phi) * sin_theta
+            dir_z = cos_theta
 
-        timestamp = np.random.uniform(0, livetime)
+            direction = np.array([dir_x, dir_y, dir_z])
+            theta = np.arccos(cos_theta)
+            R = Rotation.from_euler("yz", [theta, phi])
 
-        nu_in_trk = ROOT.Trk()
-        nu_in_trk.id = mc_trk_id
-        mc_trk_id += 1
-        nu_in_trk.mother_id = -1
-        nu_in_trk.type = nu_type
-        nu_in_trk.pos.set(*vtx_pos)
-        nu_in_trk.dir.set(*direction)
-        nu_in_trk.E = event.lepIn_E
-        nu_in_trk.t = timestamp
-        nu_in_trk.status = PARTICLE_MC_STATUS["TRK_ST_PRIMARYNEUTRINO"]
-        evt.mc_trks.push_back(nu_in_trk)
+            timestamp = np.random.uniform(0, livetime)
 
-        if tau_secondaries is not None:
-            event_tau_sec = tau_secondaries[mc_event_id]
-            add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp,
-                          PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
-            mc_trk_id += len(event_tau_sec.E)
-        else:
-            lep_out_trk = ROOT.Trk()
-            lep_out_trk.id = mc_trk_id
+            nu_in_trk = ROOT.Trk()
+            nu_in_trk.id = mc_trk_id
             mc_trk_id += 1
-            lep_out_trk.mother_id = 0
-            lep_out_trk.type = sec_lep_type
-            lep_out_trk.pos.set(*vtx_pos)
-            mom = np.array([event.lepOut_Px, event.lepOut_Py, event.lepOut_Pz])
-            p_dir = R.apply(mom / np.linalg.norm(mom))
-            lep_out_trk.dir.set(*p_dir)
-            lep_out_trk.E = event.lepOut_E
-            lep_out_trk.t = timestamp
-            lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"]
-            evt.mc_trks.push_back(lep_out_trk)
+            nu_in_trk.mother_id = -1
+            nu_in_trk.type = nu_type
+            nu_in_trk.pos.set(*vtx_pos)
+            nu_in_trk.dir.set(*direction)
+            nu_in_trk.E = event.lepIn_E
+            nu_in_trk.t = timestamp
+            nu_in_trk.status = PARTICLE_MC_STATUS["TRK_ST_PRIMARYNEUTRINO"]
+            evt.mc_trks.push_back(nu_in_trk)
 
-        add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
-                      PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
-        tree.Fill()
-    outfile.Write()
-    outfile.Close()
-    del outfile
+            if tau_secondaries is not None:
+                event_tau_sec = tau_secondaries[mc_event_id]
+                add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp,
+                              PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
+                mc_trk_id += len(event_tau_sec.E)
+            else:
+                lep_out_trk = ROOT.Trk()
+                lep_out_trk.id = mc_trk_id
+                mc_trk_id += 1
+                lep_out_trk.mother_id = 0
+                lep_out_trk.type = sec_lep_type
+                lep_out_trk.pos.set(*vtx_pos)
+                mom = np.array(
+                    [event.lepOut_Px, event.lepOut_Py, event.lepOut_Pz])
+                p_dir = R.apply(mom / np.linalg.norm(mom))
+                lep_out_trk.dir.set(*p_dir)
+                lep_out_trk.E = event.lepOut_E
+                lep_out_trk.t = timestamp
+                lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"]
+                evt.mc_trks.push_back(lep_out_trk)
+
+            add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
+                          PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
+            tree.Fill()
+        outfile.Write()
+        outfile.Close()
+        del outfile
+        del evt
+        del tree
