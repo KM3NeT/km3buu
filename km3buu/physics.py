@@ -109,6 +109,7 @@ HE_PARAMS = {
 
 
 def _get_particle_rest_mass(pdgid):
+
     @np.vectorize
     def vfunc(x):
         try:

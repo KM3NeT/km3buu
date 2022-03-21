@@ -275,6 +275,7 @@ def read_nu_abs_xsection(filepath):
 
 
 class GiBUUOutput:
+
     def __init__(self, data_dir):
         """
         Class for parsing GiBUU output files
@@ -585,6 +586,7 @@ class GiBUUOutput:
         return self._generated_events
 
     def _determine_flux_index(self):
+
         def fluxfunc(x, a, b):
             return a * x**b
 
