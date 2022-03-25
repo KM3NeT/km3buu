@@ -37,7 +37,6 @@ except ModuleNotFoundError:
 
 
 class TestXSection(unittest.TestCase):
-
     def test_xsection_all(self):
         filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
         xsection = read_nu_abs_xsection(filename)
@@ -48,7 +47,6 @@ class TestXSection(unittest.TestCase):
 
 
 class TestGiBUUOutput(unittest.TestCase):
-
     def setup_class(self):
         self.output = GiBUUOutput(TESTDATA_DIR)
 
@@ -92,8 +90,7 @@ class TestGiBUUOutput(unittest.TestCase):
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
-class TestAANET(unittest.TestCase):
-
+class TestOfflineFile(unittest.TestCase):
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
@@ -143,3 +140,91 @@ class TestAANET(unittest.TestCase):
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
         np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
+
+
+@pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
+                    reason="KM3NeT dataformat required")
+class TestMultiFileOutput(unittest.TestCase):
+    def setUp(self):
+        output = GiBUUOutput(TESTDATA_DIR)
+        datafile = NamedTemporaryFile(suffix=".root")
+        np.random.seed(1234)
+        write_detector_file(output, datafile.name, no_files=2)
+        self.fobj1 = km3io.OfflineReader(
+            datafile.name.replace(".root", ".1.root"))
+        self.fobj2 = km3io.OfflineReader(
+            datafile.name.replace(".root", ".2.root"))
+
+    def test_numbering(self):
+        np.testing.assert_array_equal(self.fobj1.events.id, range(2002))
+        np.testing.assert_array_equal(self.fobj2.events.id, range(2003))
+
+    def test_firstevent_first_file(self):
+        evt = self.fobj1.events[0]
+        np.testing.assert_array_equal(evt.mc_tracks.pdgid,
+                                      [12, 11, 2212, 111, 211, -211])
+        np.testing.assert_array_equal(evt.mc_tracks.status,
+                                      [100, 1, 1, 1, 1, 1])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
+            11.90433897, 2.1818, 1.45689677, 0.49284856, 8.33975778, 0.28362369
+        ])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
+            0.18255849, -0.2469, 0.48623089, 0.23767571, 0.24971059, 0.11284916
+        ])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
+            -0.80816248, -0.619212, -0.49241334, -0.84679953, -0.83055629,
+            -0.82624071
+        ])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
+            0.55995162, 0.745398, 0.72187854, 0.47585798, 0.4978161,
+            -0.55189796
+        ])
+        # Test dataset is elec CC -> outgoing particles are placed at vertex pos
+        np.testing.assert_allclose(evt.mc_tracks.t, 8603022.62272017)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -127.07940486)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -122.54421157)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
+        usr = evt.mc_tracks.usr[0]
+        # XSEC
+        np.testing.assert_almost_equal(evt.w2list[13], 40.62418521597373)
+        # Bx
+        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
+        # By
+        np.testing.assert_almost_equal(evt.w2list[8], 0.8167222969153614)
+        # iChannel
+        np.testing.assert_equal(evt.w2list[9], 3)
+        # CC/NC
+        np.testing.assert_equal(evt.w2list[10], 2)
+        # GiBUU weight
+        np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
+
+    def test_firstevent_second_file(self):
+        evt = self.fobj2.events[0]
+        np.testing.assert_array_equal(evt.mc_tracks.pdgid, [12, 11, 2212, 111])
+        np.testing.assert_array_equal(evt.mc_tracks.status, [100, 1, 1, 1])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.E, [7.043544, 3.274632, 4.429621, 0.21289])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_x, [0.997604, 0.824817, 0.941969, 0.00302])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_y, [-0.058292, -0.553647, 0.327013, -0.097914])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_z, [0.037271, 0.114683, -0.075871, 0.99519])
+        # Test dataset is elec CC -> outgoing particles are placed at vertex pos
+        np.testing.assert_allclose(evt.mc_tracks.t, 1951721.26185)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -171.8025)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -55.656482)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 363.950535)
+        usr = evt.mc_tracks.usr[0]
+        # XSEC
+        np.testing.assert_almost_equal(evt.w2list[13], 4.218262109165907)
+        # Bx
+        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
+        # By
+        np.testing.assert_almost_equal(evt.w2list[8], 0.8167222969153614)
+        # iChannel
+        np.testing.assert_equal(evt.w2list[9], 3)
+        # CC/NC
+        np.testing.assert_equal(evt.w2list[10], 2)
+        # GiBUU weight
+        np.testing.assert_almost_equal(evt.w2list[23], 0.00042182621091659065)
