@@ -556,9 +556,12 @@ class GiBUUOutput:
             else:
                 tmp = fobj["RootTuple"].arrays()
                 retval = np.concatenate((retval, tmp))
-        if len(retval) == 0:
-            retval = ak.Array(
-                np.recarray((0, ),
+        if retval is None or len(retval) == 0:
+            return ak.Array(
+                np.recarray((
+                    0,
+                    0,
+                ),
                             dtype=list(
                                 zip(GIBUU_FIELDNAMES,
                                     len(GIBUU_FIELDNAMES) * [float]))))
