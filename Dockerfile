@@ -1,9 +1,9 @@
-FROM docker.km3net.de/base/centos7-bundle:2021.03.01
+FROM rootproject/root:6.24.06-ubuntu20.04
 
-RUN  yum install -y -e 0 devtoolset-10 ca-certificates
+RUN  apt-get -qq update && \
+     apt-get -qq install python3-pip libbz2-dev git
 
-RUN  source /opt/rh/devtoolset-10/enable && \
-     cd /opt && \
+RUN  cd /opt && \
      wget -O RootTuple-1.0.0.tar.gz https://roottuple.hepforge.org/downloads?f=RootTuple-1.0.0.tar.gz && \
      tar -xzvf RootTuple-1.0.0.tar.gz && \
      cd RootTuple-1.0.0 && \
@@ -13,8 +13,7 @@ RUN  source /opt/rh/devtoolset-10/enable && \
      cmake -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
      make; make install
 
-RUN  source /opt/rh/devtoolset-10/enable && \
-    cd /opt && \
+RUN cd /opt && \
     wget https://gibuu.hepforge.org/downloads?f=buuinput2021.tar.gz && \
     tar xvzf downloads?f=buuinput2021.tar.gz && \
     wget https://gibuu.hepforge.org/downloads?f=release2021.tar.gz && \
@@ -28,8 +27,7 @@ RUN  source /opt/rh/devtoolset-10/enable && \
 
 ADD . /km3buu
 
-RUN source /opt/rh/devtoolset-10/enable && \
-    cd /km3buu && \
+RUN cd /km3buu && \
     pip3 install --upgrade pip && \
     pip3 install setuptools-scm && \
     pip3 install pytest-runner && \
