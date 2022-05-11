@@ -37,6 +37,7 @@ except ModuleNotFoundError:
 
 
 class TestXSection(unittest.TestCase):
+
     def test_xsection_all(self):
         filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
         xsection = read_nu_abs_xsection(filename)
@@ -47,6 +48,7 @@ class TestXSection(unittest.TestCase):
 
 
 class TestGiBUUOutput(unittest.TestCase):
+
     def setup_class(self):
         self.output = GiBUUOutput(TESTDATA_DIR)
 
@@ -91,6 +93,7 @@ class TestGiBUUOutput(unittest.TestCase):
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestOfflineFile(unittest.TestCase):
+
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
@@ -133,7 +136,7 @@ class TestOfflineFile(unittest.TestCase):
         # Bx
         np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
         # By
-        np.testing.assert_almost_equal(evt.w2list[8], 0.8167222969153614)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
         # iChannel
         np.testing.assert_equal(evt.w2list[9], 3)
         # CC/NC
@@ -145,6 +148,7 @@ class TestOfflineFile(unittest.TestCase):
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestMultiFileOutput(unittest.TestCase):
+
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
@@ -190,7 +194,7 @@ class TestMultiFileOutput(unittest.TestCase):
         # Bx
         np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
         # By
-        np.testing.assert_almost_equal(evt.w2list[8], 0.8167222969153614)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
         # iChannel
         np.testing.assert_equal(evt.w2list[9], 3)
         # CC/NC
@@ -221,7 +225,7 @@ class TestMultiFileOutput(unittest.TestCase):
         # Bx
         np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
         # By
-        np.testing.assert_almost_equal(evt.w2list[8], 0.8167222969153614)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
         # iChannel
         np.testing.assert_equal(evt.w2list[9], 3)
         # CC/NC
