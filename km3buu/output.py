@@ -498,14 +498,19 @@ class GiBUUOutput:
     def bjorken_y(roottuple_data):
         """
         Calculate Bjorken y scaling variable for the GiBUU events
-        (Lab. frame)
+        
+        Definition: y = pq/pk
 
         Parameters
         ----------
             roottuple_data: awkward.highlevel.Array                
         """
         d = roottuple_data
-        y = 1 - np.divide(np.array(d.lepOut_E), np.array(d.lepIn_E))
+        q = GiBUUOutput._q(d)
+        pq = q[0, :] * d.nuc_E - q[1, :] * d.nuc_Px - q[2, :] * d.nuc_Py - q[
+            3, :] * d.nuc_Pz
+        pk = d.lepIn_E * d.nuc_E - d.lepIn_Px * d.nuc_Px - d.lepIn_Py * d.nuc_Py - d.lepIn_Pz * d.nuc_Pz
+        y = pq / pk
         return y
 
     @property
