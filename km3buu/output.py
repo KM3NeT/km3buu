@@ -176,7 +176,8 @@ EMPTY_KM3NET_HEADER_DICT = {
     "norma": "0 0",
     "tgen": "0",
     "simul": "",
-    "primary": "0"
+    "primary": "0",
+    "genvol": "0 0 0 0 0"
 }
 
 PARTICLE_MC_STATUS = {
@@ -707,12 +708,12 @@ def write_detector_file(gibuu_output,
     global_generation_weight = gibuu_output.global_generation_weight(4 * np.pi)
     mean_xsec_func = gibuu_output.mean_xsec
 
-    head = ROOT.Head()
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
     header_dct["target"] = element.name
-    key, value = geometry.header_entry()
-    header_dct[key] = value
+    for k,v in geometry.header_entries(gibuu_output._generated_events //
+            no_files).items():
+        header_dct[k] = v
     header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
     header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
@@ -740,6 +741,7 @@ def write_detector_file(gibuu_output,
         tree.Branch("Evt", evt, 32000, 4)
         mc_trk_id = 0
 
+        head = ROOT.Head()
         for k, v in header_dct.items():
             head.set_line(k, v)
         head.Write("Head")
@@ -831,6 +833,7 @@ def write_detector_file(gibuu_output,
             tree.Fill()
         outfile.Write()
         outfile.Close()
+        del head
         del outfile
         del evt
         del tree
