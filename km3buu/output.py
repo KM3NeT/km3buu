@@ -276,7 +276,6 @@ def read_nu_abs_xsection(filepath):
 
 
 class GiBUUOutput:
-
     def __init__(self, data_dir):
         """
         Class for parsing GiBUU output files
@@ -595,7 +594,6 @@ class GiBUUOutput:
         return self._generated_events
 
     def _determine_flux_index(self):
-
         def fluxfunc(x, a, b):
             return a * x**b
 
@@ -807,26 +805,30 @@ def write_detector_file(gibuu_output,
             nu_in_trk.status = PARTICLE_MC_STATUS["TRK_ST_PRIMARYNEUTRINO"]
             evt.mc_trks.push_back(nu_in_trk)
 
+            lep_out_trk = ROOT.Trk()
+            lep_out_trk.id = mc_trk_id
+            mc_trk_id += 1
+            lep_out_trk.mother_id = 0
+            lep_out_trk.type = sec_lep_type
+            lep_out_trk.pos.set(*vtx_pos)
+            mom = np.array([event.lepOut_Px, event.lepOut_Py, event.lepOut_Pz])
+            p_dir = R.apply(mom / np.linalg.norm(mom))
+            lep_out_trk.dir.set(*p_dir)
+            lep_out_trk.E = event.lepOut_E
+            lep_out_trk.t = timestamp
+
+            if tau_secondaries is not None:
+                lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_UNDEFINED"]
+            else:
+                lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"]
+
+            evt.mc_trks.push_back(lep_out_trk)
+
             if tau_secondaries is not None:
                 event_tau_sec = tau_secondaries[mc_event_id]
                 add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp,
                               PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
                 mc_trk_id += len(event_tau_sec.E)
-            else:
-                lep_out_trk = ROOT.Trk()
-                lep_out_trk.id = mc_trk_id
-                mc_trk_id += 1
-                lep_out_trk.mother_id = 0
-                lep_out_trk.type = sec_lep_type
-                lep_out_trk.pos.set(*vtx_pos)
-                mom = np.array(
-                    [event.lepOut_Px, event.lepOut_Py, event.lepOut_Pz])
-                p_dir = R.apply(mom / np.linalg.norm(mom))
-                lep_out_trk.dir.set(*p_dir)
-                lep_out_trk.E = event.lepOut_E
-                lep_out_trk.t = timestamp
-                lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"]
-                evt.mc_trks.push_back(lep_out_trk)
 
             add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
                           PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
