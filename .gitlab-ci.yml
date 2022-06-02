@@ -1,4 +1,4 @@
-image: docker.km3net.de/base/singularity-py3:3.5.3
+image: docker.km3net.de/base/python:3
 
 variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -37,11 +37,11 @@ reset_test_image:
 
 .virtualenv_template: &virtualenv_definition |
   python -V
+  export SETUPTOOLS_USE_DISTUTILS=stdlib
   pip install virtualenv
   virtualenv venv
   source venv/bin/activate
   pip install -U pip setuptools yapf
-  if [ ! -f GiBUU.simg ]; then make buildremote; fi
   make install-dev
   pip list
   date
@@ -53,7 +53,7 @@ reset_test_image:
 
 
 test:
-    image: docker.km3net.de/base/singularity-py3:3.5.3
+    image: python:3
     stage: test
     tags:
         - docker
@@ -63,7 +63,7 @@ test:
     <<: *junit_definition
 
 code-style:
-    image: docker.km3net.de/base/singularity-py3:3.5.3
+    image: python:3 
     stage: test
     script:
         - *virtualenv_definition
@@ -71,7 +71,7 @@ code-style:
     allow_failure: true
 
 coverage:
-    image: docker.km3net.de/base/singularity-py3:3.5.3
+    image: python:3
     stage: coverage
     tags:
         - docker
@@ -116,7 +116,7 @@ release-image:
     - tags
 
 pages:
-    image: docker.km3net.de/base/python:3.6
+    image: docker.km3net.de/base/python:3
     stage: doc
     script:
         - make install-dev

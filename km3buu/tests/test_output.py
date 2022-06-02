@@ -37,7 +37,6 @@ except ModuleNotFoundError:
 
 
 class TestXSection(unittest.TestCase):
-
     def test_xsection_all(self):
         filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
         xsection = read_nu_abs_xsection(filename)
@@ -48,7 +47,6 @@ class TestXSection(unittest.TestCase):
 
 
 class TestGiBUUOutput(unittest.TestCase):
-
     def setup_class(self):
         self.output = GiBUUOutput(TESTDATA_DIR)
 
@@ -93,7 +91,6 @@ class TestGiBUUOutput(unittest.TestCase):
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestOfflineFile(unittest.TestCase):
-
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
@@ -148,7 +145,6 @@ class TestOfflineFile(unittest.TestCase):
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestMultiFileOutput(unittest.TestCase):
-
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")

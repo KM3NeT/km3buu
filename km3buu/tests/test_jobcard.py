@@ -12,15 +12,20 @@ __status__ = "Development"
 
 import unittest
 import numpy as np
+import pytest
+from os import environ
 from itertools import combinations
 from km3buu.jobcard import *
-from km3buu.ctrl import run_jobcard
 from km3buu.output import GiBUUOutput
 from tempfile import TemporaryFile, TemporaryDirectory
 
+GIBUU_INSTALL_AVAILABLE = environ.get("CONTAINER_GIBUU_EXEC") is not None
+
+if GIBUU_INSTALL_AVAILABLE:
+    from km3buu.ctrl import run_jobcard
+
 
 class TestJobcard(unittest.TestCase):
-
     def setUp(self):
         self.test_jobcard = Jobcard()
         # Insert some test elements
@@ -50,7 +55,6 @@ class TestJobcard(unittest.TestCase):
 
 
 class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
-
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
         self.test_Z = np.random.randint(1, 100)
@@ -101,7 +105,6 @@ class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
 
 
 class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
-
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
         self.test_Z = np.random.randint(1, 100)
@@ -135,8 +138,8 @@ class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
                          not self.photon_propagation_flag)
 
 
+@pytest.mark.skipif(not GIBUU_INSTALL_AVAILABLE, reason="GiBUU not installed")
 class TestJobcardSeed(unittest.TestCase):
-
     def setUp(self):
         jc = generate_neutrino_jobcard(100,
                                        "CC",

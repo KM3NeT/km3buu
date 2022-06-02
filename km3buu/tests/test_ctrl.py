@@ -11,21 +11,24 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import csv
+import pytest
 import unittest
 import numpy as np
 from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
 from tempfile import TemporaryDirectory, NamedTemporaryFile
-from os import listdir
+from os import listdir, environ
 from os.path import abspath, join, dirname
 from thepipe.logger import get_logger
 from km3net_testdata import data_path
 
 TESTDATA_DIR = data_path("gibuu")
 
+GIBUU_INSTALL_AVAILABLE = environ.get("CONTAINER_GIBUU_EXEC") is not None
 
+
+@pytest.mark.skipif(not GIBUU_INSTALL_AVAILABLE, reason="GiBUU not installed")
 class TestCTRLbyJobcardFile(unittest.TestCase):
-
     def setUp(self):
         self.filename = join(TESTDATA_DIR, "km3net_testdata.job")
         self.output_dir = TemporaryDirectory()
@@ -48,8 +51,8 @@ class TestCTRLbyJobcardFile(unittest.TestCase):
         assert "EventOutput.Pert.00000001.root" in files
 
 
+@pytest.mark.skipif(not GIBUU_INSTALL_AVAILABLE, reason="GiBUU not installed")
 class TestCTRLbyJobcardObject(unittest.TestCase):
-
     def setUp(self):
         log = get_logger("ctrl.py")
         log.setLevel("INFO")

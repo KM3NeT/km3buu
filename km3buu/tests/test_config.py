@@ -32,7 +32,6 @@ path=/tmp/gseagen
 
 
 class TestConfig(unittest.TestCase):
-
     def setUp(self):
         self.cfg_tmpfile = NamedTemporaryFile(delete=False)
         self.mock_image_file = NamedTemporaryFile(delete=False)
