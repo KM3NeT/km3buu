@@ -37,13 +37,13 @@ class DetectorVolume(ABC):
         pass
 
     @abstractmethod
-    def header_entry(self):
+    def header_entries(self):
         """
         Returns the header information for the detector volume geometry
 
         Returns
         -------
-        tuple (header_key, header_information)
+        dict {header_key: header_information}
         """
         pass
 
@@ -102,10 +102,15 @@ class CanVolume(DetectorVolume):
         pos_z = np.random.uniform(self._zmin, self._zmax)
         return (pos_x, pos_y, pos_z)
 
-    def header_entry(self):
-        key = "can"
-        value = "{} {} {}".format(self._zmin, self._zmax, self._radius)
-        return key, value
+    def header_entries(self, nevents=0):
+        retdct = dict()
+        key = "genvol"
+        value = "{} {} {} {} {}".format(self._zmin, self._zmax, self._radius,
+                                        self._volume, nevents)
+        retdct[key] = value
+        key = "fixedcan"
+        value = "0 0 {} {} {}".format(self._zmin, self._zmax, self._radius)
+        return retdct
 
 
 class SphericalVolume(DetectorVolume):
@@ -140,9 +145,14 @@ class SphericalVolume(DetectorVolume):
         pos = (pos_x, pos_y, pos_z)
         return tuple(np.add(self._coord_origin, pos))
 
-    def header_entry(self):
+    def header_entries(self, nevents=0):
+        retdct = dict()
         key = "sphere"
         value = "radius: {} center_x: {} center_y: {} center_z: {}".format(
             self._radius, self._coord_origin[0], self._coord_origin[1],
             self._coord_origin[2])
-        return key, value
+        retdct[key] = value
+        key = "genvol"
+        value = "0 0 {} {} {}".format(self._radius, self._volume, nevents)
+        retdct[key] = value
+        return retdct
