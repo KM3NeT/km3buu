@@ -28,7 +28,6 @@ MUON_TESTFILE = join(dirname(__file__), "data/muon_range_seawater.txt")
 
 
 class TestMuonRangeSeaWater(unittest.TestCase):
-
     def setUp(self):
         self.ref_values = np.loadtxt(MUON_TESTFILE).T
 
@@ -40,7 +39,6 @@ class TestMuonRangeSeaWater(unittest.TestCase):
 
 
 class TestVisEnergyParticle(unittest.TestCase):
-
     def setUp(self):
         with open(PARTICLE_TESTFILE, "r") as f:
             tmp = f.readline()
@@ -59,7 +57,6 @@ class TestVisEnergyParticle(unittest.TestCase):
 
 
 class TestVisEnergyWeightFunctions(unittest.TestCase):
-
     def setUp(self):
         self.ref_values = np.loadtxt(FUNCTIONS_TESTFILE).T
 
