@@ -6,7 +6,7 @@ pytest-flake8
 pytest-pylint
 pytest-watch
 sphinx-rtd-theme
-sphinx
+sphinx>=3.0.0
 sphinxcontrib-napoleon
 sphinxcontrib-programoutput
 sphinxcontrib-websupport
