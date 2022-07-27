@@ -82,14 +82,21 @@ class CanVolume(DetectorVolume):
         Cylinder bottom z position
     zmax: float [m] (default: 476.5)
         Cylinder top z position
+    detector_center: tuple [m] (default: (0.0, 0.0) )
+        Detector center position in the xy-plane
     """
 
-    def __init__(self, radius=403.4, zmin=0.0, zmax=476.5):
+    def __init__(self,
+                 radius=403.4,
+                 zmin=0.0,
+                 zmax=476.5,
+                 detector_center=(0., 0.)):
         super().__init__()
         self._radius = radius
         self._zmin = zmin
         self._zmax = zmax
         self._volume = self._calc_volume()
+        self._detector_center = detector_center
 
     def _calc_volume(self):
         return np.pi * (self._zmax - self._zmin) * np.power(self._radius, 2)
@@ -97,8 +104,8 @@ class CanVolume(DetectorVolume):
     def random_pos(self):
         r = self._radius * np.sqrt(np.random.uniform(0, 1))
         phi = np.random.uniform(0, 2 * np.pi)
-        pos_x = r * np.cos(phi)
-        pos_y = r * np.sin(phi)
+        pos_x = r * np.cos(phi) + self._detector_center[0]
+        pos_y = r * np.sin(phi) + self._detector_center[1]
         pos_z = np.random.uniform(self._zmin, self._zmax)
         return (pos_x, pos_y, pos_z)
 
