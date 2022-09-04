@@ -26,6 +26,7 @@ if GIBUU_INSTALL_AVAILABLE:
 
 
 class TestJobcard(unittest.TestCase):
+
     def setUp(self):
         self.test_jobcard = Jobcard()
         # Insert some test elements
@@ -55,6 +56,7 @@ class TestJobcard(unittest.TestCase):
 
 
 class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
+
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
         self.test_Z = np.random.randint(1, 100)
@@ -105,6 +107,7 @@ class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
 
 
 class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
+
     def setUp(self):
         self.test_fluxfile = TemporaryFile()
         self.test_Z = np.random.randint(1, 100)
@@ -140,6 +143,7 @@ class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
 
 @pytest.mark.skipif(not GIBUU_INSTALL_AVAILABLE, reason="GiBUU not installed")
 class TestJobcardSeed(unittest.TestCase):
+
     def setUp(self):
         jc = generate_neutrino_jobcard(100,
                                        "CC",

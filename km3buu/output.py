@@ -276,6 +276,7 @@ def read_nu_abs_xsection(filepath):
 
 
 class GiBUUOutput:
+
     def __init__(self, data_dir):
         """
         Class for parsing GiBUU output files
@@ -352,7 +353,13 @@ class GiBUUOutput:
 
     def _read_flux_file(self):
         fpath = join(self._data_path, FLUXDESCR_FILENAME)
-        self.flux_data = np.loadtxt(fpath, dtype=FLUX_INFORMATION_DTYPE)
+        self.flux_data = np.loadtxt(fpath,
+                                    dtype=FLUX_INFORMATION_DTYPE,
+                                    usecols=(
+                                        0,
+                                        1,
+                                        2,
+                                    ))
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
                                                    self.flux_data["events"])
         self._energy_min = np.min(self.flux_data["energy"])
@@ -594,6 +601,7 @@ class GiBUUOutput:
         return self._generated_events
 
     def _determine_flux_index(self):
+
         def fluxfunc(x, a, b):
             return a * x**b
 
@@ -709,8 +717,8 @@ def write_detector_file(gibuu_output,
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
     header_dct["target"] = element.name
-    for k,v in geometry.header_entries(gibuu_output._generated_events //
-            no_files).items():
+    for k, v in geometry.header_entries(gibuu_output._generated_events //
+                                        no_files).items():
         header_dct[k] = v
     header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
@@ -750,7 +758,7 @@ def write_detector_file(gibuu_output,
             evt.mc_run_id = mc_event_id
             # Weights
             evt.w.push_back(geometry.volume)  #w1 (can volume)
-            evt.w.push_back(w2[mc_event_id])  #w2
+            evt.w.push_back(w2[start_id + mc_event_id])  #w2
             evt.w.push_back(-1.0)  #w3 (= w2*flux)
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
