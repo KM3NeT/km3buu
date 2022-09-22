@@ -23,7 +23,7 @@ from .config import read_default_media_compositions
 
 DENSITY_SEA_WATER = read_default_media_compositions()["SeaWater"]["density"]
 
-MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7  #dx/dE [m/GeV]
+MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7  # dx/dE [m/GeV]
 MUON_MASS = Particle.from_string("mu").mass / 1e3
 
 ELEC_PARAMS = {
@@ -109,7 +109,6 @@ HE_PARAMS = {
 
 
 def _get_particle_rest_mass(pdgid):
-
     @np.vectorize
     def vfunc(x):
         try:
@@ -122,7 +121,7 @@ def _get_particle_rest_mass(pdgid):
     return masses[invmap]
 
 
-def get_kinetic_energy(energy, pdgid):
+def get_kinetic_energy(energy, pdgid, warning=True):
     """
     Returns the kinetic energy
 
@@ -132,9 +131,17 @@ def get_kinetic_energy(energy, pdgid):
         Total energy of the given particle 
     pdgid: int
         PDGID of the given particle
+    warning: boolean
+        Show the warning on negative value passed to np.sqrt 
     """
     mass = np.array(_get_particle_rest_mass(pdgid))
-    return np.sqrt(ak.to_numpy(energy)**2 - mass**2)
+    import warnings
+    with warnings.catch_warnings():
+        if not warning:
+            warnings.filterwarnings('ignore',
+                                    r'invalid value encountered in sqrt')
+        retval = np.sqrt(ak.to_numpy(energy)**2 - mass**2)
+    return retval
 
 
 def visible_energy(energy, pdgid):
