@@ -27,8 +27,25 @@ PARTICLE_TESTFILE = join(dirname(__file__),
 MUON_TESTFILE = join(dirname(__file__), "data/muon_range_seawater.txt")
 
 
-class TestMuonRangeSeaWater(unittest.TestCase):
+class TestKineticEnergy(unittest.TestCase):
+    def test_electron_mass(self):
+        val = get_kinetic_energy(0.51099895e-3, 11)[0]
+        self.assertAlmostEqual(val, 0.0, 6)
 
+    def test_negative_value(self):
+        with self.assertWarnsRegex(RuntimeWarning,
+                                   "invalid value encountered in sqrt"):
+            get_kinetic_energy(0.0, 11)
+
+    def test_suppress_warning(self):
+        import warnings
+        with warnings.catch_warnings(record=True) as w:
+            get_kinetic_energy(0.0, 11, False)
+            assert len(w) == 0
+
+
+
+class TestMuonRangeSeaWater(unittest.TestCase):
     def setUp(self):
         self.ref_values = np.loadtxt(MUON_TESTFILE).T
 
@@ -40,7 +57,6 @@ class TestMuonRangeSeaWater(unittest.TestCase):
 
 
 class TestVisEnergyParticle(unittest.TestCase):
-
     def setUp(self):
         with open(PARTICLE_TESTFILE, "r") as f:
             tmp = f.readline()
@@ -59,7 +75,6 @@ class TestVisEnergyParticle(unittest.TestCase):
 
 
 class TestVisEnergyWeightFunctions(unittest.TestCase):
-
     def setUp(self):
         self.ref_values = np.loadtxt(FUNCTIONS_TESTFILE).T
 
