@@ -552,7 +552,7 @@ class GiBUUOutput:
         sec_df.loc[:, "barcode"] = sec_pdgid
         sec_df.index = pd.MultiIndex.from_tuples(
             zip(*np.unique(df.index.get_level_values(0), return_counts=True)))
-        df = df.append(sec_df)
+        df = pd.concat([df, sec_df])
         return df
 
     @property
