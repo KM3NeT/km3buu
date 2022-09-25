@@ -28,6 +28,7 @@ MUON_TESTFILE = join(dirname(__file__), "data/muon_range_seawater.txt")
 
 
 class TestKineticEnergy(unittest.TestCase):
+
     def test_electron_mass(self):
         val = get_kinetic_energy(0.51099895e-3, 11)[0]
         self.assertAlmostEqual(val, 0.0, 6)
@@ -44,8 +45,8 @@ class TestKineticEnergy(unittest.TestCase):
             assert len(w) == 0
 
 
-
 class TestMuonRangeSeaWater(unittest.TestCase):
+
     def setUp(self):
         self.ref_values = np.loadtxt(MUON_TESTFILE).T
 
@@ -57,6 +58,7 @@ class TestMuonRangeSeaWater(unittest.TestCase):
 
 
 class TestVisEnergyParticle(unittest.TestCase):
+
     def setUp(self):
         with open(PARTICLE_TESTFILE, "r") as f:
             tmp = f.readline()
@@ -75,6 +77,7 @@ class TestVisEnergyParticle(unittest.TestCase):
 
 
 class TestVisEnergyWeightFunctions(unittest.TestCase):
+
     def setUp(self):
         self.ref_values = np.loadtxt(FUNCTIONS_TESTFILE).T
 
