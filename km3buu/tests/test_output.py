@@ -21,6 +21,7 @@ from km3net_testdata import data_path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 from km3buu.output import *
+from km3buu.geometry import NoVolume
 from km3buu.config import Config
 
 TESTDATA_DIR = data_path("gibuu")
@@ -89,7 +90,6 @@ class TestGiBUUOutput(unittest.TestCase):
                                2511.13458,
                                places=2)
 
-
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestOfflineFile(unittest.TestCase):
@@ -143,6 +143,27 @@ class TestOfflineFile(unittest.TestCase):
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
         np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
+
+@pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
+                    reason="KM3NeT dataformat required")
+class TestNoGeometryWriteout(unittest.TestCase):
+    def setUp(self):
+        output = GiBUUOutput(TESTDATA_DIR)
+        datafile = NamedTemporaryFile(suffix=".root")
+        geometry = NoVolume()
+        np.random.seed(1234)
+        write_detector_file(output, datafile.name, geometry=geometry)
+        self.fobj = km3io.OfflineReader(datafile.name)
+
+    def test_firstevent(self):
+        evt = self.fobj.events[0]
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x[0], 0)
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y[0], 0)
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z[0], 1)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, 0.0)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, 0.0)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 0.0)
+
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
