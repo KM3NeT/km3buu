@@ -23,6 +23,18 @@ class DetectorVolume(ABC):
     def __init__(self):
         self._volume = -1.0
         self._coord_origin = (0., 0., 0.)
+        self._solid_angle = 1
+
+    @abstractmethod
+    def random_dir(self):
+        """
+        Generate a random direction for the interaction
+
+        Return
+        ------
+        tuple [rad, 1] (phi, cos(theta))
+        """
+        pass
 
     @abstractmethod
     def random_pos(self):
@@ -48,6 +60,17 @@ class DetectorVolume(ABC):
         pass
 
     @property
+    def solid_angle(self):
+        """
+        Solid angle used for the direction sampling
+
+        Returns
+        -------
+        float [1]
+        """
+        return self._solid_angle
+
+    @property
     def volume(self):
         """
         Detector volume
@@ -68,6 +91,26 @@ class DetectorVolume(ABC):
         tuple [m] (x, y, z)
         """
         return self._coord_origin
+
+
+class NoVolume(DetectorVolume):
+    """
+    Dummy volume to write out data w/o geometry 
+    """
+
+    def __init__(self):
+        self._solid_angle = 1
+        self._volume = 1
+        self._coord_origin = (.0, .0, .0)
+
+    def header_entries(self, nevents=0):
+        return dict()
+
+    def random_pos(self):
+        return (.0, .0, .0)
+
+    def random_dir(self):
+        return (0, 1)
 
 
 class CanVolume(DetectorVolume):
@@ -97,6 +140,7 @@ class CanVolume(DetectorVolume):
         self._zmax = zmax
         self._volume = self._calc_volume()
         self._detector_center = detector_center
+        self._solid_angle = 4 * np.pi
 
     def _calc_volume(self):
         return np.pi * (self._zmax - self._zmin) * np.power(self._radius, 2)
@@ -108,6 +152,11 @@ class CanVolume(DetectorVolume):
         pos_y = r * np.sin(phi) + self._detector_center[1]
         pos_z = np.random.uniform(self._zmin, self._zmax)
         return (pos_x, pos_y, pos_z)
+
+    def random_dir(self):
+        phi = np.random.uniform(0, 2 * np.pi)
+        cos_theta = np.random.uniform(-1, 1)
+        return (phi, cos_theta)
 
     def header_entries(self, nevents=0):
         retdct = dict()
@@ -123,7 +172,7 @@ class CanVolume(DetectorVolume):
 class SphericalVolume(DetectorVolume):
     """
     Spherical detector geometry
-    
+
     Parameters
     ----------
     radius: float [m]
@@ -138,6 +187,7 @@ class SphericalVolume(DetectorVolume):
         self._radius = radius
         self._coord_origin = coord_origin
         self._volume = self._calc_volume()
+        self._solid_angle = 4 * np.pi
 
     def _calc_volume(self):
         return 4 / 3 * np.pi * np.power(self._radius, 3)
@@ -151,6 +201,11 @@ class SphericalVolume(DetectorVolume):
         pos_z = r * cosTheta
         pos = (pos_x, pos_y, pos_z)
         return tuple(np.add(self._coord_origin, pos))
+
+    def random_dir(self):
+        phi = np.random.uniform(0, 2 * np.pi)
+        cos_theta = np.random.uniform(-1, 1)
+        return (phi, cos_theta)
 
     def header_entries(self, nevents=0):
         retdct = dict()

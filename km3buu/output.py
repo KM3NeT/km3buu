@@ -710,8 +710,10 @@ def write_detector_file(gibuu_output,
     targets_per_volume = target_density / target[
         0].atomic_weight / constants.atomic_mass
 
-    w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume, 4 * np.pi)
-    global_generation_weight = gibuu_output.global_generation_weight(4 * np.pi)
+    w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume,
+                                geometry.solid_angle)
+    global_generation_weight = gibuu_output.global_generation_weight(
+        geometry.solid_angle)
     mean_xsec_func = gibuu_output.mean_xsec
 
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
@@ -787,8 +789,7 @@ def write_detector_file(gibuu_output,
             # Vertex Position
             vtx_pos = np.array(geometry.random_pos())
             # Direction
-            phi = np.random.uniform(0, 2 * np.pi)
-            cos_theta = np.random.uniform(-1, 1)
+            phi, cos_theta = geometry.random_dir()
             sin_theta = np.sqrt(1 - cos_theta**2)
 
             dir_x = np.cos(phi) * sin_theta
