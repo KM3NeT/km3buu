@@ -104,7 +104,11 @@ class NoVolume(DetectorVolume):
         self._coord_origin = (.0, .0, .0)
 
     def header_entries(self, nevents=0):
-        return dict()
+        retdct = dict()
+        key = "genvol"
+        value = "0 0 0 0 {}".format(nevents)
+        retdct[key] = value
+        return retdct
 
     def random_pos(self):
         return (.0, .0, .0)
