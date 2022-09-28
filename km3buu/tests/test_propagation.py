@@ -26,7 +26,6 @@ from km3buu.propagation import propagate_lepton
 pp.RandomGenerator.get().set_seed(1234)
 
 
-@pytest.mark.skip(reason="CI boost lib problem")
 class TestTauPropagation(unittest.TestCase):
 
     def setUp(self):
