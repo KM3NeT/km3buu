@@ -61,9 +61,6 @@ test:
         - *virtualenv_definition
         - make test
     <<: *junit_definition
-    artifacts:
-        paths:
-            - /tmp
 
 code-style:
     image: python:3 
