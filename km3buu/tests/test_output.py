@@ -90,6 +90,7 @@ class TestGiBUUOutput(unittest.TestCase):
                                2511.13458,
                                places=2)
 
+
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestOfflineFile(unittest.TestCase):
@@ -100,6 +101,10 @@ class TestOfflineFile(unittest.TestCase):
         np.random.seed(1234)
         write_detector_file(output, datafile.name)
         self.fobj = km3io.OfflineReader(datafile.name)
+
+    def test_header_event_numbers(self):
+        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4005)
+        np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
 
     def test_numbering(self):
         evts = self.fobj.events
@@ -144,9 +149,11 @@ class TestOfflineFile(unittest.TestCase):
         # GiBUU weight
         np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
 
+
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestNoGeometryWriteout(unittest.TestCase):
+
     def setUp(self):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
@@ -165,7 +172,6 @@ class TestNoGeometryWriteout(unittest.TestCase):
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 0.0)
 
 
-
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
 class TestMultiFileOutput(unittest.TestCase):
@@ -179,6 +185,14 @@ class TestMultiFileOutput(unittest.TestCase):
             datafile.name.replace(".root", ".1.root"))
         self.fobj2 = km3io.OfflineReader(
             datafile.name.replace(".root", ".2.root"))
+
+    def test_header_event_numbers(self):
+        np.testing.assert_equal(self.fobj1.header.genvol.numberOfEvents, 2002)
+        np.testing.assert_equal(self.fobj2.header.genvol.numberOfEvents, 2003)
+        np.testing.assert_equal(self.fobj1.header.gibuu_Nevents, 10000)
+        np.testing.assert_equal(self.fobj2.header.gibuu_Nevents, 10000)
+        np.testing.assert_equal(self.fobj1.header.n_split_files, 2)
+        np.testing.assert_equal(self.fobj2.header.n_split_files, 2)
 
     def test_numbering(self):
         np.testing.assert_array_equal(self.fobj1.events.id, range(2002))
