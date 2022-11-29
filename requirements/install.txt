@@ -1,5 +1,6 @@
 setuptools_scm
-numpy
+numpy==1.23.5
+numba==0.56.4
 scipy
 spython
 thepipe
