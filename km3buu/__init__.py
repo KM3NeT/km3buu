@@ -1,3 +1,5 @@
+from .__version__ import version
+
 __author__ = "Johannes Schumann"
 __copyright__ = "Copyright 2020, Johannes Schumann and the KM3NeT collaboration."
 __credits__ = []
