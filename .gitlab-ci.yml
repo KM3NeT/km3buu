@@ -41,7 +41,7 @@ reset_test_image:
   pip install virtualenv
   virtualenv venv
   source venv/bin/activate
-  pip install -U pip setuptools yapf
+  pip install -U pip setuptools yapf setuptools_scm
   make install-dev
   pip list
   date
@@ -53,7 +53,7 @@ reset_test_image:
 
 
 test:
-    image: python:3
+    image: python:3.10
     stage: test
     tags:
         - docker
@@ -63,7 +63,7 @@ test:
     <<: *junit_definition
 
 code-style:
-    image: python:3 
+    image: python:3.10
     stage: test
     script:
         - *virtualenv_definition
@@ -71,7 +71,7 @@ code-style:
     allow_failure: true
 
 coverage:
-    image: python:3
+    image: python:3.10
     stage: coverage
     tags:
         - docker
