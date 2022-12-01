@@ -40,7 +40,7 @@ try:
         libpath = Config().km3net_lib_path
     if ROOT.gSystem.Load(join(libpath, "libKM3NeTROOT.so")) < 0:
         raise ModuleNotFoundError("KM3NeT dataformat library not found!")
-except ModuleNotFoundError:
+except (ImportError, ModuleNotFoundError):
     import warnings
     warnings.warn("KM3NeT dataformat library was not loaded.", ImportWarning)
 
