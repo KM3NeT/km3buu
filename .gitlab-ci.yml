@@ -119,7 +119,7 @@ pages:
     image: docker.km3net.de/base/python:3
     stage: doc
     script:
-        - make install-dev
+        - *virtualenv_definition
         - cd doc && make clean && cd ..
         - make doc
         - mv doc/_build/html public/
