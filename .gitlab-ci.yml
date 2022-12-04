@@ -116,7 +116,7 @@ release-image:
     - tags
 
 pages:
-    image: docker.km3net.de/base/python:3
+    image: docker.km3net.de/base/python:3.10
     stage: doc
     script:
         - *virtualenv_definition
