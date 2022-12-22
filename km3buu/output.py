@@ -557,6 +557,7 @@ def write_detector_file(gibuu_output,
                         run_number=1,
                         geometry=CylindricalVolume(),
                         livetime=3.156e7,
+                        free_particle_cuts=True,
                         propagate_tau=True):  # pragma: no cover
     """
     Convert the GiBUU output to a KM3NeT MC (OfflineFormat) file
@@ -575,6 +576,8 @@ def write_detector_file(gibuu_output,
         The detector geometry which should be used
     livetime: float
         The data livetime
+    free_particle_cuts: boolean (default: True)
+        Apply cuts in order to select particles which exit the nucleus
     """
     if not isinstance(geometry, DetectorVolume):
         raise TypeError("Geometry needs to be a DetectorVolume")
@@ -617,6 +620,18 @@ def write_detector_file(gibuu_output,
         sec_lep_type *= -1
 
     event_data = gibuu_output.arrays
+    if free_particle_cuts:
+        from particle import Particle
+        mask = ~((event_data.barcode == 2112) |
+                 (event_data.barcode == 2212)) | ak.isclose(
+                     event_data.M, [Particle.from_pdgid(2212).mass * 1e-3])
+        # event_data = event_data[ak.any(mask, axis=1)]
+        for f in event_data.fields:
+            try:
+                ak.count(event_data[f], axis=1)
+                event_data[f] = event_data[f][mask]
+            except:
+                pass
 
     if no_files > len(event_data):
         raise IndexError("More files to write than contained events!")

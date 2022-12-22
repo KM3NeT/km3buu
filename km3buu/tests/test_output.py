@@ -91,7 +91,9 @@ class TestGiBUUOutput(unittest.TestCase):
 
     def test_event_values(self):
         arr = self.output.arrays
-        np.testing.assert_array_almost_equal(arr["M"][0], [0.860474, 0.019044, 0.019044, 0.019044])
+        np.testing.assert_array_almost_equal(
+            arr["M"][0], [0.860474, 0.019044, 0.019044, 0.019044])
+
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
@@ -101,7 +103,7 @@ class TestOfflineFile(unittest.TestCase):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
         np.random.seed(1234)
-        write_detector_file(output, datafile.name, run_number=1234)
+        write_detector_file(output, datafile.name, run_number=1234, free_particle_cuts=False)
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
@@ -156,6 +158,65 @@ class TestOfflineFile(unittest.TestCase):
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
+class TestFreeParticleCuts(unittest.TestCase):
+
+    def setUp(self):
+        output = GiBUUOutput(TESTDATA_DIR)
+        datafile = NamedTemporaryFile(suffix=".root")
+        np.random.seed(1234)
+        write_detector_file(output, datafile.name)
+        self.fobj = km3io.OfflineReader(datafile.name)
+
+    def test_header_event_numbers(self):
+        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4005)
+        np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
+
+    def test_numbering(self):
+        evts = self.fobj.events
+        np.testing.assert_array_equal(evts.id, range(4005))
+
+    def test_firstevent(self):
+        evt = self.fobj.events[0]
+        np.testing.assert_array_equal(evt.mc_tracks.pdgid,
+                                      [12, 11, 111, 211, -211])
+        np.testing.assert_array_equal(evt.mc_tracks.status,
+                                      [100, 1, 1, 1, 1])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
+            11.90433897, 2.1818, 0.49284856, 8.33975778, 0.28362369
+        ])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
+            0.18255849, -0.2469, 0.23767571, 0.24971059, 0.11284916
+        ])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
+            -0.80816248, -0.619212, -0.84679953, -0.83055629,
+            -0.82624071
+        ])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
+            0.55995162, 0.745398, 0.47585798, 0.4978161,
+            -0.55189796
+        ])
+        # Test dataset is elec CC -> outgoing particles are placed at vertex pos
+        np.testing.assert_allclose(evt.mc_tracks.t, 8603022.62272017)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -127.07940486)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -122.54421157)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
+        usr = evt.mc_tracks.usr[0]
+        # XSEC
+        np.testing.assert_almost_equal(evt.w2list[13], 40.62418521597373)
+        # Bx
+        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
+        # By
+        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
+        # iChannel
+        np.testing.assert_equal(evt.w2list[9], 3)
+        # CC/NC
+        np.testing.assert_equal(evt.w2list[10], 2)
+        # GiBUU weight
+        np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
+
+
+@pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
+                    reason="KM3NeT dataformat required")
 class TestNoGeometryWriteout(unittest.TestCase):
 
     def setUp(self):
@@ -163,7 +224,10 @@ class TestNoGeometryWriteout(unittest.TestCase):
         datafile = NamedTemporaryFile(suffix=".root")
         geometry = NoVolume()
         np.random.seed(1234)
-        write_detector_file(output, datafile.name, geometry=geometry)
+        write_detector_file(output,
+                            datafile.name,
+                            geometry=geometry,
+                            free_particle_cuts=False)
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_firstevent(self):
@@ -184,7 +248,10 @@ class TestMultiFileOutput(unittest.TestCase):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
         np.random.seed(1234)
-        write_detector_file(output, datafile.name, no_files=2)
+        write_detector_file(output,
+                            datafile.name,
+                            no_files=2,
+                            free_particle_cuts=False)
         self.fobj1 = km3io.OfflineReader(
             datafile.name.replace(".root", ".1.root"))
         self.fobj2 = km3io.OfflineReader(
