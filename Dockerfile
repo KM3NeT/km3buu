@@ -1,7 +1,7 @@
-FROM rootproject/root:6.24.06-ubuntu20.04
+FROM rootproject/root:6.26.02-ubuntu22.04
 
 RUN  apt-get -qq update && \
-     apt-get -qq install python3-pip libbz2-dev git
+     apt-get -qq install python3.10 python3.10-distutils python3-pip libbz2-dev git 
 
 RUN  cd /opt && \
      wget -O RootTuple-1.0.0.tar.gz https://roottuple.hepforge.org/downloads?f=RootTuple-1.0.0.tar.gz && \
@@ -31,6 +31,7 @@ RUN cd /km3buu && \
     pip3 install --upgrade pip && \
     pip3 install setuptools-scm && \
     pip3 install pytest-runner && \
+    pip3 install conan && \
     pip3 install -e . && \
     pip3 install -e ".[dev]" && \
     pip3 install -e ".[extras]"
