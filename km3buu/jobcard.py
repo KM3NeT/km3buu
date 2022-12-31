@@ -121,7 +121,7 @@ def generate_neutrino_jobcard(events,
     energy: float, tuple
         Initial energy or energy range (emin, emax) of the primary neutrino in GeV
     target: (int, int)
-        (Z, A) describing the target nucleon
+        (A, Z) describing the target nucleon
     write_pert: boolean (default: True)
         Write perturbative particles
     write_real: boolean (default: False)
@@ -144,8 +144,8 @@ def generate_neutrino_jobcard(events,
     jc["neutrino_induced"]["process_ID"] = PROCESS_LOOKUP[process.lower()]
     jc["neutrino_induced"]["flavor_ID"] = FLAVOR_LOOKUP[flavour.lower()]
     # TARGET
-    jc["target"]["target_Z"] = target[0]
-    jc["target"]["target_A"] = target[1]
+    jc["target"]["target_Z"] = target[1]
+    jc["target"]["target_A"] = target[0]
     # EVENTS
     run_events = int(100000 / target[1])
     if events < run_events:
