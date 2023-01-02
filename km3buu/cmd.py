@@ -27,6 +27,13 @@ ARGPARSE_GENERAL_PARAMS = [{
     "help": "Number of events which are simulated",
     "required": True
 }, {
+    "option_strings": ["--split", "-s"],
+    "dest": "split",
+    "type": int,
+    "help": "How many km3net files to write from the dataset",
+    "required": False,
+    "default": 1
+}, {
     "option_strings": ["--flavor", "-f"],
     "dest": "flavor",
     "choices": ["electron", "muon", "tau"],
@@ -211,7 +218,7 @@ def main():
                         geometry=volume,
                         ofile=outfilename,
                         run_number=args.runnumber,
-                        no_files=args.target[0],
+                        no_files=args.split,
                         propagate_tau=args.tauprop)
 
 
