@@ -101,11 +101,11 @@ def generate_neutrino_jobcard(events,
                               energy,
                               target,
                               write_pert=True,
-                              write_real=False,
+                              write_real=True,
                               do_decay=False,
                               photon_propagation=True,
                               fluxfile=None,
-                              seed=0,
+                              seed=None,
                               input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
@@ -180,7 +180,8 @@ def generate_neutrino_jobcard(events,
     jc["eventoutput"]["writeperturbativeparticles"] = write_pert
     jc["eventoutput"]["writerealparticles"] = write_real
     # MISC
-    jc["initRandom"]["Seed"] = seed
+    if seed:
+        jc["initRandom"]["Seed"] = seed
     jc["insertion"]["propagateNoPhoton"] = not photon_propagation
 
     return jc
