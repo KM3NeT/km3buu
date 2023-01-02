@@ -210,6 +210,7 @@ def main():
     write_detector_file(fobj,
                         geometry=volume,
                         ofile=outfilename,
+                        run_number=args.runnumber,
                         no_files=args.target[0],
                         propagate_tau=args.tauprop)
 
