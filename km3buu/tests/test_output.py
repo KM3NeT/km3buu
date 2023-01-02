@@ -99,12 +99,13 @@ class TestOfflineFile(unittest.TestCase):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
         np.random.seed(1234)
-        write_detector_file(output, datafile.name)
+        write_detector_file(output, datafile.name, run_number=1234)
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
         np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4005)
         np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
+        np.testing.assert_equal(self.fobj.header.start_run.run_id, 1234)
 
     def test_numbering(self):
         evts = self.fobj.events

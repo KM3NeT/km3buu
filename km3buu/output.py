@@ -123,7 +123,7 @@ SCATTERING_TYPE = {
 
 SCATTERING_TYPE_TO_GENIE = {
     1: 1,  # QE        -> kScQuasiElastic
-    2: 4,  # P33(1232) -> kScResonant  
+    2: 4,  # P33(1232) -> kScResonant
     3: 4,  # P11(1440) -> kScResonant
     4: 4,  # S11(1535) -> kScResonant
     5: 4,  # S11(1650) -> kScResonant
@@ -182,30 +182,43 @@ EMPTY_KM3NET_HEADER_DICT = {
 
 PARTICLE_MC_STATUS = {
     "TRK_MOTHER_UNDEFINED":
-    -1,  # mother id was not defined for this MC track (all reco tracks have this value)
-    "TRK_MOTHER_NONE": -2,  # mother id of a particle if it has no parent
+    # mother id was not defined for this MC track (all reco tracks have this value)
+    -1,
+    "TRK_MOTHER_NONE":
+    -2,  # mother id of a particle if it has no parent
     "TRK_ST_UNDEFINED":
-    0,  # status was not defined for this MC track (all reco tracks have this value)
+    # status was not defined for this MC track (all reco tracks have this value)
+    0,
     "TRK_ST_FINALSTATE":
-    1,  # particle to be tracked by detector-level MC ('track_in' tag in evt files from gseagen, genhen, mupage).
+    # particle to be tracked by detector-level MC ('track_in' tag in evt files from gseagen, genhen, mupage).
+    1,
     "TRK_ST_PRIMARYNEUTRINO":
-    100,  # initial state neutrino ('neutrino' tag in evt files from gseagen and genhen).
+    # initial state neutrino ('neutrino' tag in evt files from gseagen and genhen).
+    100,
     "TRK_ST_PRIMARYCOSMIC":
-    200,  # initial state cosmic ray ('track_primary' tag in evt files from corant).
-    "TRK_ST_ININUCLEI": 5,  # Initial state nuclei (gseagen)
+    # initial state cosmic ray ('track_primary' tag in evt files from corant).
+    200,
+    "TRK_ST_ININUCLEI":
+    5,  # Initial state nuclei (gseagen)
     "TRK_ST_INTERSTATE":
     2,  # Intermidiate state particles produced in hadronic showers (gseagen)
     "TRK_ST_DECSTATE":
     3,  # Short-lived particles that are forced to decay, like pi0 (gseagen)
-    "TRK_ST_NUCTGT": 11,  # Nucleon target (gseagen)
-    "TRK_ST_PREHAD": 12,  # DIS pre-fragmentation hadronic state (gseagen)
-    "TRK_ST_PRERES": 13,  # resonant pre-decayed state (gseagen)
-    "TRK_ST_HADNUC": 14,  # Hadrons inside the nucleus before FSI (gseagen)
-    "TRK_ST_NUCLREM": 15,  #Low energy nuclear fragments (gseagen)
+    "TRK_ST_NUCTGT":
+    11,  # Nucleon target (gseagen)
+    "TRK_ST_PREHAD":
+    12,  # DIS pre-fragmentation hadronic state (gseagen)
+    "TRK_ST_PRERES":
+    13,  # resonant pre-decayed state (gseagen)
+    "TRK_ST_HADNUC":
+    14,  # Hadrons inside the nucleus before FSI (gseagen)
+    "TRK_ST_NUCLREM":
+    15,  # Low energy nuclear fragments (gseagen)
     "TRK_ST_NUCLCLT":
-    16,  #For composite nucleons before phase space decay (gseagen)
+    16,  # For composite nucleons before phase space decay (gseagen)
     "TRK_ST_FAKECORSIKA":
-    21,  # fake particle from corant/CORSIKA to add parent information (gseagen)
+    # fake particle from corant/CORSIKA to add parent information (gseagen)
+    21,
     "TRK_ST_FAKECORSIKA_DEC_MU_START":
     22,  # fake particle from CORSIKA: decaying mu at start (gseagen)
     "TRK_ST_FAKECORSIKA_DEC_MU_END":
@@ -219,7 +232,8 @@ PARTICLE_MC_STATUS = {
     "TRK_ST_FAKECORSIKA_ETA_2PI_GAMMA":
     27,  # fake particle from CORSIKA: eta -> pi+ pi- gamma (gseagen)
     "TRK_ST_FAKECORSIKA_CHERENKOV_GAMMA":
-    28,  # fake particle from CORSIKA: Cherenkov photons on particle output file (gseagen)
+    # fake particle from CORSIKA: Cherenkov photons on particle output file (gseagen)
+    28,
     "TRK_ST_PROPLEPTON":
     1001,  # lepton propagated that reaches the can (gseagen)
     "TRK_ST_PROPDECLEPTON":
@@ -425,12 +439,12 @@ class GiBUUOutput:
                 N_A * ρ
             solid_angle: float
                 Solid angle of the possible neutrino incident direction
-            
+
         """
         root_tupledata = self.arrays
         xsec = self._event_xsec(
             root_tupledata
-        ) * self.A  #xsec_per_nucleon * no_nucleons in the core
+        ) * self.A  # xsec_per_nucleon * no_nucleons in the core
         if self.flux_data is not None:
             inv_gen_flux = np.power(
                 self.flux_interpolation(root_tupledata.lepIn_E), -1)
@@ -440,7 +454,8 @@ class GiBUUOutput:
         else:
             energy_factor = 1
         env_factor = volume * SECONDS_WEIGHT_TIMESPAN
-        retval = env_factor * solid_angle * energy_factor * xsec * 10**-42 * target_density
+        retval = env_factor * solid_angle * \
+            energy_factor * xsec * 10**-42 * target_density
         return retval
 
     @staticmethod
@@ -477,7 +492,7 @@ class GiBUUOutput:
 
         Returns
         -------
-            
+
         """
         q = GiBUUOutput._q(roottuple_data)
         qtmp = np.power(q, 2)
@@ -505,7 +520,7 @@ class GiBUUOutput:
     def bjorken_y(roottuple_data):
         """
         Calculate Bjorken y scaling variable for the GiBUU events
-        
+
         Definition: y = pq/pk
 
         Parameters
@@ -516,7 +531,8 @@ class GiBUUOutput:
         q = GiBUUOutput._q(d)
         pq = q[0, :] * d.nuc_E - q[1, :] * d.nuc_Px - q[2, :] * d.nuc_Py - q[
             3, :] * d.nuc_Pz
-        pk = d.lepIn_E * d.nuc_E - d.lepIn_Px * d.nuc_Px - d.lepIn_Py * d.nuc_Py - d.lepIn_Pz * d.nuc_Pz
+        pk = d.lepIn_E * d.nuc_E - d.lepIn_Px * d.nuc_Px - \
+            d.lepIn_Py * d.nuc_Py - d.lepIn_Pz * d.nuc_Pz
         y = pq / pk
         return y
 
@@ -624,6 +640,7 @@ class GiBUUOutput:
 def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
                         no_files=1,
+                        run_number=1,
                         geometry=CanVolume(),
                         livetime=3.156e7,
                         propagate_tau=True):  # pragma: no cover
@@ -638,6 +655,8 @@ def write_detector_file(gibuu_output,
         Output filename
     no_files: int (default: 1)
         Number of output files written
+    run_number: int (default: 1)
+        Run number which is written to the file header(s)
     geometry: DetectorVolume
         The detector geometry which should be used
     livetime: float
@@ -731,6 +750,7 @@ def write_detector_file(gibuu_output,
     header_dct["simul"] = "KM3BUU {} {}".format(
         version, timestamp.strftime("%Y%m%d %H%M%S"))
     header_dct["primary"] = "{:d}".format(nu_type)
+    header_dct["start_run"] = str(run_number)
 
     for i in range(no_files):
         start_id = 0
@@ -753,9 +773,9 @@ def write_detector_file(gibuu_output,
             evt.id = mc_event_id
             evt.mc_run_id = mc_event_id
             # Weights
-            evt.w.push_back(geometry.volume)  #w1 (can volume)
-            evt.w.push_back(w2[start_id + mc_event_id])  #w2
-            evt.w.push_back(-1.0)  #w3 (= w2*flux)
+            evt.w.push_back(geometry.volume)  # w1 (can volume)
+            evt.w.push_back(w2[start_id + mc_event_id])  # w2
+            evt.w.push_back(-1.0)  # w3 (= w2*flux)
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
             evt.w2list[W2LIST_LOOKUP["PS"]] = global_generation_weight
@@ -774,7 +794,7 @@ def write_detector_file(gibuu_output,
             evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
             evt.w2list[W2LIST_LOOKUP["GIBUU_WEIGHT"]] = event.weight
             evt.w2list[W2LIST_LOOKUP["GIBUU_SCAT_TYPE"]] = event.evType
-            #TODO
+            # TODO
             evt.w2list[W2LIST_LOOKUP["DXSEC"]] = np.nan
             evt.w2list[W2LIST_LOOKUP["COLUMN_DEPTH"]] = np.nan
             evt.w2list[W2LIST_LOOKUP["P_EARTH"]] = np.nan
