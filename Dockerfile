@@ -12,7 +12,7 @@ RUN   cd /opt && \
       wget --content-disposition https://gibuu.hepforge.org/downloads?f=libraries2021_RootTuple.tar.gz && \
       tar -xzvf libraries2021_RootTuple.tar.gz && \
       rm -rf ./*.tar.gz && \ 
-      sed -i '6 a set(CMAKE_CXX_STANDARD 14)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2021/RootTuple/RootTuple-master/CMakeLists.txt && \ 
+      sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2021/RootTuple/RootTuple-master/CMakeLists.txt && \ 
       cd release2021 && make -j buildRootTuple_POS && \
       make -j FORT=gfortran MODE=lto ARGS="-march=native" withROOT=1
 
