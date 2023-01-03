@@ -217,7 +217,7 @@ def main():
         volume = CanVolume(**kwargs)
     run_descriptor = ""
     if args.runnumber:
-        run_descriptor = "run_{0}".format(args.runnumber)
+        run_descriptor = "run{:08d}_".format(args.runnumber)
 
     outfilename = join(args.output,
                        "km3buu_" + run_descriptor + descriptor + ".root")
