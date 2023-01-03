@@ -31,4 +31,5 @@ RUN cd /km3buu/externals/km3net-dataformat/ && \
     make
 ENV KM3NET_LIB=/km3buu/externals/km3net-dataformat/lib    
 ENV CONTAINER_GIBUU_EXEC=/opt/GiBUU/release2021/objects/GiBUU.x 
+ENV CONTAINER_GIBUU_INPUT=/opt/GiBUU/buuinput 
 ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"

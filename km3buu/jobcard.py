@@ -14,13 +14,16 @@ __status__ = "Development"
 
 import f90nml
 from os.path import basename, dirname, abspath, join, isfile
+from os import environ
 
 try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
 
-INPUT_PATH = "/opt/buuinput2021/"
+INPUT_PATH = environ.get("CONTAINER_GIBUU_INPUT")
+if INPUT_PATH is None:
+    INPUT_PATH = "/opt/buuinput2021/"
 
 DEFAULT_JOBCARD_FILENAME = "jobcard.job"
 
