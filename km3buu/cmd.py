@@ -27,12 +27,19 @@ ARGPARSE_GENERAL_PARAMS = [{
     "help": "Number of events which are simulated",
     "required": True
 }, {
-    "option_strings": ["--split", "-s"],
-    "dest": "split",
+    "option_strings": ["--multifile", "-m"],
+    "dest": "multifile",
     "type": int,
     "help": "How many km3net files to write from the dataset",
     "required": False,
     "default": 1
+}, {
+    "option_strings": ["--seed", "-s"],
+    "dest": "seed",
+    "type": int,
+    "help": "Seed which should be used for the (pseudo) random number gen.",
+    "required": False,
+    "default": 0
 }, {
     "option_strings": ["--flavor", "-f"],
     "dest": "flavor",
@@ -178,8 +185,9 @@ def main():
                                    args.flavor,
                                    tuple(args.energy),
                                    args.target,
+                                   seed=args.seed,
                                    fluxfile=fluxfile,
-                                   do_decay=True)
+                                   do_decay=False)
 
     jc["neutrinoanalysis"]["outputEvents"] = True
     jc["neutrinoanalysis"]["inclusiveAnalysis"] = False
@@ -218,7 +226,7 @@ def main():
                         geometry=volume,
                         ofile=outfilename,
                         run_number=args.runnumber,
-                        no_files=args.split,
+                        no_files=args.multifile,
                         propagate_tau=args.tauprop)
 
 
