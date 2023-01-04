@@ -49,7 +49,7 @@ ARGPARSE_GENERAL_PARAMS = [{
 }, {
     "option_strings": ["--interaction", "-i"],
     "dest": "interaction",
-    "choices": ["nc", "cc"],
+    "choices": ["nc", "cc", "antinc", "anticc"],
     "help": "The current type of the weak interaction",
     "required": True
 }, {
