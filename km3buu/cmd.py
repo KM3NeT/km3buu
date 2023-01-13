@@ -158,13 +158,18 @@ def main():
         default=0.0)
     args = parser.parse_args()
 
-    if type(args.energy) is float:
-        descriptor = "{0}_{1}_{2}GeV_A{3}Z{4}".format(
-            args.flavor, args.interaction, args.energy,
-            args.target[0], args.target[1])
+    single_energy_run = type(args.energy) is float
+    energy = args.energy if single_energy_run else tuple(args.energy)
+
+    if single_energy_run:
+        descriptor = "{0}_{1}_{2}GeV_A{3}Z{4}".format(args.flavor,
+                                                      args.interaction,
+                                                      args.energy,
+                                                      args.target[0],
+                                                      args.target[1])
     else:
         descriptor = "{0}_{1}_{2}-{3}GeV_A{4}Z{5}_power_law_{6:.1f}".format(
-            args.flavor, args.interaction, args.energy[0], args.energy[1],
+            args.flavor, args.interaction, energy[0], energy[1],
             args.target[0], args.target[1], args.flux)
 
     gibuu_dir = Path(join(args.output, descriptor))
@@ -174,8 +179,8 @@ def main():
     #
     fluxfile = None
 
-    if not np.isclose(args.flux, 0.):
-        energies = np.linspace(args.energy[0], args.energy[1], 1000)
+    if not single_energy_run and not np.isclose(args.flux, 0.):
+        energies = np.linspace(energy[0], energy[1], 1000)
         flux = 1e3 * energies**args.flux
         fluxfile = join(args.output, "flux.dat")
         np.savetxt(fluxfile, np.c_[energies, flux])
@@ -183,7 +188,7 @@ def main():
     jc = generate_neutrino_jobcard(args.events,
                                    args.interaction,
                                    args.flavor,
-                                   tuple(args.energy),
+                                   energy,
                                    args.target,
                                    seed=args.seed,
                                    fluxfile=fluxfile,
