@@ -11,7 +11,7 @@ from os.path import join
 
 from km3buu.jobcard import generate_neutrino_jobcard
 from km3buu.ctrl import run_jobcard
-from km3buu.geometry import CanVolume, SphericalVolume
+from km3buu.geometry import CanVolume, SphericalVolume, NoVolume
 from km3buu.output import GiBUUOutput, write_detector_file
 
 ARGPARSE_DESC = {
@@ -205,7 +205,7 @@ def main():
     fobj = GiBUUOutput(gibuu_dir)
 
     if args.geometry == 'no':
-        volume = NoGeometry()
+        volume = NoVolume()
     elif args.geometry == 'sphere':
         volume = SphericalVolume(args.dimensions[0], tuple(args.center))
     elif args.geometry == 'can':
