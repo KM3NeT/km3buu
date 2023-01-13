@@ -161,7 +161,7 @@ def main():
     if type(args.energy) is float:
         descriptor = "{0}_{1}_{2}GeV_A{3}Z{4}".format(
             args.flavor, args.interaction, args.energy,
-            args.target[0].args.target[1])
+            args.target[0], args.target[1])
     else:
         descriptor = "{0}_{1}_{2}-{3}GeV_A{4}Z{5}_power_law_{6:.1f}".format(
             args.flavor, args.interaction, args.energy[0], args.energy[1],
