@@ -186,13 +186,17 @@ class SphericalVolume(DetectorVolume):
     center: tuple [m]
         Coordinate center of the sphere
         (x, y, z)
+    zenith: float [1] (default (-1.0, 1.0)
+        Zenith range given as cos(θ)
     """
-    def __init__(self, radius, coord_origin=(0, 0, 0)):
+    def __init__(self, radius, coord_origin=(0, 0, 0), zenith=(-1, 1)):
         super().__init__()
         self._radius = radius
         self._coord_origin = coord_origin
         self._volume = self._calc_volume()
-        self._solid_angle = 4 * np.pi
+        self._cosZmin = zenith[0]
+        self._cosZmax = zenith[1]
+        self._solid_angle = 2 * np.pi * (self._cosZmax - self._cosZmin)
 
     def _calc_volume(self):
         return 4 / 3 * np.pi * np.power(self._radius, 3)
@@ -209,7 +213,7 @@ class SphericalVolume(DetectorVolume):
 
     def random_dir(self):
         phi = np.random.uniform(0, 2 * np.pi)
-        cos_theta = np.random.uniform(-1, 1)
+        cos_theta = np.random.uniform(self._cosZmin, self._cosZmax)
         return (phi, cos_theta)
 
     def header_entries(self, nevents=0):
