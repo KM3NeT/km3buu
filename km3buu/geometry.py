@@ -19,6 +19,7 @@ class DetectorVolume(ABC):
     """
     Detector geometry class
     """
+
     def __init__(self):
         self._volume = -1.0
         self._coord_origin = (0., 0., 0.)
@@ -96,6 +97,7 @@ class NoVolume(DetectorVolume):
     """
     Dummy volume to write out data w/o geometry 
     """
+
     def __init__(self):
         self._solid_angle = 1
         self._volume = 1
@@ -132,6 +134,7 @@ class CanVolume(DetectorVolume):
     zenith: float [1] (default: (-1.0, 1.0) )
         Zenith range given as cos(θ)
     """
+
     def __init__(self,
                  radius=403.4,
                  zmin=0.0,
@@ -189,6 +192,7 @@ class SphericalVolume(DetectorVolume):
     zenith: float [1] (default: (-1.0, 1.0) )
         Zenith range given as cos(θ)
     """
+
     def __init__(self, radius, coord_origin=(0, 0, 0), zenith=(-1, 1)):
         super().__init__()
         self._radius = radius
