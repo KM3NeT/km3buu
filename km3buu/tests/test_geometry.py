@@ -17,14 +17,12 @@ import numpy as np
 
 
 class TestGeneralGeometry(unittest.TestCase):
-
     def test_abstract_init(self):
         with self.assertRaises(TypeError) as ctx:
             d = DetectorVolume()
 
 
 class TestSphere(unittest.TestCase):
-
     def setUp(self):
         self.detector_geometry = SphericalVolume(20, (2, 2, 2))
 
@@ -46,7 +44,6 @@ class TestSphere(unittest.TestCase):
 
 
 class TestCan(unittest.TestCase):
-
     def setUp(self):
         self.detector_geometry = CanVolume()
 
@@ -68,3 +65,15 @@ class TestCan(unittest.TestCase):
         self.assertAlmostEqual(pos[0], -27.07940486491587)
         self.assertAlmostEqual(pos[1], -22.54421157149173)
         self.assertAlmostEqual(pos[2], 208.57726763689004)
+
+    def test_limited_zenith(self):
+        np.random.seed(1234)
+        geometry = CanVolume(zenith=(-0.4, 0.5))
+        direction = geometry.random_dir()
+        self.assertAlmostEqual(direction[1], 0.15989789393584863)
+        geometry = CanVolume(zenith=(0.1, 0.3))
+        direction = geometry.random_dir()
+        self.assertAlmostEqual(direction[1], 0.25707171674275386)
+        geometry = CanVolume(zenith=(-0.3, -0.2))
+        direction = geometry.random_dir()
+        self.assertAlmostEqual(direction[1], -0.2727407394717358)

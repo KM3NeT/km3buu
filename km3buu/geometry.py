@@ -19,7 +19,6 @@ class DetectorVolume(ABC):
     """
     Detector geometry class
     """
-
     def __init__(self):
         self._volume = -1.0
         self._coord_origin = (0., 0., 0.)
@@ -97,7 +96,6 @@ class NoVolume(DetectorVolume):
     """
     Dummy volume to write out data w/o geometry 
     """
-
     def __init__(self):
         self._solid_angle = 1
         self._volume = 1
@@ -131,20 +129,24 @@ class CanVolume(DetectorVolume):
         Cylinder top z position
     detector_center: tuple [m] (default: (0.0, 0.0) )
         Detector center position in the xy-plane
+    zenith: float [1] (default (-1.0, 1.0)
+        Zenith range given as cos(θ)
     """
-
     def __init__(self,
                  radius=403.4,
                  zmin=0.0,
                  zmax=476.5,
-                 detector_center=(0., 0.)):
+                 detector_center=(0., 0.),
+                 zenith=(-1, 1)):
         super().__init__()
         self._radius = radius
         self._zmin = zmin
         self._zmax = zmax
         self._volume = self._calc_volume()
         self._detector_center = detector_center
-        self._solid_angle = 4 * np.pi
+        self._cosZmin = zenith[0]
+        self._cosZmax = zenith[1]
+        self._solid_angle = 2 * np.pi * (self._cosZmax - self._cosZmin)
 
     def _calc_volume(self):
         return np.pi * (self._zmax - self._zmin) * np.power(self._radius, 2)
@@ -159,7 +161,7 @@ class CanVolume(DetectorVolume):
 
     def random_dir(self):
         phi = np.random.uniform(0, 2 * np.pi)
-        cos_theta = np.random.uniform(-1, 1)
+        cos_theta = np.random.uniform(self._cosZmin, self._cosZmax)
         return (phi, cos_theta)
 
     def header_entries(self, nevents=0):
@@ -185,7 +187,6 @@ class SphericalVolume(DetectorVolume):
         Coordinate center of the sphere
         (x, y, z)
     """
-
     def __init__(self, radius, coord_origin=(0, 0, 0)):
         super().__init__()
         self._radius = radius
