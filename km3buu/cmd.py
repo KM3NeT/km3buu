@@ -117,6 +117,15 @@ ARGPARSE_GENERAL_PARAMS = [{
     "action": argparse.BooleanOptionalAction,
     "help": "Do tau propagation",
     "default": False
+}, {
+    "option_strings": ["--zenith", "-z"],
+    "dest": "zenith",
+    "type":float,
+    "nargs": 2,
+    "help" = "Zenith range of the direction if a geometry is used",
+    "metavar": ("cosZmin", "cosZmax"),
+    "required": False,
+    "default": [-1, 1]
 }]
 
 
@@ -212,9 +221,10 @@ def main():
     if args.geometry == 'no':
         volume = NoVolume()
     elif args.geometry == 'sphere':
-        volume = SphericalVolume(args.dimensions[0], tuple(args.center))
+        volume = SphericalVolume(args.dimensions[0], tuple(
+            args.center), zenith=args.zenith)
     elif args.geometry == 'can':
-        kwargs = {"detector_center": tuple(args.center)}
+        kwargs = {"detector_center": tuple(args.center), "zenith": args.zenith}
         if args.dimensions:
             kwargs["radius"] = arg.dimensions[0]
             kwargs["zmin"] = arg.dimensions[1]
