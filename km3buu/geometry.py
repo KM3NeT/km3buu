@@ -129,7 +129,7 @@ class CanVolume(DetectorVolume):
         Cylinder top z position
     detector_center: tuple [m] (default: (0.0, 0.0) )
         Detector center position in the xy-plane
-    zenith: float [1] (default (-1.0, 1.0)
+    zenith: float [1] (default: (-1.0, 1.0) )
         Zenith range given as cos(θ)
     """
     def __init__(self,
@@ -186,7 +186,7 @@ class SphericalVolume(DetectorVolume):
     center: tuple [m]
         Coordinate center of the sphere
         (x, y, z)
-    zenith: float [1] (default (-1.0, 1.0)
+    zenith: float [1] (default: (-1.0, 1.0) )
         Zenith range given as cos(θ)
     """
     def __init__(self, radius, coord_origin=(0, 0, 0), zenith=(-1, 1)):
