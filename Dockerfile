@@ -1,4 +1,5 @@
 FROM rootproject/root:6.26.02-ubuntu22.04
+MAINTAINER Johannes Schumann <jschumann@km3net.de>
 
 RUN  apt-get -qq update && \
      apt-get -qq install python3.10 python3.10-distutils python3-pip libbz2-dev git 
