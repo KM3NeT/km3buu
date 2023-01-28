@@ -227,9 +227,9 @@ def main():
     elif args.geometry == 'can':
         kwargs = {"detector_center": tuple(args.center), "zenith": args.zenith}
         if args.dimensions:
-            kwargs["radius"] = args.dimensions[0]
-            kwargs["zmin"] = args.dimensions[1]
-            kwargs["zmax"] = args.dimensions[2]
+            kwargs["zmin"] = args.dimensions[0]
+            kwargs["zmax"] = args.dimensions[1]
+            kwargs["radius"] = args.dimensions[2]
         volume = CanVolume(**kwargs)
     run_descriptor = ""
     if args.runnumber:
