@@ -45,8 +45,8 @@ except (ImportError, ModuleNotFoundError):
     warnings.warn("KM3NeT dataformat library was not loaded.", ImportWarning)
 
 EVENT_FILENAME = "FinalEvents.dat"
-ROOT_PERT_FILENAME = "EventOutput.Pert.[0-9]{8}.root"
-ROOT_REAL_FILENAME = "EventOutput.Real.[0-9]{8}.root"
+ROOT_PERT_FILENAME = "EventOutput.Pert.*.root"
+ROOT_REAL_FILENAME = "EventOutput.Real.*.root"
 FLUXDESCR_FILENAME = "neutrino_initialized_energyFlux.dat"
 XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 
@@ -61,7 +61,7 @@ EVENTINFO_COLUMNS = [
 ]
 
 LHE_NU_INFO_DTYPE = np.dtype([
-    ("type", np.int),
+    ("type", np.int64),
     ("weight", np.float64),
     ("mom_lepton_in_E", np.float64),
     ("mom_lepton_in_x", np.float64),
@@ -576,23 +576,8 @@ class GiBUUOutput:
         """
         GiBUU output data in awkward format
         """
-        retval = None
-        for ifile in self.root_pert_files:
-            fobj = uproot.open(join(self.data_path, ifile))
-            if retval is None:
-                retval = fobj["RootTuple"].arrays()
-            else:
-                tmp = fobj["RootTuple"].arrays()
-                retval = np.concatenate((retval, tmp))
-        if retval is None or len(retval) == 0:
-            return ak.Array(
-                np.recarray((
-                    0,
-                    0,
-                ),
-                            dtype=list(
-                                zip(GIBUU_FIELDNAMES,
-                                    len(GIBUU_FIELDNAMES) * [float]))))
+        path_descr = join(self.data_path, ROOT_PERT_FILENAME) + ":RootTuple"
+        retval = uproot.concatenate(path_descr)
         # Calculate additional information
         counts = ak.num(retval.E)
         retval["xsec"] = self._event_xsec(retval)
