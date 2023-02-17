@@ -15,7 +15,7 @@ RUN   cd /opt && \
       rm -rf ./*.tar.gz && \ 
       sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2021/RootTuple/RootTuple-master/CMakeLists.txt && \ 
       cd release2021 && make -j buildRootTuple_POS && \
-      make -j FORT=gfortran MODE=lto withROOT=1
+      make -j FORT=gfortran MODE=lto ARGS="-march=x86-64-v3" withROOT=1 
 
 ADD . /km3buu
 
