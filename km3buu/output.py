@@ -610,12 +610,15 @@ class GiBUUOutput:
         upper_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.8)
         mask = (self.flux_data["flux"] > lower_limit) & (self.flux_data["flux"]
                                                          < upper_limit)
-        popt, pcov = curve_fit(fluxfunc,
-                               self.flux_data["energy"][mask],
-                               self.flux_data["flux"][mask],
-                               p0=[1, -1])
+        try:
+            popt, pcov = curve_fit(fluxfunc,
+                                   self.flux_data["energy"][mask],
+                                   self.flux_data["flux"][mask],
+                                   p0=[1, -1])
 
-        self._flux_index = popt[1]
+            self._flux_index = popt[1]
+        except:
+            pass
 
     @property
     def flux_index(self):
