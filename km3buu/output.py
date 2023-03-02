@@ -170,14 +170,12 @@ EMPTY_KM3NET_HEADER_DICT = {
     "target": "",
     "cut_nu": "0 0 0 0",
     "spectrum": "0",
-    "can": "0 0 0",
     "flux": "0 0 0",
     "coord_origin": "0 0 0",
     "norma": "0 0",
     "tgen": "0",
     "simul": "",
     "primary": "0",
-    "genvol": "0 0 0 0 0"
 }
 
 PARTICLE_MC_STATUS = {
