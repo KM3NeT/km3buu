@@ -25,6 +25,19 @@ if GIBUU_INSTALL_AVAILABLE:
     from km3buu.ctrl import run_jobcard
 
 
+class TestUtils(unittest.TestCase):
+    def test_event_numbers(self):
+        e, r = estimate_number_of_ensembles(1000, (1, 1))
+        assert e == 2000
+        assert r == 1
+        e, r = estimate_number_of_ensembles(1000000, (1, 1))
+        assert e == 100000
+        assert r == 20
+        e, r = estimate_number_of_ensembles(100000, (16, 8))
+        assert e == 6250
+        assert r == 2
+
+
 class TestJobcard(unittest.TestCase):
 
     def setUp(self):
@@ -67,6 +80,7 @@ class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
         self.do_decay = np.random.choice([True, False])
         self.test_jobcard = generate_neutrino_jobcard(
             1000,
+            1,
             "CC",
             "electron", (self.test_energy_min, self.test_energy_max),
             (self.test_A, self.test_Z),
@@ -96,7 +110,7 @@ class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
         self.assertEqual(self.test_jobcard["neutrino_induced"]["nuexp"], 99)
         # Test flat flux
         flat_flux_jobcard = generate_neutrino_jobcard(
-            1000, "CC", "electron",
+            1000, 1, "CC", "electron",
             (self.test_energy_min, self.test_energy_max),
             (self.test_Z, self.test_A))
         self.assertEqual(flat_flux_jobcard["neutrino_induced"]["nuexp"], 10)
@@ -117,6 +131,7 @@ class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
         self.do_decay = np.random.choice([True, False])
         self.test_jobcard = generate_neutrino_jobcard(
             1000,
+            1,
             "CC",
             "electron",
             self.test_energy, (self.test_A, self.test_Z),
