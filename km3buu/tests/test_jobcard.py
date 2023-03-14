@@ -79,8 +79,8 @@ class TestNeutrinoEnergyRangeJobcard(unittest.TestCase):
         self.assertEqual("/test", self.test_jobcard["input"]["path_to_input"])
 
     def test_target(self):
-        self.assertEqual(self.test_Z, self.test_jobcard["target"]["target_Z"])
-        self.assertEqual(self.test_A, self.test_jobcard["target"]["target_A"])
+        self.assertEqual(self.test_Z, self.test_jobcard["target"]["Z"])
+        self.assertEqual(self.test_A, self.test_jobcard["target"]["A"])
 
     def test_energy(self):
         self.assertAlmostEqual(
@@ -129,8 +129,8 @@ class TestNeutrinoSingleEnergyJobcard(unittest.TestCase):
         self.assertEqual("/test", self.test_jobcard["input"]["path_to_input"])
 
     def test_target(self):
-        self.assertEqual(self.test_Z, self.test_jobcard["target"]["target_Z"])
-        self.assertEqual(self.test_A, self.test_jobcard["target"]["target_A"])
+        self.assertEqual(self.test_Z, self.test_jobcard["target"]["z"])
+        self.assertEqual(self.test_A, self.test_jobcard["target"]["a"])
 
     def test_energy(self):
         self.assertAlmostEqual(self.test_energy,

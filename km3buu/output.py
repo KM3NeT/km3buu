@@ -536,11 +536,19 @@ class GiBUUOutput:
 
     @property
     def A(self):
-        return self.jobcard["target"]["target_a"]
+        grp = self.jobcard["target"]
+        if "a" in grp.keys():
+            return grp["a"]
+        elif "target_a" in grp.keys():
+            return grp["target_a"]
 
     @property
     def Z(self):
-        return self.jobcard["target"]["target_z"]
+        grp = self.jobcard["target"]
+        if "z" in grp.keys():
+            return grp["z"]
+        elif "target_z" in grp.keys():
+            return grp["target_z"]
 
     @property
     def data_path(self):
