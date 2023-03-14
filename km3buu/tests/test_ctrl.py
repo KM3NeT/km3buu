@@ -78,8 +78,8 @@ class TestCTRLbyJobcardObject(unittest.TestCase):
         self.test_jobcard["input"]["num_runs_SameEnergy"] = 1
         self.test_jobcard["input"]["LRF_equals_CALC_frame"] = True
         # TARGET
-        self.test_jobcard["target"]["target_Z"] = 1
-        self.test_jobcard["target"]["target_A"] = 1
+        self.test_jobcard["target"]["z"] = 1
+        self.test_jobcard["target"]["a"] = 1
         # MISC
         # self.test_jobcard["nl_neutrinoxsection"]["DISmassless"] =  True
         self.test_jobcard["neutrinoAnalysis"]["outputEvents"] = True
