@@ -19,15 +19,11 @@ RUN   cd /opt && \
 
 ADD . /km3buu
 
-RUN pip3 install --upgrade pip && \
-    pip3 install setuptools-scm && \
-    pip3 install pytest-runner
-
-RUN cd /opt && \
-    git clone https://github.com/tudo-astroparticlephysics/PROPOSAL.git && cd PROPOSAL && \
-    pip3 install -e .
-
 RUN cd /km3buu && \
+    pip3 install --upgrade pip && \
+    pip3 install setuptools-scm && \
+    pip3 install pytest-runner && \
+    pip3 install conan && \
     pip3 install -e . && \
     pip3 install -e ".[dev]" && \
     pip3 install -e ".[extras]"
