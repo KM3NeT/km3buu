@@ -92,7 +92,7 @@ class TestGiBUUOutput(unittest.TestCase):
     def test_event_values(self):
         arr = self.output.arrays
         np.testing.assert_array_almost_equal(
-            arr["M"][0], [0.860474, 0.019044, 0.019044, 0.019044])
+            arr["M2"][0], [0.860474, 0.019044, 0.019044, 0.019044])
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
