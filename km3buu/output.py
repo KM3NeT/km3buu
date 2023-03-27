@@ -54,11 +54,12 @@ XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
 SECONDS_WEIGHT_TIMESPAN = 1
 
-PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "barcode"]
+PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "x", "y", "z", "barcode"]
 EVENTINFO_COLUMNS = [
     "weight", "evType", "lepIn_E", "lepIn_Px", "lepIn_Py", "lepIn_Pz",
     "lepOut_E", "lepOut_Px", "lepOut_Py", "lepOut_Pz", "nuc_E", "nuc_Px",
-    "nuc_Py", "nuc_Pz"
+    "nuc_Py", "nuc_Pz", "nucleus_A", "nucleus_Z", "flavor_ID", "process_ID",
+    "numRuns", "numEnsembles"
 ]
 
 LHE_NU_INFO_DTYPE = np.dtype([
@@ -620,18 +621,18 @@ def write_detector_file(gibuu_output,
         sec_lep_type *= -1
 
     event_data = gibuu_output.arrays
+
     if free_particle_cuts:
         from particle import Particle
-        mask = ~((event_data.barcode == 2112) |
-                 (event_data.barcode == 2212)) | ak.isclose(
-                     event_data.M, [Particle.from_pdgid(2212).mass * 1e-3])
-        # event_data = event_data[ak.any(mask, axis=1)]
-        for f in event_data.fields:
-            try:
-                ak.count(event_data[f], axis=1)
-                event_data[f] = event_data[f][mask]
-            except:
-                pass
+        nums = ak.num(event_data.barcode)
+        pdgid = ak.flatten(event_data.barcode)
+        masses = ak.flatten(event_data.M)
+        mask = np.isclose(
+            masses,
+            ak.from_iter(map(lambda x: Particle.from_pdgid(x).mass, pdgid)))
+        mask = ak.unflatten(mask, nums)
+        for field in PARTICLE_COLUMNS:
+            event_data[field] = event_data[field][mask]
 
     if no_files > len(event_data):
         raise IndexError("More files to write than contained events!")
