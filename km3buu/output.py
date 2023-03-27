@@ -511,7 +511,7 @@ class GiBUUOutput:
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
         retval["By"] = GiBUUOutput.bjorken_y(retval)
         retval["Q2"] = GiBUUOutput.Qsquared(retval)
-        retval["M"] = retval["E"]**2 - retval["Px"]**2 - retval[
+        retval["M2"] = retval["E"]**2 - retval["Px"]**2 - retval[
             "Py"]**2 - retval["Pz"]**2
         if "x" in retval.fields:
             retval["R"] = retval["x"]**2 + retval["y"]**2 + retval["z"]**2
@@ -626,10 +626,10 @@ def write_detector_file(gibuu_output,
         from particle import Particle
         nums = ak.num(event_data.barcode)
         pdgid = ak.flatten(event_data.barcode)
-        masses = ak.flatten(event_data.M)
+        masses = ak.flatten(event_data.M2)
         mask = np.isclose(
             masses,
-            ak.from_iter(map(lambda x: Particle.from_pdgid(x).mass, pdgid)))
+            ak.from_iter(map(lambda x: Particle.from_pdgid(x).mass**2, pdgid)))
         mask = ak.unflatten(mask, nums)
         for field in PARTICLE_COLUMNS:
             event_data[field] = event_data[field][mask]
