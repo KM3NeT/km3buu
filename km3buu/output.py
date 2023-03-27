@@ -632,7 +632,8 @@ def write_detector_file(gibuu_output,
             ak.from_iter(map(lambda x: Particle.from_pdgid(x).mass**2, pdgid)))
         mask = ak.unflatten(mask, nums)
         for field in PARTICLE_COLUMNS:
-            event_data[field] = event_data[field][mask]
+            if field in event_data.fields:
+                event_data[field] = event_data[field][mask]
 
     if no_files > len(event_data):
         raise IndexError("More files to write than contained events!")
