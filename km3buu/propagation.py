@@ -22,6 +22,12 @@ import pathlib
 
 from .config import Config
 
+M_TO_CM = 1e2
+
+itp_table_path = Config().proposal_itp_tables
+pathlib.Path(itp_table_path).mkdir(parents=True, exist_ok=True)
+pp.InterpolationSettings.tables_path = itp_table_path
+
 PROPOSAL_LEPTON_DEFINITIONS = {
     11: pp.particle.EMinusDef,
     -11: pp.particle.EPlusDef,
@@ -37,16 +43,21 @@ PROPOSAL_LEPTON_DEFINITIONS = {
     -16: pp.particle.NuTauBarDef
 }
 
-PROPOSAL_TARGET = pp.medium.AntaresWater()
+PROPOSAL_TARGET_WATER = pp.medium.AntaresWater()
+PROPOSAL_TARGET_ROCK = pp.medium.StandardRock()
+
+PROPOSAL_STOP_HIERARCHY_LEVEL = 0
+PROPOSAL_PROPAGATION_HIERARCHY_LEVEL = 4
+PROPOSAL_CAN_HIERARCHY_LEVEL = 2
+
+PROPOSAL_MUON_STOP_CONDITION = 3
+PROPOSAL_TAU_STOP_CONDITION = 1
 
 
-def _setup_propagator(max_distance, particle_definition):
-    itp_table_path = Config().proposal_itp_tables
-    pathlib.Path(itp_table_path).mkdir(parents=True, exist_ok=True)
-    pp.InterpolationSettings.tables_path = itp_table_path
+def _setup_utility(particle_definition, target):
     crosssection = pp.crosssection.make_std_crosssection(
         particle_def=particle_definition,
-        target=PROPOSAL_TARGET,
+        target=target,
         interpolate=True,
         cuts=pp.EnergyCutSettings(np.inf, 0.05, False))
     collection = pp.PropagationUtilityCollection()
@@ -54,73 +65,120 @@ def _setup_propagator(max_distance, particle_definition):
     collection.interaction = pp.make_interaction(crosssection, True)
     collection.decay = pp.make_decay(crosssection, particle_definition, True)
     collection.time = pp.make_time(crosssection, particle_definition, True)
+    return pp.PropagationUtility(collection=collection)
 
-    utility = pp.PropagationUtility(collection=collection)
 
-    geometry = pp.geometry.Sphere(pp.Cartesian3D(), max_distance)
-    density_distr = pp.density_distribution.density_homogeneous(
-        PROPOSAL_TARGET.mass_density)
+def setup_propagator(particle_definition, proposal_geometries):
+    utility_sw = _setup_utility(particle_definition, PROPOSAL_TARGET_WATER)
+    utility_sr = _setup_utility(
+        particle_definition,
+        PROPOSAL_TARGET_ROCK) if "sr" in proposal_geometries.keys() else None
 
-    propagator = pp.Propagator(particle_definition,
-                               [(geometry, utility, density_distr)])
+    density_sw = pp.density_distribution.density_homogeneous(
+        PROPOSAL_TARGET_WATER.mass_density)
+    density_sr = pp.density_distribution.density_homogeneous(
+        PROPOSAL_TARGET_ROCK.mass_density)
+
+    sectors = [(geometry, utility_sw, density_sw)
+               for k, geometry in proposal_geometries.items() if k != "sr"]
+    if "sr" in proposal_geometries.keys():
+        sectors.append((proposal_geometries["sr"], utility_sr, density_sr))
+
+    propagator = pp.Propagator(particle_definition, sectors)
 
     return propagator
 
 
-def propagate_lepton(lepout_data, pdgid):
-    """
-    Lepton propagation based on PROPOSAL
+class Propagator(object):
 
-    Parameters
-    ----------
-    lepout_data: awkward.highlevel.Array
-        Lepton data in the GiBUU output shape containing the fields 
-        'lepOut_E, lepOut_Px, lepOut_Py, lepOut_Pz'
-    pdgid:
-        The pdgid of the propagated lepton
+    def __init__(self, pdgids, geometry):
+        self._geometry = geometry
+        self._pdgids = pdgids
+        self._pp_propagators = dict()
+        self._setup()
 
-    Returns
-    -------
-    awkward.highlevel.Array (E, Px, Py, Pz, x, y, z)
-    """
-    lepton_info = Particle.from_pdgid(pdgid)
-    prop_range = const.c * lepton_info.lifetime * 1e11 * np.max(
-        lepout_data.lepOut_E) / lepton_info.mass  #[cm]
+    def _setup(self):
+        for p in self._pdgids:
+            self._pp_propagators[p] = setup_propagator(
+                PROPOSAL_LEPTON_DEFINITIONS[p](), self._geometry)
 
-    lepton_def = PROPOSAL_LEPTON_DEFINITIONS[pdgid]()
+    # @geometry.setter
+    # def geometry(self, geodct):
+    #     self._geometry = geodct
+    #     # Update propagators
+    #     self._setup()
 
-    propagator = _setup_propagator(10 * prop_range, lepton_def)
+    @staticmethod
+    def _addparticles(dct, particle_infos):
+        for prtcl in particle_infos:
+            dct['barcode'].append(prtcl.type)
+            dct['E'].append(prtcl.energy)
+            dct['x'].append(prtcl.position.x / M_TO_CM)
+            dct['y'].append(prtcl.position.y / M_TO_CM)
+            dct['z'].append(prtcl.position.z / M_TO_CM)
+            dct['Px'].append(prtcl.direction.x * prtcl.momentum / 1e3)
+            dct['Py'].append(prtcl.direction.y * prtcl.momentum / 1e3)
+            dct['Pz'].append(prtcl.direction.z * prtcl.momentum / 1e3)
+            dct['deltaT'].append(prtcl.time * 1e-9)
 
-    propagated_data = defaultdict(list)
+    def propagate_particle(self, prtcl_state):
+        stop_condition = PROPOSAL_MUON_STOP_CONDITION if abs(
+            prtcl_state.type) == 13 else PROPOSAL_TAU_STOP_CONDITION
+        return self._pp_propagators[prtcl_state.type].propagate(
+            prtcl_state, hierarchy_condition=stop_condition)
 
-    for entry in lepout_data:
+    def propagate_to_can(self, lep_pdgid, lep_E, lep_pos, lep_dir):
+        """
+        Lepton propagation to can based on PROPOSAL
+
+        Parameters
+        ----------
+        vtx_pos: np.array
+            Vertex positions of the given events
+        lep_E: np.array
+            Outgoing lepton energy
+        lep_dir: np.array 
+            Lepton direction positions of the given events
+        pdgid:
+            The pdgid of the propagated lepton
+
+        Returns
+        -------
+        awkward.highlevel.Array (barcode, deltaT, E, Px, Py, Pz, x, y, z)
+        """
+        if not lep_pdgid in self._pdgids:
+            return None
+
         init_state = pp.particle.ParticleState()
-        init_state.energy = entry.lepOut_E * 1e3
-        init_state.position = pp.Cartesian3D(0, 0, 0)
-        init_state.direction = pp.Cartesian3D(entry.lepOut_Px, entry.lepOut_Py,
-                                              entry.lepOut_Pz)
+        init_state.type = lep_pdgid
+        init_state.energy = lep_E * 1e3
+        init_state.direction = pp.Cartesian3D(lep_dir)
         init_state.direction.normalize()
-        track = propagator.propagate(init_state, 5 * prop_range)
-        secondaries = track.decay_products()
+        init_state.position = pp.Cartesian3D(*(lep_pos * M_TO_CM))
 
-        E = [s.energy / 1e3 for s in secondaries]
-        pdgid = [p.type for p in secondaries]
-        Px = [p.direction.x * p.momentum / 1e3 for p in secondaries]
-        Py = [p.direction.y * p.momentum / 1e3 for p in secondaries]
-        Pz = [p.direction.z * p.momentum / 1e3 for p in secondaries]
-        x = [p.position.x / 100 for p in secondaries]
-        y = [p.position.y / 100 for p in secondaries]
-        z = [p.position.z / 100 for p in secondaries]
-        dt = [p.time for p in secondaries]
+        particle_dct = defaultdict(list)
 
-        propagated_data["E"].append(E)
-        propagated_data["Px"].append(Px)
-        propagated_data["Py"].append(Py)
-        propagated_data["Pz"].append(Pz)
-        propagated_data["barcode"].append(pdgid)
-        propagated_data["x"].append(x)
-        propagated_data["y"].append(y)
-        propagated_data["z"].append(z)
-        propagated_data["deltaT"].append(dt)
+        track = self.propagate_particle(init_state)
+        fsi = track.final_state()
+        decay = track.decay_products()
 
-    return ak.Array(propagated_data)
+        if self._geometry['can'].is_inside(fsi.position, fsi.direction):
+            if len(decay) > 0:
+                self._addparticles(particle_dct, decay)
+            else:
+                self._addparticles(particle_dct, [fsi])
+        else:
+            for d in decay:
+                if d.type in self._pp_propagators.keys():
+                    track = self.propagate_particle(d)
+                    fsi = track.final_state()
+                    decay = track.decay_products()
+                    if self._geometry['can'].is_inside(fsi.position,
+                                                       fsi.direction):
+                        if len(decay) > 0:
+                            self._addparticles(particle_dct, decay)
+                        else:
+                            self._addparticles(particle_dct, [fsi])
+        if len(particle_dct["E"]) == 0:
+            return None
+        return ak.Array(particle_dct)
