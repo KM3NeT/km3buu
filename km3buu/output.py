@@ -30,7 +30,7 @@ import km3io
 
 from .physics import visible_energy_fraction
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
-from .geometry import DetectorVolume, CanVolume
+from .geometry import *
 from .config import Config, read_default_media_compositions
 from .__version__ import version
 
@@ -540,7 +540,6 @@ class GiBUUOutput:
                                self.flux_data["energy"][mask],
                                self.flux_data["flux"][mask],
                                p0=[1, -1])
-
         self._flux_index = popt[1]
 
     @property
@@ -552,7 +551,7 @@ def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
                         no_files=1,
                         run_number=1,
-                        geometry=CanVolume(),
+                        geometry=CylindricalVolume(),
                         livetime=3.156e7,
                         propagate_tau=True):  # pragma: no cover
     """
@@ -576,8 +575,8 @@ def write_detector_file(gibuu_output,
     if not isinstance(geometry, DetectorVolume):
         raise TypeError("Geometry needs to be a DetectorVolume")
 
-    def add_particles(particle_data, pos_offset, rotation, start_mc_trk_id,
-                      timestamp, status):
+    def add_particles(particle_data, start_mc_trk_id, timestamp, status,
+                      mother_id):
         nonlocal evt
         for i in range(len(particle_data.E)):
             trk = ROOT.Trk()
@@ -585,19 +584,13 @@ def write_detector_file(gibuu_output,
             mom = np.array([
                 particle_data.Px[i], particle_data.Py[i], particle_data.Pz[i]
             ])
-            p_dir = rotation.apply(mom / np.linalg.norm(mom))
-            try:
-                prtcl_pos = np.array([
-                    particle_data.x[i], particle_data.y[i], particle_data.z[i]
-                ])
-                prtcl_pos = rotation.apply(prtcl_pos)
-                trk.pos.set(*np.add(pos_offset, prtcl_pos))
-                trk.t = timestamp + particle_data.deltaT[i] * 1e9
-            except AttributeError:
-                trk.pos.set(*pos_offset)
-                trk.t = timestamp
+            p_dir = mom / np.linalg.norm(mom)
             trk.dir.set(*p_dir)
-            trk.mother_id = 0
+            prtcl_pos = np.array(
+                [particle_data.x[i], particle_data.y[i], particle_data.z[i]])
+            trk.pos.set(*prtcl_pos)
+            trk.t = timestamp + particle_data.deltaT[i]
+            trk.mother_id = mother_id
             trk.type = int(particle_data.barcode[i])
             trk.E = particle_data.E[i]
             trk.status = status
@@ -626,11 +619,6 @@ def write_detector_file(gibuu_output,
 
     bjorkenx = event_data.Bx
     bjorkeny = event_data.By
-
-    tau_secondaries = None
-    if propagate_tau and abs(nu_type) == 16 and ichan == 2:
-        from .propagation import propagate_lepton
-        tau_secondaries = propagate_lepton(event_data, np.sign(nu_type) * 15)
 
     media = read_default_media_compositions()
     density = media["SeaWater"]["density"]  # [g/cm^3]
@@ -663,6 +651,8 @@ def write_detector_file(gibuu_output,
     header_dct["primary"] = "{:d}".format(nu_type)
     header_dct["start_run"] = str(run_number)
 
+    event_times = np.random.uniform(0, livetime, len(event_data))
+
     for i in range(no_files):
         start_id = 0
         stop_id = len(event_data)
@@ -677,15 +667,20 @@ def write_detector_file(gibuu_output,
         outfile = ROOT.TFile.Open(tmp_filename, "RECREATE")
         tree = ROOT.TTree("E", "KM3NeT Evt Tree")
         tree.Branch("Evt", evt, 32000, 4)
-        mc_trk_id = 0
-
-        for mc_event_id, event in enumerate(event_data[start_id:stop_id]):
+        from tqdm import tqdm
+        for mc_event_id, event in tqdm(enumerate(
+                event_data[start_id:stop_id])):
+            mc_trk_id = 0
+            total_id = start_id + mc_event_id
             evt.clear()
             evt.id = mc_event_id
             evt.mc_run_id = mc_event_id
+            # Vertex Positioning & Propagation
+            vtx_pos, vtx_angles, samples, prop_particles = geometry.distribute_event(
+                event)
             # Weights
             evt.w.push_back(geometry.volume)  # w1 (can volume)
-            evt.w.push_back(w2[start_id + mc_event_id])  # w2
+            evt.w.push_back(w2[total_id] / samples)  # w2
             evt.w.push_back(-1.0)  # w3 (= w2*flux)
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
@@ -711,10 +706,9 @@ def write_detector_file(gibuu_output,
             evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_P_EARTH"]] = np.nan
             evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_WATER_INT_LEN"]] = np.nan
 
-            # Vertex Position
-            vtx_pos = np.array(geometry.random_pos())
+            timestamp = event_times[total_id]
             # Direction
-            phi, cos_theta = geometry.random_dir()
+            phi, cos_theta = vtx_angles
             sin_theta = np.sqrt(1 - cos_theta**2)
 
             dir_x = np.cos(phi) * sin_theta
@@ -725,8 +719,6 @@ def write_detector_file(gibuu_output,
             theta = np.arccos(cos_theta)
             R = Rotation.from_euler("yz", [theta, phi])
 
-            timestamp = np.random.uniform(0, livetime)
-
             nu_in_trk = ROOT.Trk()
             nu_in_trk.id = mc_trk_id
             mc_trk_id += 1
@@ -736,7 +728,8 @@ def write_detector_file(gibuu_output,
             nu_in_trk.dir.set(*direction)
             nu_in_trk.E = event.lepIn_E
             nu_in_trk.t = timestamp
-            nu_in_trk.status = km3io.definitions.trkmembers["TRK_ST_PRIMARYNEUTRINO"]
+            nu_in_trk.status = km3io.definitions.trkmembers[
+                "TRK_ST_PRIMARYNEUTRINO"]
             evt.mc_trks.push_back(nu_in_trk)
 
             lep_out_trk = ROOT.Trk()
@@ -751,21 +744,40 @@ def write_detector_file(gibuu_output,
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
 
-            if tau_secondaries is not None:
-                lep_out_trk.status = km3io.definitions.trkmembers["TRK_ST_UNDEFINED"]
+            if prop_particles is not None:
+                lep_out_trk.status = km3io.definitions.trkmembers[
+                    "TRK_ST_PROPLEPTON"]
+                generator_particle_state = km3io.definitions.trkmembers[
+                    "TRK_ST_UNDEFINED"]
             else:
-                lep_out_trk.status = km3io.definitions.trkmembers["TRK_ST_FINALSTATE"]
+                lep_out_trk.status = km3io.definitions.trkmembers[
+                    "TRK_ST_FINALSTATE"]
+                generator_particle_state = km3io.definitions.trkmembers[
+                    "TRK_ST_FINALSTATE"]
 
             evt.mc_trks.push_back(lep_out_trk)
 
-            if tau_secondaries is not None:
-                event_tau_sec = tau_secondaries[mc_event_id]
-                add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp,
-                              km3io.definitions.trkmembers["TRK_ST_FINALSTATE"])
-                mc_trk_id += len(event_tau_sec.E)
+            event.x = np.ones(len(event.E)) * vtx_pos[0]
+            event.y = np.ones(len(event.E)) * vtx_pos[1]
+            event.z = np.ones(len(event.E)) * vtx_pos[2]
 
-            add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
-                          km3io.definitions.trkmembers["TRK_ST_FINALSTATE"])
+            directions = R.apply(np.array([event.Px, event.Py, event.Pz]).T)
+            event.Px = directions[:, 0]
+            event.Py = directions[:, 1]
+            event.Pz = directions[:, 2]
+
+            event.deltaT = np.zeros(len(event.E))
+
+            add_particles(event, mc_trk_id, timestamp,
+                          generator_particle_state, 0)
+            mc_trk_id += len(event.E)
+
+            if prop_particles is not None:
+                add_particles(
+                    prop_particles, mc_trk_id, timestamp,
+                    km3io.definitions.trkmembers["TRK_ST_FINALSTATE"], 1)
+                mc_trk_id += len(prop_particles.E)
+
             tree.Fill()
 
         for k, v in geometry.header_entries(mc_event_id + 1).items():
