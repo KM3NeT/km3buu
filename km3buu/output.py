@@ -629,7 +629,8 @@ def write_detector_file(gibuu_output,
         masses = ak.flatten(event_data.M2)
         mask = np.isclose(
             masses,
-            ak.from_iter(map(lambda x: Particle.from_pdgid(x).mass**2, pdgid)))
+            ak.from_iter(
+                map(lambda x: (Particle.from_pdgid(x).mass * 1e-3)**2, pdgid)))
         mask = ak.unflatten(mask, nums)
         for field in PARTICLE_COLUMNS:
             if field in event_data.fields:
