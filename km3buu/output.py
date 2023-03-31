@@ -26,6 +26,7 @@ import scipy.constants as constants
 from scipy.optimize import curve_fit
 import mendeleev
 from datetime import datetime
+import km3io
 
 from .physics import visible_energy_fraction
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
@@ -178,88 +179,7 @@ EMPTY_KM3NET_HEADER_DICT = {
     "primary": "0",
 }
 
-PARTICLE_MC_STATUS = {
-    "TRK_MOTHER_UNDEFINED":
-    # mother id was not defined for this MC track (all reco tracks have this value)
-    -1,
-    "TRK_MOTHER_NONE":
-    -2,  # mother id of a particle if it has no parent
-    "TRK_ST_UNDEFINED":
-    # status was not defined for this MC track (all reco tracks have this value)
-    0,
-    "TRK_ST_FINALSTATE":
-    # particle to be tracked by detector-level MC ('track_in' tag in evt files from gseagen, genhen, mupage).
-    1,
-    "TRK_ST_PRIMARYNEUTRINO":
-    # initial state neutrino ('neutrino' tag in evt files from gseagen and genhen).
-    100,
-    "TRK_ST_PRIMARYCOSMIC":
-    # initial state cosmic ray ('track_primary' tag in evt files from corant).
-    200,
-    "TRK_ST_ININUCLEI":
-    5,  # Initial state nuclei (gseagen)
-    "TRK_ST_INTERSTATE":
-    2,  # Intermidiate state particles produced in hadronic showers (gseagen)
-    "TRK_ST_DECSTATE":
-    3,  # Short-lived particles that are forced to decay, like pi0 (gseagen)
-    "TRK_ST_NUCTGT":
-    11,  # Nucleon target (gseagen)
-    "TRK_ST_PREHAD":
-    12,  # DIS pre-fragmentation hadronic state (gseagen)
-    "TRK_ST_PRERES":
-    13,  # resonant pre-decayed state (gseagen)
-    "TRK_ST_HADNUC":
-    14,  # Hadrons inside the nucleus before FSI (gseagen)
-    "TRK_ST_NUCLREM":
-    15,  # Low energy nuclear fragments (gseagen)
-    "TRK_ST_NUCLCLT":
-    16,  # For composite nucleons before phase space decay (gseagen)
-    "TRK_ST_FAKECORSIKA":
-    # fake particle from corant/CORSIKA to add parent information (gseagen)
-    21,
-    "TRK_ST_FAKECORSIKA_DEC_MU_START":
-    22,  # fake particle from CORSIKA: decaying mu at start (gseagen)
-    "TRK_ST_FAKECORSIKA_DEC_MU_END":
-    23,  # fake particle from CORSIKA: decaying mu at end (gseagen)
-    "TRK_ST_FAKECORSIKA_ETA_2GAMMA":
-    24,  # fake particle from CORSIKA: eta -> 2 gamma (gseagen)
-    "TRK_ST_FAKECORSIKA_ETA_3PI0":
-    25,  # fake particle from CORSIKA: eta -> 3 pi0 (gseagen)
-    "TRK_ST_FAKECORSIKA_ETA_PIP_PIM_PI0":
-    26,  # fake particle from CORSIKA: eta -> pi+ pi- pi0 (gseagen)
-    "TRK_ST_FAKECORSIKA_ETA_2PI_GAMMA":
-    27,  # fake particle from CORSIKA: eta -> pi+ pi- gamma (gseagen)
-    "TRK_ST_FAKECORSIKA_CHERENKOV_GAMMA":
-    # fake particle from CORSIKA: Cherenkov photons on particle output file (gseagen)
-    28,
-    "TRK_ST_PROPLEPTON":
-    1001,  # lepton propagated that reaches the can (gseagen)
-    "TRK_ST_PROPDECLEPTON":
-    2001  # lepton propagated and decayed before got to the can (gseagen)
-}
-
-W2LIST_LOOKUP = {
-    "PS": 0,
-    "EG": 1,
-    "XSEC_MEAN": 2,
-    "COLUMN_DEPTH": 3,
-    "P_EARTH": 4,
-    "WATER_INT_LEN": 5,
-    "BX": 7,
-    "BY": 8,
-    "ICHAN": 9,
-    "CC": 10,
-    "XSEC": 13,
-    "DXSEC": 14,
-    "TARGETA": 15,
-    "TARGETZ": 16,
-    "VERINCAN": 17,
-    "LEPINCAN": 18,
-    "GIBUU_WEIGHT": 23,
-    "GIBUU_SCAT_TYPE": 24
-}
-
-W2LIST_LENGTH = max(W2LIST_LOOKUP.values()) + 1
+W2LIST_LENGTH = max(km3io.definitions.w2list_km3buu.values()) + 1
 
 GIBUU_FIELDNAMES = [
     'weight', 'barcode', 'Px', 'Py', 'Pz', 'E', 'evType', 'lepIn_E',
@@ -769,27 +689,27 @@ def write_detector_file(gibuu_output,
             evt.w.push_back(-1.0)  # w3 (= w2*flux)
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
-            evt.w2list[W2LIST_LOOKUP["PS"]] = global_generation_weight
-            evt.w2list[W2LIST_LOOKUP["EG"]] = gibuu_output.flux_index
-            evt.w2list[W2LIST_LOOKUP["XSEC_MEAN"]] = mean_xsec_func(
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_PS"]] = global_generation_weight
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_EG"]] = gibuu_output.flux_index
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_XSEC_MEAN"]] = mean_xsec_func(
                 event.lepIn_E)
-            evt.w2list[W2LIST_LOOKUP["XSEC"]] = event.xsec
-            evt.w2list[W2LIST_LOOKUP["TARGETA"]] = gibuu_output.A
-            evt.w2list[W2LIST_LOOKUP["TARGETZ"]] = gibuu_output.Z
-            evt.w2list[W2LIST_LOOKUP["BX"]] = bjorkenx[mc_event_id]
-            evt.w2list[W2LIST_LOOKUP["BY"]] = bjorkeny[mc_event_id]
-            evt.w2list[W2LIST_LOOKUP["CC"]] = ichan
-            evt.w2list[W2LIST_LOOKUP["ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_XSEC"]] = event.xsec
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_TARGETA"]] = gibuu_output.A
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_TARGETZ"]] = gibuu_output.Z
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_BX"]] = bjorkenx[mc_event_id]
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_BY"]] = bjorkeny[mc_event_id]
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_CC"]] = ichan
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
                 event.evType]
-            evt.w2list[W2LIST_LOOKUP["VERINCAN"]] = 1
-            evt.w2list[W2LIST_LOOKUP["LEPINCAN"]] = 1
-            evt.w2list[W2LIST_LOOKUP["GIBUU_WEIGHT"]] = event.weight
-            evt.w2list[W2LIST_LOOKUP["GIBUU_SCAT_TYPE"]] = event.evType
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_VERINCAN"]] = 1
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_LEPINCAN"]] = 1
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_GIBUU_WEIGHT"]] = event.weight
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_GIBUU_SCAT_TYPE"]] = event.evType
             # TODO
-            evt.w2list[W2LIST_LOOKUP["DXSEC"]] = np.nan
-            evt.w2list[W2LIST_LOOKUP["COLUMN_DEPTH"]] = np.nan
-            evt.w2list[W2LIST_LOOKUP["P_EARTH"]] = np.nan
-            evt.w2list[W2LIST_LOOKUP["WATER_INT_LEN"]] = np.nan
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_DXSEC"]] = np.nan
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_COLUMN_DEPTH"]] = np.nan
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_P_EARTH"]] = np.nan
+            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_WATER_INT_LEN"]] = np.nan
 
             # Vertex Position
             vtx_pos = np.array(geometry.random_pos())
@@ -816,7 +736,7 @@ def write_detector_file(gibuu_output,
             nu_in_trk.dir.set(*direction)
             nu_in_trk.E = event.lepIn_E
             nu_in_trk.t = timestamp
-            nu_in_trk.status = PARTICLE_MC_STATUS["TRK_ST_PRIMARYNEUTRINO"]
+            nu_in_trk.status = km3io.definitions.trkmembers["TRK_ST_PRIMARYNEUTRINO"]
             evt.mc_trks.push_back(nu_in_trk)
 
             lep_out_trk = ROOT.Trk()
@@ -832,20 +752,20 @@ def write_detector_file(gibuu_output,
             lep_out_trk.t = timestamp
 
             if tau_secondaries is not None:
-                lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_UNDEFINED"]
+                lep_out_trk.status = km3io.definitions.trkmembers["TRK_ST_UNDEFINED"]
             else:
-                lep_out_trk.status = PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"]
+                lep_out_trk.status = km3io.definitions.trkmembers["TRK_ST_FINALSTATE"]
 
             evt.mc_trks.push_back(lep_out_trk)
 
             if tau_secondaries is not None:
                 event_tau_sec = tau_secondaries[mc_event_id]
                 add_particles(event_tau_sec, vtx_pos, R, mc_trk_id, timestamp,
-                              PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
+                              km3io.definitions.trkmembers["TRK_ST_FINALSTATE"])
                 mc_trk_id += len(event_tau_sec.E)
 
             add_particles(event, vtx_pos, R, mc_trk_id, timestamp,
-                          PARTICLE_MC_STATUS["TRK_ST_FINALSTATE"])
+                          km3io.definitions.trkmembers["TRK_ST_FINALSTATE"])
             tree.Fill()
 
         for k, v in geometry.header_entries(mc_event_id + 1).items():
