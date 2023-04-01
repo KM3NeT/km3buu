@@ -747,8 +747,12 @@ def write_detector_file(gibuu_output,
             if prop_particles is not None:
                 lep_out_trk.status = km3io.definitions.trkmembers[
                     "TRK_ST_PROPLEPTON"]
-                generator_particle_state = km3io.definitions.trkmembers[
-                    "TRK_ST_UNDEFINED"]
+                if geometry.in_can(vtx_pos):
+                    generator_particle_state = km3io.definitions.trkmembers[
+                        "TRK_ST_FINALSTATE"]
+                else:
+                    generator_particle_state = km3io.definitions.trkmembers[
+                        "TRK_ST_UNDEFINED"]
             else:
                 lep_out_trk.status = km3io.definitions.trkmembers[
                     "TRK_ST_FINALSTATE"]
