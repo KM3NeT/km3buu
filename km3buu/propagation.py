@@ -127,7 +127,7 @@ class Propagator(object):
         return self._pp_propagators[prtcl_state.type].propagate(
             prtcl_state, hierarchy_condition=stop_condition)
 
-    def propagate_to_can(self, lep_pdgid, lep_E, lep_pos, lep_dir):
+    def propagate(self, lep_pdgid, lep_E, lep_pos, lep_dir):
         """
         Lepton propagation to can based on PROPOSAL
 

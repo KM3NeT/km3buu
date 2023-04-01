@@ -159,6 +159,13 @@ class NoVolume(DetectorVolume):
         else:
             return np.concatenate([np.zeros(n), np.ones(n)]).reshape((2, -1)).T
 
+    def distribute_event(self, evt):
+        vtx_pos = self.random_pos()
+        vtx_dir = self.random_dir()
+        weight = 1
+        evts = None
+        return vtx_pos, vtx_dir, weight, None
+
 
 class CanVolume(DetectorVolume):
     """
@@ -176,6 +183,8 @@ class CanVolume(DetectorVolume):
         Detector center position in the xy-plane
     zenith: float [1] (default: (-1.0, 1.0) )
         Zenith range given as cos(θ)
+    taupropagation: bool (default True)
+        Do secondary tau lepton propagation / decay
     """
 
     def __init__(self,
@@ -183,7 +192,8 @@ class CanVolume(DetectorVolume):
                  zmin=0.0,
                  zmax=476.5,
                  detector_center=(0., 0.),
-                 zenith=(-1, 1)):
+                 zenith=(-1, 1),
+                 taupropagation=True):
         super().__init__()
         self._radius = radius
         self._zmin = zmin
@@ -193,22 +203,55 @@ class CanVolume(DetectorVolume):
         self._cosZmin = zenith[0]
         self._cosZmax = zenith[1]
         self._solid_angle = 2 * np.pi * (self._cosZmax - self._cosZmin)
+        self._propagator = None
+        if taupropagation:
+            self._pp_geometry = self.make_proposal_geometries()
+            self._propagator = Propagator([15, -15], self._pp_geometry)
+
+    def make_proposal_geometries(self):
+        """
+        Setup the geometries for the propagation using PROPOSAL
+        """
+        geometries = dict()
+        # General
+        center_x = self._detector_center[0] * M_TO_CM
+        center_y = self._detector_center[1] * M_TO_CM
+        # StopVolume
+        geometry_stop = pp.geometry.Sphere(pp.Cartesian3D(), 1e20)
+        geometry_stop.hierarchy = PROPOSAL_STOP_HIERARCHY_LEVEL
+        geometries["stop"] = geometry_stop
+        # CAN
+        can_zpos = (self._zmin + self._zmax) / 2 * M_TO_CM
+        geometry_can = pp.geometry.Cylinder(
+            pp.Cartesian3D(center_x, center_y, can_zpos),
+            (self._zmax - self._zmin) * M_TO_CM, self._radius * M_TO_CM, 0.)
+        geometry_can.hierarchy = PROPOSAL_CAN_HIERARCHY_LEVEL
+        geometries["can"] = geometry_can
+        return geometries
 
     def _calc_volume(self):
         return np.pi * (self._zmax - self._zmin) * np.power(self._radius, 2)
 
-    def random_pos(self):
-        r = self._radius * np.sqrt(np.random.uniform(0, 1))
-        phi = np.random.uniform(0, 2 * np.pi)
+    def random_pos(self, n=1):
+        r = self._radius * np.sqrt(np.random.uniform(0, 1, n))
+        phi = np.random.uniform(0, 2 * np.pi, n)
         pos_x = r * np.cos(phi) + self._detector_center[0]
         pos_y = r * np.sin(phi) + self._detector_center[1]
-        pos_z = np.random.uniform(self._zmin, self._zmax)
-        return (pos_x, pos_y, pos_z)
+        pos_z = np.random.uniform(self._zmin, self._zmax, n)
+        pos = np.concatenate([pos_x, pos_y, pos_z]).reshape((3, -1)).T
+        if pos.shape[0] == 1:
+            return pos[0, :]
+        else:
+            return pos
 
-    def random_dir(self):
-        phi = np.random.uniform(0, 2 * np.pi)
-        cos_theta = np.random.uniform(self._cosZmin, self._cosZmax)
-        return (phi, cos_theta)
+    def random_dir(self, n=1):
+        phi = np.random.uniform(0, 2 * np.pi, n)
+        cos_theta = np.random.uniform(self._cosZmin, self._cosZmax, n)
+        direction = np.concatenate([phi, cos_theta]).reshape((2, -1)).T
+        if direction.shape[0] == 1:
+            return direction[0, :]
+        else:
+            return direction
 
     def header_entries(self, nevents=0):
         retdct = dict()
@@ -217,16 +260,28 @@ class CanVolume(DetectorVolume):
                                         self._volume, nevents)
         retdct[key] = value
         key = "fixedcan"
-        value = "{} {} {} {} {}".format(detector_center[0], detector_center[1],
-                                        self._zmin, self._zmax, self._radius)
+        value = "{} {} {} {} {}".format(self._detector_center[0],
+                                        self._detector_center[1], self._zmin,
+                                        self._zmax, self._radius)
         return retdct
 
     def distribute_event(self, evt):
         vtx_pos = self.random_pos()
-        vtx_dir = self.random_dir()
+        vtx_angles = self.random_dir()
         weight = 1
         evts = None
-        return vtx_pos, vtx_dir, weight, evts
+
+        if evt.flavor_ID == 3 and abs(evt.process_ID) == 2:
+            charged_lepton_type = np.sign(
+                evt.process_ID) * (2 * evt.flavor_ID + 9)
+            lepout_dir = np.array(
+                [evt.lepOut_Px, evt.lepOut_Py, evt.lepOut_Pz])
+            R = Rotation.from_euler("yz", vtx_angles)
+            evts = self._propagator.propagate(charged_lepton_type,
+                                              evt.lepOut_E, vtx_pos,
+                                              R.apply(lepout_dir))
+
+        return vtx_pos, vtx_angles, weight, evts
 
 
 class CylindricalVolume(DetectorVolume):
@@ -438,9 +493,9 @@ class CylindricalVolume(DetectorVolume):
             if self.in_can(vtx_pos) and evt.flavor_ID == 2:
                 return vtx_pos, vtx_angles, samples, None
             R = Rotation.from_euler("yz", vtx_angles)
-            particles = self._propagator.propagate_to_can(
-                charged_lepton_type, evt.lepOut_E, vtx_pos,
-                R.apply(lepout_dir))
+            particles = self._propagator.propagate(charged_lepton_type,
+                                                   evt.lepOut_E, vtx_pos,
+                                                   R.apply(lepout_dir))
             if not particles is None:
                 return vtx_pos, vtx_angles, samples, particles
 
