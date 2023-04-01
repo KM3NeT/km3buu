@@ -112,7 +112,7 @@ class Propagator(object):
     def _addparticles(dct, particle_infos):
         for prtcl in particle_infos:
             dct['barcode'].append(prtcl.type)
-            dct['E'].append(prtcl.energy)
+            dct['E'].append(prtcl.energy / 1e3)
             dct['x'].append(prtcl.position.x / M_TO_CM)
             dct['y'].append(prtcl.position.y / M_TO_CM)
             dct['z'].append(prtcl.position.z / M_TO_CM)
