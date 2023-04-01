@@ -244,6 +244,31 @@ class CanVolume(DetectorVolume):
         else:
             return pos
 
+    def in_can(self, pos):
+        """
+        Check if position is inside the CAN
+
+        Parameters
+        ----------
+        pos: np.array
+            The positions which should be checked
+
+        Return
+        ------
+        boolean / np.array
+        """
+        if type(pos) is tuple or pos.ndim == 1:
+            pos = np.reshape(pos, (-1, 3))
+        zmask = (pos[:, 2] >= self._zmin) & (pos[:, 2] <= self._zmax)
+        r2 = (pos[:, 0] - self._coord_origin[0])**2 + \
+            (pos[:, 1] - self._coord_origin[1])**2
+        rmask = r2 < (self._radius**2)
+        mask = zmask & rmask
+        if len(mask) == 1:
+            return mask[0]
+        else:
+            return mask
+
     def random_dir(self, n=1):
         phi = np.random.uniform(0, 2 * np.pi, n)
         cos_theta = np.random.uniform(self._cosZmin, self._cosZmax, n)
