@@ -47,10 +47,10 @@ class TestTauPropagation(unittest.TestCase):
                                              [3.271, 3.696, -0.009],
                                              decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec.Py),
-                                             [2.48 , 4.382, 0.097],
+                                             [2.48, 4.382, 0.097],
                                              decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec.Pz),
-                                             [-0.549,  0.564, -0.015],
+                                             [-0.549, 0.564, -0.015],
                                              decimal=3)
 
     def test_secondary_types(self):
@@ -59,11 +59,45 @@ class TestTauPropagation(unittest.TestCase):
 
     def test_secondary_positions(self):
         np.testing.assert_array_almost_equal(np.array(self.sec.x),
-                                             [10.0,10.0,10.0],
+                                             [10.0, 10.0, 10.0],
                                              decimal=1)
         np.testing.assert_array_almost_equal(np.array(self.sec.y),
-                                             [10.0,10.0,10.0],
+                                             [10.0, 10.0, 10.0],
                                              decimal=1)
         np.testing.assert_array_almost_equal(np.array(self.sec.z),
                                              [100., 100., 100.],
+                                             decimal=1)
+
+
+class TestMuonPropagation(unittest.TestCase):
+
+    def setUp(self):
+        prop = Propagator([13, -13],
+                          CylindricalVolume().make_proposal_geometries())
+        self.position = np.array([200.0, 200.0, 100.0])
+        self.direction = np.array([-1., -1., 0])
+        self.energy = 100.0
+        self.sec = prop.propagate(13, self.energy, self.position,
+                                  self.direction)
+
+    def test_secondary_momenta(self):
+        np.testing.assert_array_almost_equal(np.array(self.sec.E), [77.102],
+                                             decimal=3)
+        np.testing.assert_array_almost_equal(np.array(self.sec.Px), [-54.519],
+                                             decimal=3)
+        np.testing.assert_array_almost_equal(np.array(self.sec.Py), [-54.519],
+                                             decimal=3)
+        np.testing.assert_array_almost_equal(np.array(self.sec.Pz),
+                                             [-0.],
+                                             decimal=3)
+
+    def test_secondary_types(self):
+        np.testing.assert_array_equal(np.array(self.sec.barcode), [13])
+
+    def test_secondary_positions(self):
+        np.testing.assert_array_almost_equal(np.array(self.sec.x), [141.7],
+                                             decimal=1)
+        np.testing.assert_array_almost_equal(np.array(self.sec.y), [141.7],
+                                             decimal=1)
+        np.testing.assert_array_almost_equal(np.array(self.sec.z), [100.],
                                              decimal=1)
