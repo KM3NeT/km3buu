@@ -167,7 +167,7 @@ class NoVolume(DetectorVolume):
         return vtx_pos, vtx_dir, weight, None
 
 
-class CanVolume(DetectorVolume):
+class CANVolume(DetectorVolume):
     """
     Cylindrical detector geometry, only CAN / no propagation
 
