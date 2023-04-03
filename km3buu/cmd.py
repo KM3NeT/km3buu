@@ -11,7 +11,7 @@ from os.path import join
 
 from km3buu.jobcard import generate_neutrino_jobcard
 from km3buu.ctrl import run_jobcard
-from km3buu.geometry import CanVolume, SphericalVolume, NoVolume
+from km3buu.geometry import CANVolume, SphericalVolume, NoVolume
 from km3buu.output import GiBUUOutput, write_detector_file
 
 ARGPARSE_DESC = {
@@ -230,7 +230,7 @@ def main():
             kwargs["zmin"] = args.dimensions[0]
             kwargs["zmax"] = args.dimensions[1]
             kwargs["radius"] = args.dimensions[2]
-        volume = CanVolume(**kwargs)
+        volume = CANVolume(**kwargs)
     run_descriptor = ""
     if args.runnumber:
         run_descriptor = "run{:08d}_".format(args.runnumber)
