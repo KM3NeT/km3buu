@@ -87,8 +87,7 @@ class TestMuonPropagation(unittest.TestCase):
                                              decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec.Py), [-54.519],
                                              decimal=3)
-        np.testing.assert_array_almost_equal(np.array(self.sec.Pz),
-                                             [-0.],
+        np.testing.assert_array_almost_equal(np.array(self.sec.Pz), [-0.],
                                              decimal=3)
 
     def test_secondary_types(self):

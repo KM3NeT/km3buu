@@ -684,27 +684,44 @@ def write_detector_file(gibuu_output,
             evt.w.push_back(-1.0)  # w3 (= w2*flux)
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_PS"]] = global_generation_weight
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_EG"]] = gibuu_output.flux_index
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_XSEC_MEAN"]] = mean_xsec_func(
-                event.lepIn_E)
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_XSEC"]] = event.xsec
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_TARGETA"]] = gibuu_output.A
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_TARGETZ"]] = gibuu_output.Z
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_BX"]] = bjorkenx[mc_event_id]
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_BY"]] = bjorkeny[mc_event_id]
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_CC"]] = ichan
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
-                event.evType]
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_VERINCAN"]] = 1
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_LEPINCAN"]] = 1
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_GIBUU_WEIGHT"]] = event.weight
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_GIBUU_SCAT_TYPE"]] = event.evType
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_PS"]] = global_generation_weight
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_EG"]] = gibuu_output.flux_index
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_XSEC_MEAN"]] = mean_xsec_func(event.lepIn_E)
+            evt.w2list[km3io.definitions.
+                       w2list_km3buu["W2LIST_KM3BUU_XSEC"]] = event.xsec
+            evt.w2list[km3io.definitions.
+                       w2list_km3buu["W2LIST_KM3BUU_TARGETA"]] = gibuu_output.A
+            evt.w2list[km3io.definitions.
+                       w2list_km3buu["W2LIST_KM3BUU_TARGETZ"]] = gibuu_output.Z
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_BX"]] = bjorkenx[mc_event_id]
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_BY"]] = bjorkeny[mc_event_id]
+            evt.w2list[
+                km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_CC"]] = ichan
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
+                    event.evType]
+            evt.w2list[
+                km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_VERINCAN"]] = 1
+            evt.w2list[
+                km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_LEPINCAN"]] = 1
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_GIBUU_WEIGHT"]] = event.weight
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_GIBUU_SCAT_TYPE"]] = event.evType
             # TODO
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_DXSEC"]] = np.nan
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_COLUMN_DEPTH"]] = np.nan
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_P_EARTH"]] = np.nan
-            evt.w2list[km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_WATER_INT_LEN"]] = np.nan
+            evt.w2list[km3io.definitions.
+                       w2list_km3buu["W2LIST_KM3BUU_DXSEC"]] = np.nan
+            evt.w2list[km3io.definitions.
+                       w2list_km3buu["W2LIST_KM3BUU_COLUMN_DEPTH"]] = np.nan
+            evt.w2list[km3io.definitions.
+                       w2list_km3buu["W2LIST_KM3BUU_P_EARTH"]] = np.nan
+            evt.w2list[km3io.definitions.
+                       w2list_km3buu["W2LIST_KM3BUU_WATER_INT_LEN"]] = np.nan
 
             timestamp = event_times[total_id]
             # Direction
