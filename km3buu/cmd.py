@@ -118,6 +118,13 @@ ARGPARSE_GENERAL_PARAMS = [{
     "help": "Do tau propagation",
     "default": False
 }, {
+    "option_strings": ["--decay"],
+    "dest": "decay",
+    "action": argparse.BooleanOptionalAction,
+    "help":
+    "Decay final state particles (according to the decays done in gSeaGen)",
+    "default": True
+}, {
     "option_strings": ["--zenith", "-z"],
     "dest": "zenith",
     "type": float,
@@ -201,7 +208,7 @@ def main():
                                    args.target,
                                    seed=args.seed,
                                    fluxfile=fluxfile,
-                                   do_decay=False)
+                                   do_decay=args.decay)
 
     jc["neutrinoanalysis"]["outputEvents"] = True
     jc["neutrinoanalysis"]["inclusiveAnalysis"] = False
