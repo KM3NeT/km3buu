@@ -46,14 +46,14 @@ class TestSphere(unittest.TestCase):
 
     def test_limited_zenith(self):
         np.random.seed(1234)
-        geometry = CanVolume(zenith=(-0.4, 0.5))
+        geometry = CANVolume(zenith=(-0.4, 0.5))
         self.assertAlmostEqual(geometry.solid_angle, 5.654866776461628)
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], 0.15989789393584863)
-        geometry = CanVolume(zenith=(0.1, 0.3))
+        geometry = CANVolume(zenith=(0.1, 0.3))
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], 0.25707171674275386)
-        geometry = CanVolume(zenith=(-0.3, -0.2))
+        geometry = CANVolume(zenith=(-0.3, -0.2))
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], -0.2727407394717358)
 
@@ -61,7 +61,7 @@ class TestSphere(unittest.TestCase):
 class TestCan(unittest.TestCase):
 
     def setUp(self):
-        self.detector_geometry = CanVolume()
+        self.detector_geometry = CANVolume()
 
     def test_volume(self):
         volume = self.detector_geometry.volume
@@ -76,7 +76,7 @@ class TestCan(unittest.TestCase):
 
     def test_position(self):
         np.random.seed(1234)
-        detector_geometry = CanVolume(detector_center=(100, 100))
+        detector_geometry = CANVolume(detector_center=(100, 100))
         pos = detector_geometry.random_pos()
         self.assertAlmostEqual(pos[0], -27.07940486491587)
         self.assertAlmostEqual(pos[1], -22.54421157149173)
@@ -84,13 +84,13 @@ class TestCan(unittest.TestCase):
 
     def test_limited_zenith(self):
         np.random.seed(1234)
-        geometry = CanVolume(zenith=(-0.4, 0.5))
+        geometry = CANVolume(zenith=(-0.4, 0.5))
         self.assertAlmostEqual(geometry.solid_angle, 5.654866776461628)
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], 0.15989789393584863)
-        geometry = CanVolume(zenith=(0.1, 0.3))
+        geometry = CANVolume(zenith=(0.1, 0.3))
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], 0.25707171674275386)
-        geometry = CanVolume(zenith=(-0.3, -0.2))
+        geometry = CANVolume(zenith=(-0.3, -0.2))
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], -0.2727407394717358)
