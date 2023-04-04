@@ -29,7 +29,7 @@ def main():
         tablepath = Config().proposal_itp_tables
         logging.info(f"Writing PROPOSAL tables to: {tablepath}")
 
-        from km3buu.propagation import _setup_utility, PROPOSAL_LEPTON_DEFINITIONS, PROPOSAL_TARGET_WATER
+        from km3buu.propagation import _setup_utility, PROPOSAL_LEPTON_DEFINITIONS, PROPOSAL_TARGET_WATER, PROPOSAL_TARGET_ROCK
         import proposal as pp
 
         pp.InterpolationSettings.tables_path = '.'
