@@ -109,6 +109,7 @@ def generate_neutrino_jobcard(events,
                               photon_propagation=True,
                               fluxfile=None,
                               seed=None,
+                              timesteps=-1,
                               input_path=INPUT_PATH):  # pragma: no cover
     """
     Generate a jobcard for neutrino interaction
@@ -138,6 +139,9 @@ def generate_neutrino_jobcard(events,
     seed: int (default: 0)
         Input seed for the random number generator in GiBUU 
         (0: some seed will be drawn based on system time)
+    timesteps: int (default: -1)
+        Number of timesteps done by GiBUU
+        (-1: Default value from GiBUU is used)
     input_path: str
         The input path pointing to the GiBUU lookup data which should be used
     """
@@ -151,6 +155,9 @@ def generate_neutrino_jobcard(events,
     jc["target"]["a"] = target[0]
     # EVENTS
     run_events = int(100000 / target[1])
+    # FSI
+    if timesteps >= 0:
+        jc["input"]["numTimeSteps"] = timesteps
     if events < run_events:
         run_events = events
         runs = 1

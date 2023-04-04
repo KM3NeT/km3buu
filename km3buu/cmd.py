@@ -61,6 +61,13 @@ ARGPARSE_GENERAL_PARAMS = [{
     "metavar": ("A", "Z"),
     "required": True
 }, {
+    "option_strings": ["--timesteps", "-x"],
+    "dest": "timesteps",
+    "type": int,
+    "help": "The number of timesteps performed by GiBUU",
+    "required": False
+    "default": -1
+}, {
     "option_strings": ["--geometry", "-g"],
     "dest":
     "geometry",
@@ -208,7 +215,8 @@ def main():
                                    args.target,
                                    seed=args.seed,
                                    fluxfile=fluxfile,
-                                   do_decay=args.decay)
+                                   do_decay=args.decay,
+                                   timesteps=args.timesteps)
 
     jc["neutrinoanalysis"]["outputEvents"] = True
     jc["neutrinoanalysis"]["inclusiveAnalysis"] = False
