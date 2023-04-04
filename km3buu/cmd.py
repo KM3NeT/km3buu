@@ -11,7 +11,7 @@ from os.path import join
 
 from km3buu.jobcard import generate_neutrino_jobcard
 from km3buu.ctrl import run_jobcard
-from km3buu.geometry import CanVolume, SphericalVolume, NoVolume
+from km3buu.geometry import *
 from km3buu.output import GiBUUOutput, write_detector_file
 
 ARGPARSE_DESC = {
@@ -71,7 +71,7 @@ ARGPARSE_GENERAL_PARAMS = [{
     "option_strings": ["--geometry", "-g"],
     "dest":
     "geometry",
-    "choices": ["no", "can", "sphere"],
+    "choices": ["no", "can", "sphere", "cylindrical"],
     "default":
     "no",
     "help":
@@ -97,7 +97,7 @@ ARGPARSE_GENERAL_PARAMS = [{
     "nargs":
     "*",
     "help":
-    "Dimensions of the geometry; sphere -> -d <radius> / can -> -d <radius> <zmin> <zmax>"
+    "Dimensions of the geometry; sphere -> -d <radius> / can -> -d <radius> <zmin> <zmax> / cylindrical -> -d <seawaterheight> <rockheight> <radius> <canradius> <canzmin> <canzmax>"
 }, {
     "option_strings": ["--output-dir", "-o"],
     "dest": "output",
@@ -245,7 +245,16 @@ def main():
             kwargs["zmin"] = args.dimensions[0]
             kwargs["zmax"] = args.dimensions[1]
             kwargs["radius"] = args.dimensions[2]
-        volume = CanVolume(**kwargs)
+        volume = CANVolume(**kwargs)
+    elif args.geometry == 'cylindrical':
+        kwargs = {"detector_center": tuple(args.center), "zenith": args.zenith}
+        kwargs["sw_height"] = args.dimensions[0]
+        kwargs["sr_height"] = args.dimensions[1]
+        kwargs["radius"] = args.dimensions[2]
+        kwargs["can_radius"] = args.dimensions[3]
+        kwargs["can_zmin"] = args.dimensions[4]
+        kwargs["can_zmax"] = args.dimensions[5]
+        volume = CylindricalVolume(**kwargs)
     run_descriptor = ""
     if args.runnumber:
         run_descriptor = "run{:08d}_".format(args.runnumber)

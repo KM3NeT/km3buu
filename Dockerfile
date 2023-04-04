@@ -28,6 +28,8 @@ RUN cd /km3buu && \
     pip3 install -e ".[dev]" && \
     pip3 install -e ".[extras]"
 
+RUN init4buu --proposal=/proposal
+
 RUN cd /km3buu/externals/km3net-dataformat/ && \
     make
 ENV KM3NET_LIB=/km3buu/externals/km3net-dataformat/lib    
