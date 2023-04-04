@@ -65,7 +65,7 @@ ARGPARSE_GENERAL_PARAMS = [{
     "dest": "timesteps",
     "type": int,
     "help": "The number of timesteps performed by GiBUU",
-    "required": False
+    "required": False,
     "default": -1
 }, {
     "option_strings": ["--geometry", "-g"],
