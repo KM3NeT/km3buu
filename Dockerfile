@@ -28,7 +28,7 @@ RUN cd /km3buu && \
     pip3 install -e ".[dev]" && \
     pip3 install -e ".[extras]"
 
-RUN init4buu --proposal
+RUN init4buu --proposal=/proposal
 
 RUN cd /km3buu/externals/km3net-dataformat/ && \
     make
