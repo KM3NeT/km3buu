@@ -22,13 +22,11 @@ import awkward as ak
 import uproot
 from scipy.interpolate import UnivariateSpline, interp1d
 from scipy.spatial.transform import Rotation
-import scipy.constants as constants
 from scipy.optimize import curve_fit
-import mendeleev
 from datetime import datetime
 import km3io
 
-from .physics import visible_energy_fraction
+from .physics import visible_energy_fraction, get_targets_per_volume
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 from .geometry import *
 from .config import Config, read_default_media_compositions
@@ -648,13 +646,7 @@ def write_detector_file(gibuu_output,
     bjorkenx = event_data.Bx
     bjorkeny = event_data.By
 
-    media = read_default_media_compositions()
-    density = media["SeaWater"]["density"]  # [g/cm^3]
-    element = mendeleev.element(gibuu_output.Z)
-    target = media["SeaWater"]["elements"][element.symbol]
-    target_density = 1e3 * density * target[1]  # [kg/m^3]
-    targets_per_volume = target_density / target[
-        0].atomic_weight / constants.atomic_mass
+    targets_per_volume = get_targets_per_volume(gibuu_output.Z, "SeaWater")
 
     w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume,
                                 geometry.solid_angle)

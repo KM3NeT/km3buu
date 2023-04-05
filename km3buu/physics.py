@@ -18,10 +18,13 @@ __status__ = "Development"
 import numpy as np
 import awkward as ak
 from particle import Particle
+import mendeleev
+import scipy.constants as constants
 
 from .config import read_default_media_compositions
 
-DENSITY_SEA_WATER = read_default_media_compositions()["SeaWater"]["density"]
+MEDIA_COMPOSITION = read_default_media_compositions()
+DENSITY_SEA_WATER = MEDIA_COMPOSITION["SeaWater"]["density"]
 
 MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7  # dx/dE [m/GeV]
 MUON_MASS = Particle.from_string("mu").mass / 1e3
@@ -107,6 +110,44 @@ HE_PARAMS = {
     "Mkref": 2.698,
 }
 
+###################################
+# Target Properties
+###################################
+
+
+def get_targets_per_volume(targetZ,
+                           medium,
+                           media_composition=MEDIA_COMPOSITION):
+    """
+    Calculate the target density
+
+    Parameters
+    ----------
+    targetZ: int
+        Charge number of the hit nucleus
+    medium: str 
+        Name of the medium definied in the definitions file
+    media_composition: dict
+        Overall media composition from the main definitions file
+
+    Returns
+    -------
+    target_density: float [m^-3]
+        The target densitiy in the given medium
+    """
+    density = media_composition[medium]["density"]  # [g/cm^3]
+    element = mendeleev.element(targetZ)
+    target = media[medium]["elements"][element.symbol]
+    target_density = 1e3 * density * target[1]  # [kg/m^3]
+    targets_per_volume = target_density / target[
+        0].atomic_weight / constants.atomic_mass
+    return targets_per_volume
+
+
+###################################
+# Visible Energy
+###################################
+
 
 def _get_particle_rest_mass(pdgid):
 
@@ -128,12 +169,12 @@ def get_kinetic_energy(energy, pdgid, warning=True):
 
     Parameters
     ----------
-    energy: float [GeV]
-        Total energy of the given particle 
+    energy: float[GeV]
+        Total energy of the given particle
     pdgid: int
         PDGID of the given particle
     warning: boolean
-        Show the warning on negative value passed to np.sqrt 
+        Show the warning on negative value passed to np.sqrt
     """
     mass = np.array(_get_particle_rest_mass(pdgid))
     import warnings
@@ -147,13 +188,13 @@ def get_kinetic_energy(energy, pdgid, warning=True):
 
 def visible_energy(energy, pdgid):
     """
-    Returns the visible energy in the one particle approximation (OPA)
-    how it is used in JSirene (i.e. JPythia.hh)
+    Returns the visible energy in the one particle approximation(OPA)
+    how it is used in JSirene(i.e. JPythia.hh)
 
     Parameters
     ----------
-    energy: float [GeV]
-        Total energy of the given particle 
+    energy: float[GeV]
+        Total energy of the given particle
     pdgid: int
         PDGID of the given particle
     """
@@ -163,13 +204,13 @@ def visible_energy(energy, pdgid):
 
 def visible_energy_fraction(energy, pdgid):
     """
-    Returns the visible energy fraction in the one particle approximation (OPA)
-    how it is used in JSirene (i.e. JPythia.hh)
+    Returns the visible energy fraction in the one particle approximation(OPA)
+    how it is used in JSirene(i.e. JPythia.hh)
 
     Parameters
     ----------
-    energy: float [GeV]
-        Total energy of the given particle 
+    energy: float[GeV]
+        Total energy of the given particle
     pdgid: int
         PDGID of the given particle
     """
@@ -190,13 +231,13 @@ def visible_energy_fraction(energy, pdgid):
 @np.vectorize
 def km3_opa_fraction(energy, pdgid):
     """
-    Returns the visible energy fraction in the one particle approximation (OPA)
+    Returns the visible energy fraction in the one particle approximation(OPA)
     how it is used in KM3
 
     Parameters
     ----------
-    energy: float [GeV]
-        Kinetic energy of the given particle 
+    energy: float[GeV]
+        Kinetic energy of the given particle
     pdgid: int
         PDGID of the given particle
     """
@@ -319,11 +360,11 @@ def neutron_weight(energy):
 @np.vectorize
 def high_energy_weight(energy):
     """
-    High energy weight (valid above 40 GeV)
+    High energy weight(valid above 40 GeV)
 
     Parameters
     ----------
-    energy: float 
+    energy: float
         Kinetic energy of the given particle
     """
     if energy < 0.2:
@@ -350,14 +391,14 @@ def muon_range_seawater(start_energy, stop_energy):
 
     Parameters
     ----------
-    start_energy: float [GeV]
+    start_energy: float[GeV]
         Start energy of the muon track
-    stop_energy: float [GeV]
+    stop_energy: float[GeV]
         Stop energy of the muon track
 
     Return
     ------
-    track_length: float [m]
+    track_length: float[m]
     """
     if start_energy <= MUON_MASS:
         return 0
@@ -392,17 +433,17 @@ def muon_range(start_energy, stop_energy, a, b):
 
     Parameters
     ----------
-    start_energy: float [GeV]
+    start_energy: float[GeV]
         Start energy of the muon track
-    stop_energy: float [GeV]
+    stop_energy: float[GeV]
         Stop energy of the muon track
-    a: float [GeV/m]
+    a: float[GeV/m]
         Ionisation loss
-    b: float [m^-1]
+    b: float[m ^ -1]
         Pair-Production and Bremsstrahlung
 
     Return
     ------
-    track_length: float [m]
+    track_length: float[m]
     """
     return -np.log((a + b * stop_energy) / (a + b * start_energy)) / b
