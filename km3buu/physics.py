@@ -149,6 +149,45 @@ def get_targets_per_volume(targetZ,
 ###################################
 
 
+###################################
+# Target Properties
+###################################
+def get_targets_per_volume(targetZ,
+                           medium,
+                           media_composition=MEDIA_COMPOSITION):
+    """
+    Calculate the target density
+
+    Parameters
+    ----------
+    targetZ: int
+        Charge number of the hit nucleus
+    medium: str 
+        Name of the medium definied in the definitions file
+    media_composition: dict
+        Overall media composition from the main definitions file
+
+    Returns
+    -------
+    target_density: float [m^-3]
+        The target densitiy in the given medium
+    element: object
+        Element object from mendeleev package
+    """
+    density = media_composition[medium]["density"]  # [g/cm^3]
+    element = mendeleev.element(targetZ)
+    target = media_composition[medium]["elements"][element.symbol]
+    target_density = 1e3 * density * target[1]  # [kg/m^3]
+    targets_per_volume = target_density / target[
+        0].atomic_weight / constants.atomic_mass
+    return targets_per_volume, element
+
+
+###################################
+# Visible Energy
+###################################
+
+
 def _get_particle_rest_mass(pdgid):
 
     @np.vectorize

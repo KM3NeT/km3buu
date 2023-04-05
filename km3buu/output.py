@@ -545,19 +545,19 @@ class GiBUUOutput:
         return self._generated_events
 
     def _determine_flux_index(self):
-
-        def fluxfunc(x, a, b):
-            return a * x**b
-
-        lower_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.2)
-        upper_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.8)
-        mask = (self.flux_data["flux"] > lower_limit) & (self.flux_data["flux"]
-                                                         < upper_limit)
-        popt, pcov = curve_fit(fluxfunc,
-                               self.flux_data["energy"][mask],
-                               self.flux_data["flux"][mask],
-                               p0=[1, -1])
-        self._flux_index = popt[1]
+        #
+        # def fluxfunc(x, a, b):
+        #     return a * x**b
+        #
+        # lower_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.2)
+        # upper_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.8)
+        # mask = (self.flux_data["flux"] > lower_limit) & (self.flux_data["flux"]
+        #                                                  < upper_limit)
+        # popt, pcov = curve_fit(fluxfunc,
+        #                        self.flux_data["energy"][mask],
+        #                        self.flux_data["flux"][mask],
+        #                        p0=[1, -1])
+        self._flux_index = np.nan  #popt[1]
 
     @property
     def flux_index(self):
