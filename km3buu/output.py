@@ -545,19 +545,19 @@ class GiBUUOutput:
         return self._generated_events
 
     def _determine_flux_index(self):
-        #
-        # def fluxfunc(x, a, b):
-        #     return a * x**b
-        #
-        # lower_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.2)
-        # upper_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.8)
-        # mask = (self.flux_data["flux"] > lower_limit) & (self.flux_data["flux"]
-        #                                                  < upper_limit)
-        # popt, pcov = curve_fit(fluxfunc,
-        #                        self.flux_data["energy"][mask],
-        #                        self.flux_data["flux"][mask],
-        #                        p0=[1, -1])
-        self._flux_index = np.nan  #popt[1]
+
+        def fluxfunc(x, a, b):
+            return a * x**b
+
+        lower_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.2)
+        upper_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.8)
+        mask = (self.flux_data["flux"] > lower_limit) & (self.flux_data["flux"]
+                                                         < upper_limit)
+        popt, pcov = curve_fit(fluxfunc,
+                               self.flux_data["energy"][mask],
+                               self.flux_data["flux"][mask],
+                               p0=[1, -1])
+        self._flux_index = popt[1]
 
     @property
     def flux_index(self):
@@ -646,17 +646,14 @@ def write_detector_file(gibuu_output,
     bjorkenx = event_data.Bx
     bjorkeny = event_data.By
 
-    targets_per_volume = get_targets_per_volume(gibuu_output.Z, "SeaWater")
-
-    w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume,
-                                geometry.solid_angle)
+    w2 = gibuu_output.w2weights(geometry.volume, 1, geometry.solid_angle)
     global_generation_weight = gibuu_output.global_generation_weight(
         geometry.solid_angle)
     mean_xsec_func = gibuu_output.mean_xsec
 
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
-    header_dct["target"] = element.name
+    # header_dct["target"] = element.name
     header_dct["gibuu_Nevents"] = str(gibuu_output._generated_events)
     header_dct["n_split_files"] = str(no_files)
     header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
@@ -694,11 +691,11 @@ def write_detector_file(gibuu_output,
             evt.id = mc_event_id
             evt.mc_run_id = mc_event_id
             # Vertex Positioning & Propagation
-            vtx_pos, vtx_angles, samples, prop_particles = geometry.distribute_event(
+            vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
                 event)
             # Weights
             evt.w.push_back(geometry.volume)  # w1 (can volume)
-            evt.w.push_back(w2[total_id] / samples)  # w2
+            evt.w.push_back(w2[total_id] * targets_per_volume / samples)  # w2
             evt.w.push_back(-1.0)  # w3 (= w2*flux)
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)

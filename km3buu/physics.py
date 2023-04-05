@@ -25,6 +25,7 @@ from .config import read_default_media_compositions
 
 MEDIA_COMPOSITION = read_default_media_compositions()
 DENSITY_SEA_WATER = MEDIA_COMPOSITION["SeaWater"]["density"]
+ELEMENTS = dict()
 
 MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7  # dx/dE [m/GeV]
 MUON_MASS = Particle.from_string("mu").mass / 1e3
@@ -175,7 +176,11 @@ def get_targets_per_volume(targetZ,
         Element object from mendeleev package
     """
     density = media_composition[medium]["density"]  # [g/cm^3]
-    element = mendeleev.element(targetZ)
+    try:
+        element = ELEMENTS[targetZ]
+    except:
+        element = mendeleev.element(targetZ)
+        ELEMENTS[targetZ] = element
     target = media_composition[medium]["elements"][element.symbol]
     target_density = 1e3 * density * target[1]  # [kg/m^3]
     targets_per_volume = target_density / target[
