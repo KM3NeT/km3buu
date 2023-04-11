@@ -653,7 +653,7 @@ def write_detector_file(gibuu_output,
 
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
-    # header_dct["target"] = element.name
+    header_dct["target"] = "A{:d}Z{:d}".format(gibuu_output.A, gibuu_output.Z)
     header_dct["gibuu_Nevents"] = str(gibuu_output._generated_events)
     header_dct["n_split_files"] = str(no_files)
     header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
