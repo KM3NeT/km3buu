@@ -137,7 +137,7 @@ def get_targets_per_volume(targetZ,
     """
     density = media_composition[medium]["density"]  # [g/cm^3]
     element = mendeleev.element(targetZ)
-    target = media[medium]["elements"][element.symbol]
+    target = media_composition[medium]["elements"][element.symbol]
     target_density = 1e3 * density * target[1]  # [kg/m^3]
     targets_per_volume = target_density / target[
         0].atomic_weight / constants.atomic_mass
