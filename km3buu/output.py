@@ -627,7 +627,7 @@ def write_detector_file(gibuu_output,
         nums = ak.num(event_data.barcode)
         pdgid = ak.flatten(event_data.barcode)
         masses = ak.flatten(event_data.M2)
-        mask = np.isclose(
+        mask = np.greater_equal(
             masses,
             ak.from_iter(
                 map(lambda x: (Particle.from_pdgid(x).mass * 1e-3)**2, pdgid)))
