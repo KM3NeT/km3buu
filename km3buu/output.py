@@ -521,6 +521,19 @@ class GiBUUOutput:
         return retval
 
     @property
+    def free_particle_mask(self):
+        from particle import Particle
+        arr = self.arrays
+        nums = ak.num(arr.barcode)
+        pdgid = ak.flatten(arr.barcode)
+        masses = ak.flatten(arr.M2)
+        mask = np.greater_equal(
+            masses,
+            ak.from_iter(
+                map(lambda x: (Particle.from_pdgid(x).mass * 1e-3)**2, pdgid)))
+        return ak.unflatten(mask, nums)
+
+    @property
     def energy_min(self):
         return self._min_energy
 
@@ -623,15 +636,7 @@ def write_detector_file(gibuu_output,
     event_data = gibuu_output.arrays
 
     if free_particle_cuts:
-        from particle import Particle
-        nums = ak.num(event_data.barcode)
-        pdgid = ak.flatten(event_data.barcode)
-        masses = ak.flatten(event_data.M2)
-        mask = np.greater_equal(
-            masses,
-            ak.from_iter(
-                map(lambda x: (Particle.from_pdgid(x).mass * 1e-3)**2, pdgid)))
-        mask = ak.unflatten(mask, nums)
+        mask = gibuu_output.free_particle_mask
         for field in PARTICLE_COLUMNS:
             if field in event_data.fields:
                 event_data[field] = event_data[field][mask]
