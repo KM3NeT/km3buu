@@ -42,10 +42,10 @@ class TestXSection(unittest.TestCase):
     def test_xsection_all(self):
         filename = join(TESTDATA_DIR, XSECTION_FILENAMES["all"])
         xsection = read_nu_abs_xsection(filename)
-        self.assertAlmostEqual(xsection['var'], 58.631)
-        self.assertAlmostEqual(xsection['sum'], 8.0929)
-        self.assertAlmostEqual(xsection['Delta'], 0.26805)
-        self.assertAlmostEqual(xsection['highRES'], 0.14248)
+        self.assertAlmostEqual(xsection['var'], 12.435)
+        self.assertAlmostEqual(xsection['sum'], 16.424)
+        self.assertAlmostEqual(xsection['Delta'], 0.3777)
+        self.assertAlmostEqual(xsection['highRES'], 0.43642)
 
 
 class TestGiBUUOutput(unittest.TestCase):
@@ -70,24 +70,23 @@ class TestGiBUUOutput(unittest.TestCase):
         df = df[(df.lepIn_E > 0.7) & (df.lepIn_E < 1.0)]
         xsec = np.sum(df.xsec / df.lepIn_E)
         n_evts = self.output.flux_interpolation.integral(0.7, 1.0) / 0.02
-        self.assertAlmostEqual(xsec / n_evts, 0.8, places=2)
+        self.assertAlmostEqual(xsec / n_evts, 0.621, places=2)
 
     def test_nucleus_properties(self):
         assert self.output.Z == 8
         assert self.output.A == 16
 
     def test_flux_index(self):
-        assert np.isclose(self.output.flux_index, -0.904, rtol=1e-3)
+        assert np.isclose(self.output.flux_index, -0.004812255, rtol=1e-3)
 
     def test_w2weights(self):
         w2 = self.output.w2weights(123.0, 2.6e28, 4 * np.pi)
         np.testing.assert_array_almost_equal(
-            w2[:3], [2.42100575e-06, 1.14490671e-08, 3.59246902e-05],
-            decimal=5)
+            w2[:3], [2.73669e-07, 4.04777e-09, 7.26780e-11], decimal=5)
 
     def test_global_generation_weight(self):
         self.assertAlmostEqual(self.output.global_generation_weight(4 * np.pi),
-                               2511.13458,
+                               2513.2982433720877,
                                places=2)
 
 
@@ -103,33 +102,35 @@ class TestOfflineFile(unittest.TestCase):
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
-        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4005)
+        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4755)
         np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj.header.start_run.run_id, 1234)
 
     def test_numbering(self):
         evts = self.fobj.events
-        np.testing.assert_array_equal(evts.id, range(4005))
+        np.testing.assert_array_equal(evts.id, range(4755))
 
     def test_firstevent(self):
         evt = self.fobj.events[0]
         np.testing.assert_array_equal(evt.mc_tracks.pdgid,
-                                      [12, 11, 2212, 111, 211, -211])
+                                      [12, 11, 111, 2212, -211, 111, 211])
         np.testing.assert_array_equal(evt.mc_tracks.status,
-                                      [100, 1, 1, 1, 1, 1])
+                                      [100, 1, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
-            11.90433897, 2.1818, 1.45689677, 0.49284856, 8.33975778, 0.28362369
+            24.777316, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
+            3.124241
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
-            0.18255849, -0.2469, 0.48623089, 0.23767571, 0.24971059, 0.11284916
+            0.182558, 0.395074, -0.014414, 0.13387, 0.179905, -0.669119,
+            0.104834
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.80816248, -0.619212, -0.49241334, -0.84679953, -0.83055629,
-            -0.82624071
+            -0.808162, -0.890131, -0.908936, -0.730252, -0.67154, -0.707438,
+            -0.808691
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            0.55995162, 0.745398, 0.72187854, 0.47585798, 0.4978161,
-            -0.55189796
+            0.559952, 0.227118, 0.416687, 0.669933, 0.718796, 0.227622,
+            0.578816
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 8603022.62272017)
@@ -138,17 +139,17 @@ class TestOfflineFile(unittest.TestCase):
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
         usr = evt.mc_tracks.usr[0]
         # XSEC
-        np.testing.assert_almost_equal(evt.w2list[13], 40.62418521597373)
+        np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
         # Bx
-        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
+        np.testing.assert_almost_equal(evt.w2list[7], 0.6810899274375058)
         # By
-        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.7719161976356189)
         # iChannel
         np.testing.assert_equal(evt.w2list[9], 3)
         # CC/NC
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
-        np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
+        np.testing.assert_almost_equal(evt.w2list[23], 0.0008055736278936948)
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
@@ -188,36 +189,38 @@ class TestMultiFileOutput(unittest.TestCase):
             datafile.name.replace(".root", ".2.root"))
 
     def test_header_event_numbers(self):
-        np.testing.assert_equal(self.fobj1.header.genvol.numberOfEvents, 2002)
-        np.testing.assert_equal(self.fobj2.header.genvol.numberOfEvents, 2003)
+        np.testing.assert_equal(self.fobj1.header.genvol.numberOfEvents, 2377)
+        np.testing.assert_equal(self.fobj2.header.genvol.numberOfEvents, 2378)
         np.testing.assert_equal(self.fobj1.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj2.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj1.header.n_split_files, 2)
         np.testing.assert_equal(self.fobj2.header.n_split_files, 2)
 
     def test_numbering(self):
-        np.testing.assert_array_equal(self.fobj1.events.id, range(2002))
-        np.testing.assert_array_equal(self.fobj2.events.id, range(2003))
+        np.testing.assert_array_equal(self.fobj1.events.id, range(2377))
+        np.testing.assert_array_equal(self.fobj2.events.id, range(2378))
 
     def test_firstevent_first_file(self):
         evt = self.fobj1.events[0]
         np.testing.assert_array_equal(evt.mc_tracks.pdgid,
-                                      [12, 11, 2212, 111, 211, -211])
+                                      [12, 11, 111, 2212, -211, 111, 211])
         np.testing.assert_array_equal(evt.mc_tracks.status,
-                                      [100, 1, 1, 1, 1, 1])
+                                      [100, 1, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
-            11.90433897, 2.1818, 1.45689677, 0.49284856, 8.33975778, 0.28362369
+            24.777316, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
+            3.124241
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
-            0.18255849, -0.2469, 0.48623089, 0.23767571, 0.24971059, 0.11284916
+            0.182558, 0.395074, -0.014414, 0.13387, 0.179905, -0.669119,
+            0.104834
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.80816248, -0.619212, -0.49241334, -0.84679953, -0.83055629,
-            -0.82624071
+            -0.808162, -0.890131, -0.908936, -0.730252, -0.67154, -0.707438,
+            -0.808691
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            0.55995162, 0.745398, 0.72187854, 0.47585798, 0.4978161,
-            -0.55189796
+            0.559952, 0.227118, 0.416687, 0.669933, 0.718796, 0.227622,
+            0.578816
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 8603022.62272017)
@@ -226,45 +229,45 @@ class TestMultiFileOutput(unittest.TestCase):
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
         usr = evt.mc_tracks.usr[0]
         # XSEC
-        np.testing.assert_almost_equal(evt.w2list[13], 40.62418521597373)
+        np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
         # Bx
-        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
+        np.testing.assert_almost_equal(evt.w2list[7], 0.6810899274375058)
         # By
-        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.7719161976356189)
         # iChannel
         np.testing.assert_equal(evt.w2list[9], 3)
         # CC/NC
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
-        np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
+        np.testing.assert_almost_equal(evt.w2list[23], 0.0008055736278936948)
 
     def test_firstevent_second_file(self):
         evt = self.fobj2.events[0]
-        np.testing.assert_array_equal(evt.mc_tracks.pdgid, [12, 11, 2212, 111])
-        np.testing.assert_array_equal(evt.mc_tracks.status, [100, 1, 1, 1])
-        np.testing.assert_array_almost_equal(
-            evt.mc_tracks.E, [7.043544, 3.274632, 4.429621, 0.21289])
-        np.testing.assert_array_almost_equal(
-            evt.mc_tracks.dir_x, [0.997604, 0.824817, 0.941969, 0.00302])
-        np.testing.assert_array_almost_equal(
-            evt.mc_tracks.dir_y, [-0.058292, -0.553647, 0.327013, -0.097914])
-        np.testing.assert_array_almost_equal(
-            evt.mc_tracks.dir_z, [0.037271, 0.114683, -0.075871, 0.99519])
+        np.testing.assert_array_equal(evt.mc_tracks.pdgid, [12, 11, 2212])
+        np.testing.assert_array_equal(evt.mc_tracks.status, [100, 1, 1])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.E,
+                                             [5.010154, 1.041807, 4.87277])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x,
+                                             [0.317736, 0.71741, 0.158145])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y,
+                                             [0.850453, -0.333502, 0.944757])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z,
+                                             [-0.419254, -0.611636, -0.287098])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 1951721.26185)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -171.8025)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -55.656482)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 363.950535)
+        np.testing.assert_allclose(evt.mc_tracks.t, 13046739.670364)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, 152.156762)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -38.122626)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 220.976034)
         usr = evt.mc_tracks.usr[0]
         # XSEC
-        np.testing.assert_almost_equal(evt.w2list[13], 4.218262109165907)
+        np.testing.assert_almost_equal(evt.w2list[13], 0.0021272535302635045)
         # Bx
-        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
+        np.testing.assert_almost_equal(evt.w2list[7], 0.6810899274375058)
         # By
-        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.7719161976356189)
         # iChannel
-        np.testing.assert_equal(evt.w2list[9], 3)
+        np.testing.assert_equal(evt.w2list[9], 1)
         # CC/NC
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
-        np.testing.assert_almost_equal(evt.w2list[23], 0.00042182621091659065)
+        np.testing.assert_almost_equal(evt.w2list[23], 2.1272535302635046e-07)
