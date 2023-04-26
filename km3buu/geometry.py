@@ -501,7 +501,10 @@ class CylindricalVolume(DetectorVolume):
             vtx_dir = self.random_dir()
             weight = 1
             evts = None
-            return vtx_pos, vtx_dir, weight, evts
+            medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
+            targets_per_volume, _ = get_targets_per_volume(targetZ=evt.nucleus_Z,
+                                                        medium=medium)
+            return vtx_pos, vtx_dir, weight, evts, targets_per_volume
 
         if not self._pp_geometry:
             self._pp_geometry = self.make_proposal_geometries()
