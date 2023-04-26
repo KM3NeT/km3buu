@@ -120,23 +120,22 @@ class TestOfflineFile(unittest.TestCase):
             24.777316, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
             3.124241
         ])
-        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
-            0.182558, 0.395074, -0.014414, 0.13387, 0.179905, -0.669119,
-            0.104834
-        ])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_x,
+            [0.93038, 0.761401, 0.818513, 0.964518, 0.984183, 0.39, 0.925828])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.808162, -0.890131, -0.908936, -0.730252, -0.67154, -0.707438,
-            -0.808691
+            -0.124785, 0.088805, -0.326036, -0.15996, -0.104239, -0.868099,
+            -0.200785
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            0.559952, 0.227118, 0.416687, 0.669933, 0.718796, 0.227622,
-            0.578816
+            -0.344705, -0.64217, -0.473008, -0.210043, -0.143242, -0.307089,
+            -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 8603022.62272017)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -127.07940486)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -122.54421157)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
+        np.testing.assert_allclose(evt.mc_tracks.t, 6044353.853958)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
         usr = evt.mc_tracks.usr[0]
         # XSEC
         np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
@@ -210,23 +209,22 @@ class TestMultiFileOutput(unittest.TestCase):
             24.777316, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
             3.124241
         ])
-        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
-            0.182558, 0.395074, -0.014414, 0.13387, 0.179905, -0.669119,
-            0.104834
-        ])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_x,
+            [0.93038, 0.761401, 0.818513, 0.964518, 0.984183, 0.39, 0.925828])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.808162, -0.890131, -0.908936, -0.730252, -0.67154, -0.707438,
-            -0.808691
+            -0.124785, 0.088805, -0.326036, -0.15996, -0.104239, -0.868099,
+            -0.200785
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            0.559952, 0.227118, 0.416687, 0.669933, 0.718796, 0.227622,
-            0.578816
+            -0.344705, -0.64217, -0.473008, -0.210043, -0.143242, -0.307089,
+            -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 8603022.62272017)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -127.07940486)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -122.54421157)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
+        np.testing.assert_allclose(evt.mc_tracks.t, 6044353.853958)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
         usr = evt.mc_tracks.usr[0]
         # XSEC
         np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
@@ -248,16 +246,16 @@ class TestMultiFileOutput(unittest.TestCase):
         np.testing.assert_array_almost_equal(evt.mc_tracks.E,
                                              [5.010154, 1.041807, 4.87277])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x,
-                                             [0.317736, 0.71741, 0.158145])
+                                             [0.659808, -0.546414,  0.79964])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y,
-                                             [0.850453, -0.333502, 0.944757])
+                                             [-0.705338, -0.570482, -0.587667])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z,
-                                             [-0.419254, -0.611636, -0.287098])
+                                             [-0.259137, -0.613174, -0.123386])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 13046739.670364)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, 152.156762)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -38.122626)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 220.976034)
+        np.testing.assert_allclose(evt.mc_tracks.t, 3209014.341685)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -349.987102)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, 33.284445)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, -41.963346)
         usr = evt.mc_tracks.usr[0]
         # XSEC
         np.testing.assert_almost_equal(evt.w2list[13], 0.0021272535302635045)
