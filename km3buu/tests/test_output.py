@@ -92,7 +92,7 @@ class TestGiBUUOutput(unittest.TestCase):
     def test_event_values(self):
         arr = self.output.arrays
         np.testing.assert_array_almost_equal(
-            arr["M2"][0], [0.860474, 0.019044, 0.019044, 0.019044])
+            arr["M2"][0], [0.019044, 0.832647, 0.019044, 0.019044, 0.019044])
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
@@ -167,52 +167,57 @@ class TestFreeParticleCuts(unittest.TestCase):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
         np.random.seed(1234)
-        write_detector_file(output, datafile.name)
+        write_detector_file(output,
+                            datafile.name,
+                            run_number=1235,
+                            free_particle_cuts=True)
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
-        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4005)
+        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4755)
         np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
+        np.testing.assert_equal(self.fobj.header.start_run.run_id, 1235)
 
     def test_numbering(self):
         evts = self.fobj.events
-        np.testing.assert_array_equal(evts.id, range(4005))
+        np.testing.assert_array_equal(evts.id, range(4755))
 
     def test_firstevent(self):
         evt = self.fobj.events[0]
         np.testing.assert_array_equal(evt.mc_tracks.pdgid,
-                                      [12, 11, 111, 211, -211])
-        np.testing.assert_array_equal(evt.mc_tracks.status, [100, 1, 1, 1, 1])
+                                      [12, 11, 111, -211, 111, 211])
+        np.testing.assert_array_equal(evt.mc_tracks.status,
+                                      [100, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(
             evt.mc_tracks.E,
-            [11.90433897, 2.1818, 0.49284856, 8.33975778, 0.28362369])
+            [24.777316, 5.654808, 1.808523, 2.866352, 0.222472, 3.124241])
         np.testing.assert_array_almost_equal(
             evt.mc_tracks.dir_x,
-            [0.18255849, -0.2469, 0.23767571, 0.24971059, 0.11284916])
+            [0.93038, 0.761401, 0.818513, 0.984183, 0.39, 0.925828])
         np.testing.assert_array_almost_equal(
             evt.mc_tracks.dir_y,
-            [-0.80816248, -0.619212, -0.84679953, -0.83055629, -0.82624071])
+            [-0.124785, 0.088805, -0.326036, -0.104239, -0.868099, -0.200785])
         np.testing.assert_array_almost_equal(
             evt.mc_tracks.dir_z,
-            [0.55995162, 0.745398, 0.47585798, 0.4978161, -0.55189796])
+            [-0.344705, -0.64217, -0.473008, -0.143242, -0.307089, -0.320199])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 8603022.62272017)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -127.07940486)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -122.54421157)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 208.57726764)
+        np.testing.assert_allclose(evt.mc_tracks.t, 6044353.853958)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
         usr = evt.mc_tracks.usr[0]
         # XSEC
-        np.testing.assert_almost_equal(evt.w2list[13], 40.62418521597373)
+        np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
         # Bx
-        np.testing.assert_almost_equal(evt.w2list[7], 0.35479262672400624)
+        np.testing.assert_almost_equal(evt.w2list[7], 0.6810899274375058)
         # By
-        np.testing.assert_almost_equal(evt.w2list[8], 0.8203215908456797)
+        np.testing.assert_almost_equal(evt.w2list[8], 0.7719161976356189)
         # iChannel
         np.testing.assert_equal(evt.w2list[9], 3)
         # CC/NC
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
-        np.testing.assert_almost_equal(evt.w2list[23], 0.004062418521597373)
+        np.testing.assert_almost_equal(evt.w2list[23], 0.0008055736278936948)
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
@@ -316,7 +321,7 @@ class TestMultiFileOutput(unittest.TestCase):
         np.testing.assert_array_almost_equal(evt.mc_tracks.E,
                                              [5.010154, 1.041807, 4.87277])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x,
-                                             [0.659808, -0.546414,  0.79964])
+                                             [0.659808, -0.546414, 0.79964])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y,
                                              [-0.705338, -0.570482, -0.587667])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z,
