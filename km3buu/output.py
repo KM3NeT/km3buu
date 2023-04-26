@@ -531,6 +531,7 @@ class GiBUUOutput:
             masses,
             ak.from_iter(
                 map(lambda x: (Particle.from_pdgid(x).mass * 1e-3)**2, pdgid)))
+        mask = mask | ~np.isin(np.array(np.abs(pdgid)), [2112, 2212])
         return ak.unflatten(mask, nums)
 
     @property
@@ -694,8 +695,7 @@ def write_detector_file(gibuu_output,
         outfile = ROOT.TFile.Open(tmp_filename, "RECREATE")
         tree = ROOT.TTree("E", "KM3NeT Evt Tree")
         tree.Branch("Evt", evt, 32000, 4)
-        for mc_event_id, event in enumerate(
-                event_data[start_id:stop_id]):
+        for mc_event_id, event in enumerate(event_data[start_id:stop_id]):
             mc_trk_id = 0
             total_id = start_id + mc_event_id
             evt.clear()
