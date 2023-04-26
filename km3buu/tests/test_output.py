@@ -94,6 +94,10 @@ class TestGiBUUOutput(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             arr["M2"][0], [0.019044, 0.832647, 0.019044, 0.019044, 0.019044])
 
+    def test_free_particle_mask(self):
+        mask = self.output.free_particle_mask
+        np.testing.assert_array_equal(mask[0], [True, False, True, True, True])
+
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
