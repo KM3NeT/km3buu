@@ -502,8 +502,8 @@ class CylindricalVolume(DetectorVolume):
             weight = 1
             evts = None
             medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
-            targets_per_volume, _ = get_targets_per_volume(targetZ=evt.nucleus_Z,
-                                                        medium=medium)
+            targets_per_volume, _ = get_targets_per_volume(
+                targetZ=evt.nucleus_Z, medium=medium)
             return vtx_pos, vtx_dir, weight, evts, targets_per_volume
 
         if not self._pp_geometry:
@@ -523,8 +523,8 @@ class CylindricalVolume(DetectorVolume):
             vtx_pos = self.random_pos()
             vtx_angles = self.random_dir()
             medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
-            targets_per_volume, _ = get_targets_per_volume(targetZ=evt.nucleus_Z,
-                                                        medium=medium)
+            targets_per_volume, _ = get_targets_per_volume(
+                targetZ=evt.nucleus_Z, medium=medium)
             if self.in_can(vtx_pos) and evt.flavor_ID == 2:
                 return vtx_pos, vtx_angles, samples, None, targets_per_volume
             R = Rotation.from_euler("yz", vtx_angles)
