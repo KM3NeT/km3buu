@@ -19,6 +19,7 @@ from particle import Particle
 
 import proposal as pp
 from .propagation import *
+from .physics import get_targets_per_volume
 
 M_TO_CM = 1e2
 
@@ -164,7 +165,7 @@ class NoVolume(DetectorVolume):
         vtx_dir = self.random_dir()
         weight = 1
         evts = None
-        return vtx_pos, vtx_dir, weight, None
+        return vtx_pos, vtx_dir, weight, None, 1
 
 
 class CANVolume(DetectorVolume):
@@ -204,6 +205,7 @@ class CANVolume(DetectorVolume):
         self._cosZmax = zenith[1]
         self._solid_angle = 2 * np.pi * (self._cosZmax - self._cosZmin)
         self._propagator = None
+        self._medium = "SeaWater"
         if taupropagation:
             self._pp_geometry = self.make_proposal_geometries()
             self._propagator = Propagator([15, -15], self._pp_geometry)
@@ -305,8 +307,10 @@ class CANVolume(DetectorVolume):
             evts = self._propagator.propagate(charged_lepton_type,
                                               evt.lepOut_E, vtx_pos,
                                               R.apply(lepout_dir))
+        targets_per_volume, _ = get_targets_per_volume(targetZ=evts.nucleus_Z,
+                                                       medium=self._medium)
 
-        return vtx_pos, vtx_angles, weight, evts
+        return vtx_pos, vtx_angles, weight, evts, targets_per_volume
 
 
 class CylindricalVolume(DetectorVolume):
@@ -497,7 +501,10 @@ class CylindricalVolume(DetectorVolume):
             vtx_dir = self.random_dir()
             weight = 1
             evts = None
-            return vtx_pos, vtx_dir, weight, evts
+            medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
+            targets_per_volume, _ = get_targets_per_volume(
+                targetZ=evt.nucleus_Z, medium=medium)
+            return vtx_pos, vtx_dir, weight, evts, targets_per_volume
 
         if not self._pp_geometry:
             self._pp_geometry = self.make_proposal_geometries()
@@ -515,14 +522,17 @@ class CylindricalVolume(DetectorVolume):
             samples += 1
             vtx_pos = self.random_pos()
             vtx_angles = self.random_dir()
+            medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
+            targets_per_volume, _ = get_targets_per_volume(
+                targetZ=evt.nucleus_Z, medium=medium)
             if self.in_can(vtx_pos) and evt.flavor_ID == 2:
-                return vtx_pos, vtx_angles, samples, None
+                return vtx_pos, vtx_angles, samples, None, targets_per_volume
             R = Rotation.from_euler("yz", vtx_angles)
             particles = self._propagator.propagate(charged_lepton_type,
                                                    evt.lepOut_E, vtx_pos,
                                                    R.apply(lepout_dir))
             if not particles is None:
-                return vtx_pos, vtx_angles, samples, particles
+                return vtx_pos, vtx_angles, samples, particles, targets_per_volume
 
 
 class SphericalVolume(DetectorVolume):

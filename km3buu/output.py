@@ -22,13 +22,11 @@ import awkward as ak
 import uproot
 from scipy.interpolate import UnivariateSpline, interp1d
 from scipy.spatial.transform import Rotation
-import scipy.constants as constants
 from scipy.optimize import curve_fit
-import mendeleev
 from datetime import datetime
 import km3io
 
-from .physics import visible_energy_fraction
+from .physics import visible_energy_fraction, get_targets_per_volume
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
 from .geometry import *
 from .config import Config, read_default_media_compositions
@@ -648,23 +646,14 @@ def write_detector_file(gibuu_output,
     bjorkenx = event_data.Bx
     bjorkeny = event_data.By
 
-    media = read_default_media_compositions()
-    density = media["SeaWater"]["density"]  # [g/cm^3]
-    element = mendeleev.element(gibuu_output.Z)
-    target = media["SeaWater"]["elements"][element.symbol]
-    target_density = 1e3 * density * target[1]  # [kg/m^3]
-    targets_per_volume = target_density / target[
-        0].atomic_weight / constants.atomic_mass
-
-    w2 = gibuu_output.w2weights(geometry.volume, targets_per_volume,
-                                geometry.solid_angle)
+    w2 = gibuu_output.w2weights(geometry.volume, 1, geometry.solid_angle)
     global_generation_weight = gibuu_output.global_generation_weight(
         geometry.solid_angle)
     mean_xsec_func = gibuu_output.mean_xsec
 
     header_dct = EMPTY_KM3NET_HEADER_DICT.copy()
 
-    header_dct["target"] = element.name
+    header_dct["target"] = "A{:d}Z{:d}".format(gibuu_output.A, gibuu_output.Z)
     header_dct["gibuu_Nevents"] = str(gibuu_output._generated_events)
     header_dct["n_split_files"] = str(no_files)
     header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
@@ -702,11 +691,11 @@ def write_detector_file(gibuu_output,
             evt.id = mc_event_id
             evt.mc_run_id = mc_event_id
             # Vertex Positioning & Propagation
-            vtx_pos, vtx_angles, samples, prop_particles = geometry.distribute_event(
+            vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
                 event)
             # Weights
             evt.w.push_back(geometry.volume)  # w1 (can volume)
-            evt.w.push_back(w2[total_id] / samples)  # w2
+            evt.w.push_back(w2[total_id] * targets_per_volume / samples)  # w2
             evt.w.push_back(-1.0)  # w3 (= w2*flux)
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
