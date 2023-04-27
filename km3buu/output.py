@@ -54,11 +54,12 @@ XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
 SECONDS_WEIGHT_TIMESPAN = 1
 
-PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "barcode"]
+PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "x", "y", "z", "barcode"]
 EVENTINFO_COLUMNS = [
     "weight", "evType", "lepIn_E", "lepIn_Px", "lepIn_Py", "lepIn_Pz",
     "lepOut_E", "lepOut_Px", "lepOut_Py", "lepOut_Pz", "nuc_E", "nuc_Px",
-    "nuc_Py", "nuc_Pz"
+    "nuc_Py", "nuc_Pz", "nucleus_A", "nucleus_Z", "flavor_ID", "process_ID",
+    "numRuns", "numEnsembles"
 ]
 
 LHE_NU_INFO_DTYPE = np.dtype([
@@ -510,10 +511,28 @@ class GiBUUOutput:
         retval["Bx"] = GiBUUOutput.bjorken_x(retval)
         retval["By"] = GiBUUOutput.bjorken_y(retval)
         retval["Q2"] = GiBUUOutput.Qsquared(retval)
+        retval["M2"] = retval["E"]**2 - retval["Px"]**2 - retval[
+            "Py"]**2 - retval["Pz"]**2
+        if "x" in retval.fields:
+            retval["R"] = retval["x"]**2 + retval["y"]**2 + retval["z"]**2
         visEfrac = visible_energy_fraction(ak.flatten(retval.E),
                                            ak.flatten(retval.barcode))
         retval["visEfrac"] = ak.unflatten(visEfrac, counts)
         return retval
+
+    @property
+    def free_particle_mask(self):
+        from particle import Particle
+        arr = self.arrays
+        nums = ak.num(arr.barcode)
+        pdgid = ak.flatten(arr.barcode)
+        masses = ak.flatten(arr.M2)
+        mask = np.greater_equal(
+            masses,
+            ak.from_iter(
+                map(lambda x: (Particle.from_pdgid(x).mass * 1e-3)**2, pdgid)))
+        mask = mask | ~np.isin(np.array(np.abs(pdgid)), [2112, 2212])
+        return ak.unflatten(mask, nums)
 
     @property
     def energy_min(self):
@@ -553,6 +572,7 @@ def write_detector_file(gibuu_output,
                         run_number=1,
                         geometry=CylindricalVolume(),
                         livetime=3.156e7,
+                        free_particle_cuts=True,
                         propagate_tau=True):  # pragma: no cover
     """
     Convert the GiBUU output to a KM3NeT MC (OfflineFormat) file
@@ -571,6 +591,8 @@ def write_detector_file(gibuu_output,
         The detector geometry which should be used
     livetime: float
         The data livetime
+    free_particle_cuts: boolean (default: True)
+        Apply cuts in order to select particles which exit the nucleus
     """
     if not isinstance(geometry, DetectorVolume):
         raise TypeError("Geometry needs to be a DetectorVolume")
@@ -613,6 +635,12 @@ def write_detector_file(gibuu_output,
         sec_lep_type *= -1
 
     event_data = gibuu_output.arrays
+
+    if free_particle_cuts:
+        mask = gibuu_output.free_particle_mask
+        for field in PARTICLE_COLUMNS:
+            if field in event_data.fields:
+                event_data[field] = event_data[field][mask]
 
     if no_files > len(event_data):
         raise IndexError("More files to write than contained events!")
@@ -667,8 +695,7 @@ def write_detector_file(gibuu_output,
         outfile = ROOT.TFile.Open(tmp_filename, "RECREATE")
         tree = ROOT.TTree("E", "KM3NeT Evt Tree")
         tree.Branch("Evt", evt, 32000, 4)
-        for mc_event_id, event in enumerate(
-                event_data[start_id:stop_id]):
+        for mc_event_id, event in enumerate(event_data[start_id:stop_id]):
             mc_trk_id = 0
             total_id = start_id + mc_event_id
             evt.clear()
