@@ -26,6 +26,7 @@ if GIBUU_INSTALL_AVAILABLE:
 
 
 class TestUtils(unittest.TestCase):
+
     def test_event_numbers(self):
         e, r = estimate_number_of_ensembles(1000, (1, 1))
         assert e == 2000
