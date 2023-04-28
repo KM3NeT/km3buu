@@ -149,7 +149,7 @@ def generate_neutrino_jobcard(ensembles,
     Parameters
     ----------
     ensembles: int
-        Simulated number of ensembles per nucleon, which will result in #events < ensembles
+        Simulated number of ensembles per nucleon & runs, which will result in #events < ensembles * runs
     runs: int
         Number of runs which should be executed by   
     process: str
