@@ -25,6 +25,7 @@ except ModuleNotFoundError:
 
 
 class TestSWIMLabels(unittest.TestCase):
+
     def test_xsection_labels(self):
         assert "gnum_CC_E" == build_swim_xsec_label("muon", "CC", False)
         assert "gnut_CC_logE" == build_swim_xsec_label("tau", "CC", False,
@@ -42,6 +43,7 @@ class TestSWIMLabels(unittest.TestCase):
 
 @pytest.mark.skipif(not ROOT_AVAILABLE, reason="PyROOT required")
 class TestSWIMFiles(unittest.TestCase):
+
     def setUp(self):
         self.filename = TemporaryFile(suffix=".root")
         lbl = build_swim_xsec_label("electron", "CC", True)
