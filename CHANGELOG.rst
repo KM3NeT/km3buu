@@ -6,3 +6,4 @@ Unreleased changes
 * Add singularity build and deploy option to KM3NeT FTP to CI
 * Add free particle cuts to check if nucleons are bound to nuclear potential
 * Resturcture application of the target density in order to care for different materials, i.e. water/rock
+* Add function to estimate #ensembles & #runs by desired number of events
