@@ -13,6 +13,7 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import f90nml
+import numpy as np
 from os.path import basename, dirname, abspath, join, isfile
 from os import environ
 
@@ -24,6 +25,8 @@ except ImportError:
 INPUT_PATH = environ.get("CONTAINER_GIBUU_INPUT")
 if INPUT_PATH is None:
     INPUT_PATH = "/opt/buuinput2021/"
+
+BLOCKING_FACTOR = 2
 
 DEFAULT_JOBCARD_FILENAME = "jobcard.job"
 
@@ -50,6 +53,7 @@ XSECTIONMODE_LOOKUP = {
 }
 
 DECAYED_HADRONS = [56, 57, 114, 115, 118, 119]
+MAX_OVERALL_ENSEMBLES = 100000
 
 
 class Jobcard(f90nml.Namelist):
@@ -98,7 +102,35 @@ def write_jobcard(jobcard, filepath):
         f90nml.write(jobcard, nml_file)
 
 
-def generate_neutrino_jobcard(events,
+def estimate_number_of_ensembles(events, target):
+    """
+    Estimate a suiting ensemble configuration for GiBUU based on a 
+    the desired number of events
+    Parameters
+    ----------
+    events: int
+        Number of events which should be generated
+    target: (int, int)
+        (A, Z) properties of the target nucleus
+    Return
+    ------
+    tuple (int, int) [ensembles, runs] 
+    """
+
+    run_ensembles = int(np.ceil(MAX_OVERALL_ENSEMBLES / target[0]))
+    required_ensembles = int(np.ceil(events / target[0])) * BLOCKING_FACTOR
+
+    if required_ensembles < run_ensembles:
+        ensembles = required_ensembles
+        runs = 1
+    else:
+        ensembles = run_ensembles
+        runs = int(np.ceil(required_ensembles / run_ensembles))
+    return (ensembles, runs)
+
+
+def generate_neutrino_jobcard(ensembles,
+                              runs,
                               process,
                               flavour,
                               energy,
@@ -116,8 +148,10 @@ def generate_neutrino_jobcard(events,
 
     Parameters
     ----------
-    events: int
-        Simulated number of neutrino events
+    ensembles: int
+        Simulated number of ensembles per nucleon & runs, which will result in #events < ensembles * runs
+    runs: int
+        Number of runs which should be executed by   
     process: str
         Interaction channel ["CC", "NC", "antiCC", "antiNC"]
     flavour: str
@@ -125,7 +159,7 @@ def generate_neutrino_jobcard(events,
     energy: float, tuple
         Initial energy or energy range (emin, emax) of the primary neutrino in GeV
     target: (int, int)
-        (A, Z) describing the target nucleon
+        (A, Z) properties of the target nucleus
     write_pert: boolean (default: True)
         Write perturbative particles
     write_real: boolean (default: False)
@@ -153,17 +187,11 @@ def generate_neutrino_jobcard(events,
     # TARGET
     jc["target"]["z"] = target[1]
     jc["target"]["a"] = target[0]
-    # EVENTS
-    run_events = int(100000 / target[1])
     # FSI
     if timesteps >= 0:
         jc["input"]["numTimeSteps"] = timesteps
-    if events < run_events:
-        run_events = events
-        runs = 1
-    else:
-        runs = events // run_events
-    jc["input"]["numEnsembles"] = run_events
+    # EVENTS
+    jc["input"]["numEnsembles"] = ensembles
     jc["input"]["num_runs_SameEnergy"] = runs
     # ENERGY
     if isinstance(energy, tuple):

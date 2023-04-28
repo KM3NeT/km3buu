@@ -9,7 +9,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from os.path import join
 
-from km3buu.jobcard import generate_neutrino_jobcard
+from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
 from km3buu.geometry import *
 from km3buu.output import GiBUUOutput, write_detector_file
@@ -208,7 +208,10 @@ def main():
         fluxfile = join(args.output, "flux.dat")
         np.savetxt(fluxfile, np.c_[energies, flux])
 
-    jc = generate_neutrino_jobcard(args.events,
+    ensembles, runs = estimate_number_of_ensembles(args.events, args.target)
+
+    jc = generate_neutrino_jobcard(ensembles,
+                                   runs,
                                    args.interaction,
                                    args.flavor,
                                    energy,
