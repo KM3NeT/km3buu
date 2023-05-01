@@ -23,6 +23,25 @@ class TestGeneralGeometry(unittest.TestCase):
             d = DetectorVolume()
 
 
+class TestNoVolume(unittest.TestCase):
+
+    def setUp(self):
+        self.detector_geometry = NoVolume()
+
+    def test_volume(self):
+        volume = self.detector_geometry.volume
+        self.assertAlmostEqual(volume, 1.0)
+
+    def test_random_pos(self):
+        pos = self.detector_geometry.random_pos()
+        np.testing.assert_array_almost_equal(pos, 0.0)
+
+    def test_random_dir(self):
+        direction = self.detector_geometry.random_dir()
+        assert direction[0] == 0.0
+        assert direction[1] == 1.0
+
+
 class TestSphere(unittest.TestCase):
 
     def setUp(self):
@@ -67,6 +86,15 @@ class TestCan(unittest.TestCase):
         volume = self.detector_geometry.volume
         self.assertAlmostEqual(volume, 243604084.28, 2)
 
+    def test_in_can(self):
+        assert ~self.detector_geometry.in_can((300, 300, 100))
+        assert self.detector_geometry.in_can((100, 100, 100))
+
+    def test_header(self):
+        header = self.detector_geometry.header_entries(1234)
+        assert header["genvol"] == "0.000 476.500 403.400 243604084.277 1234"
+        assert header["fixedcan"] == "0.000 0.000 0.000 476.500 403.400"
+
     def test_position(self):
         np.random.seed(1234)
         pos = self.detector_geometry.random_pos()
@@ -94,3 +122,47 @@ class TestCan(unittest.TestCase):
         geometry = CANVolume(zenith=(-0.3, -0.2))
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], -0.2727407394717358)
+
+
+class TestCylindricalVolume(unittest.TestCase):
+
+    def setUp(self):
+        np.random.seed(1234)
+        self.detector_geometry = CylindricalVolume()
+
+    def test_volume(self):
+        volume = self.detector_geometry.volume
+        self.assertAlmostEqual(volume, 589048622.55, 2)
+
+    def test_in_can(self):
+        assert ~self.detector_geometry.in_can((300, 300, 100))
+        assert self.detector_geometry.in_can((100, 100, 100))
+
+    def test_header(self):
+        header = self.detector_geometry.header_entries(1234)
+        assert header[
+            "genvol"] == "-100.000 650.000 500.000 589048622.548 1234"
+        assert header["fixedcan"] == "0.000 0.000 0.000 350.000 200.400"
+
+    def test_single_position(self):
+        pos = self.detector_geometry.random_pos()
+        np.testing.assert_array_almost_equal(
+            pos, [-157.510418, -151.889206, 228.295804])
+
+    def test_multiple_positions(self):
+        pos = self.detector_geometry.random_pos(10)
+        np.testing.assert_array_almost_equal(
+            pos[0, :], [-137.152421, 170.496557, 173.664488])
+        np.testing.assert_array_almost_equal(
+            pos[9, :], [346.394334, -314.633317, 326.073989])
+
+    def test_single_direction(self):
+        direction = self.detector_geometry.random_dir()
+        np.testing.assert_array_almost_equal(direction, [1.203352, 0.244218])
+
+    def test_multiple_directions(self):
+        directions = self.detector_geometry.random_dir(10)
+        np.testing.assert_array_almost_equal(directions[0, :],
+                                             [1.203352, -0.284365])
+        np.testing.assert_array_almost_equal(directions[9, :],
+                                             [5.503647, 0.765282])
