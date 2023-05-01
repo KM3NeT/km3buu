@@ -11,8 +11,10 @@ __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
 import csv
+import re
 import pytest
 import unittest
+from unittest import mock
 import numpy as np
 from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
@@ -25,6 +27,28 @@ from km3net_testdata import data_path
 TESTDATA_DIR = data_path("gibuu")
 
 GIBUU_INSTALL_AVAILABLE = environ.get("CONTAINER_GIBUU_EXEC") is not None
+
+
+def subprocess_mock_function(*args, **kwargs):
+    assert re.match("abc < (.+)/tmp.job", args[0])
+    assert kwargs["shell"]
+    assert kwargs["cwd"] == "/tmp"
+    return mock.Mock()
+
+
+class TestRunJobcard(unittest.TestCase):
+
+    def setUp(self):
+        self.filename = join(TESTDATA_DIR, "km3net_testdata.job")
+        self.jobcard = read_jobcard(self.filename)
+        self.flux_file = NamedTemporaryFile(suffix='.dat')
+        self.jobcard["neutrino_induced"]["FileNameFlux"] = self.flux_file.name
+
+    @mock.patch.dict(environ, {"CONTAINER_GIBUU_EXEC": "abc"})
+    @mock.patch("subprocess.Popen", side_effect=subprocess_mock_function)
+    def test_inside_container(self, mock):
+        run_jobcard(self.jobcard, "/tmp")
+        assert mock.called
 
 
 @pytest.mark.skipif(not GIBUU_INSTALL_AVAILABLE, reason="GiBUU not installed")

@@ -35,7 +35,7 @@ class DetectorVolume(ABC):
         self._solid_angle = 1
 
     @abstractmethod
-    def random_dir(self, n=1):
+    def random_dir(self, n=1):  # pragma: no cover
         """
         Generate a random direction for the interaction
 
@@ -51,7 +51,7 @@ class DetectorVolume(ABC):
         pass
 
     @abstractmethod
-    def random_pos(self, n=1):
+    def random_pos(self, n=1):  # pragma: no cover
         """
         Generate a random position in the detector volume based on a uniform
         event distribution
@@ -87,7 +87,7 @@ class DetectorVolume(ABC):
         return self.random_pos(), self.random_dir(), 1.0, None
 
     @abstractmethod
-    def header_entries(self):
+    def header_entries(self):  # pragma: no cover
         """
         Returns the header information for the detector volume geometry
 
@@ -283,13 +283,14 @@ class CANVolume(DetectorVolume):
     def header_entries(self, nevents=0):
         retdct = dict()
         key = "genvol"
-        value = "{} {} {} {} {}".format(self._zmin, self._zmax, self._radius,
-                                        self._volume, nevents)
+        value = "{:.3f} {:.3f} {:.3f} {:.3f} {:d}".format(
+            self._zmin, self._zmax, self._radius, self._volume, nevents)
         retdct[key] = value
         key = "fixedcan"
-        value = "{} {} {} {} {}".format(self._detector_center[0],
-                                        self._detector_center[1], self._zmin,
-                                        self._zmax, self._radius)
+        value = "{:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
+            self._detector_center[0], self._detector_center[1], self._zmin,
+            self._zmax, self._radius)
+        retdct[key] = value
         return retdct
 
     def distribute_event(self, evt):
@@ -419,14 +420,15 @@ class CylindricalVolume(DetectorVolume):
     def header_entries(self, nevents=0):
         retdct = dict()
         key = "genvol"
-        value = "{} {} {} {} {}".format(-self._rock_height, self._water_height,
-                                        self._radius, self._volume, nevents)
+        value = "{:.3f} {:.3f} {:.3f} {:.3f} {:d}".format(
+            -self._rock_height, self._water_height, self._radius, self._volume,
+            nevents)
         retdct[key] = value
         key = "fixedcan"
-        value = "{} {} {} {} {}".format(self._detector_center[0],
-                                        self._detector_center[1],
-                                        self._canzmin, self._canzmax,
-                                        self._canradius)
+        value = "{:.3f} {:.3f} {:.3f} {:.3f} {:.3f}".format(
+            self._detector_center[0], self._detector_center[1], self._canzmin,
+            self._canzmax, self._canradius)
+        retdct[key] = value
         return retdct
 
     def make_proposal_geometries(self):
