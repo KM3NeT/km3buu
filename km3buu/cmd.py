@@ -2,6 +2,48 @@
 # coding=utf-8
 # Filename: cmd.py
 # Author: Johannes Schumann <jschumann@km3net.de>
+"""
+Runscript for GIBUU/KM3BUU
+
+options:
+  -h, --help            show this help message and exit
+  --events EVENTS, -n EVENTS
+                        Number of events which are simulated
+  --multifile MULTIFILE, -m MULTIFILE
+                        How many km3net files to write from the dataset
+  --seed SEED, -s SEED  Seed which should be used for the (pseudo) random number gen.
+  --flavor {electron,muon,tau}, -f {electron,muon,tau}
+                        Simulated neutrino flavor
+  --interaction {nc,cc,antinc,anticc}, -i {nc,cc,antinc,anticc}
+                        The current type of the weak interaction
+  --target A Z, -t A Z  The number of nucleons/protons in the target nucleus
+  --timesteps TIMESTEPS, -x TIMESTEPS
+                        The number of timesteps performed by GiBUU
+  --geometry {no,can,sphere,cylindrical}, -g {no,can,sphere,cylindrical}
+                        Type of detector enviroment geometry should be used
+  --center x y z, -c x y z
+                        Center (offset) if a geometry is used (otherwise ignored)
+  --dimensions [DIMENSIONS ...], -d [DIMENSIONS ...]
+                        Dimensions of the geometry; sphere -> -d <radius> / can -> -d <radius> <zmin> <zmax> / cylindrical -> -d
+                        <seawaterheight> <rockheight> <radius> <canradius> <canzmin> <canzmax>
+  --output-dir OUTPUT, -o OUTPUT
+                        Output directory
+  --run RUNNUMBER, -r RUNNUMBER
+                        Run number to use
+  --gibuuparams GIBUUPARAMS, -p GIBUUPARAMS
+                        JSON file for modified GiBUU namelist params
+  --taupropagation, --no-taupropagation
+                        Do tau propagation (default: False)
+  --decay, --no-decay   Decay final state particles (according to the decays done in gSeaGen) (default: True)
+  --zenith cosZmin cosZmax, -z cosZmin cosZmax
+                        Zenith range of the direction if a geometry is used
+
+modes:
+  {single,range}        Modes
+    single              Run in single energy mode
+    range               Run in energy range mode
+
+"""
 
 import numpy as np
 import argparse
