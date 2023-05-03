@@ -56,8 +56,6 @@ reset_test_image:
 test:
     image: python:3.10
     stage: test
-    tags:
-        - docker
     script:
         - *virtualenv_definition
         - make test
@@ -74,8 +72,6 @@ code-style:
 coverage:
     image: python:3.10
     stage: coverage
-    tags:
-        - docker
     script:
         - *virtualenv_definition
         - "make test-cov|grep TOTAL| awk '{printf \"COVERAGE: %.2f%%\", (1-$3/$2)*100 }'"
@@ -143,7 +139,5 @@ release-singularity:
         - du -sh $SINGULARITY_RELEASE_IMAGE
         - mkdir -p ~/.ssh && ssh-keyscan -H -t rsa $KM3NET_SFTP_HOST  >> ~/.ssh/known_hosts
         - lftp -u $KM3NET_SFTP_USER,$KM3NET_SFTP_PASSWORD sftp://$KM3NET_SFTP_HOST -e "set ssl:verify-certificate no; cd singularity/; put $SINGULARITY_RELEASE_IMAGE; bye"
-    tags:
-        - docker
     only:
         - tags
