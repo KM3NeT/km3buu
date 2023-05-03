@@ -8,89 +8,49 @@ KM3BUU
 
 
 
-The KM3BUU project is an integrated environment for the GiBUU studies
-within the KM3NeT experiment.
+The KM3BUU project is an integrated environment for the GiBUU particle interaction simulation. It is specifically designed for studies within the KM3NeT experiment and focuses on the neutrino simulation functionality of GiBUU.
+
+The main code repository can be found at: https://git.km3net.de/simulation/km3buu
+
+The framework covers all parts of the GiBUU workflow, which includes setting up the simulation configuarion inside a so-called jobcarb, running GiBUU and parsing the output files.
 
 Installation
 ------------
 
-The main `KM3BUU` project is python based using ``singularity`` for running GiBUU.
-The python environment is required to have version 3.5 or higher and singularity 
-is required to have version 3.3 or higher (e.g. `v3.4 <https://sylabs.io/guides/3.4/user-guide/>`__). In the default workflow the singularity image is build remote from the 
-KM3NeT docker server, but it can also be built locally (see :ref:`Local Machine`).
-`KM3BUU` is not provided via python package manager and can be installed as follows.
-First the repository needs to be cloned:
+The main `KM3BUU` project is a python based framework, which can be used with a
+local GiBUU installation or used within a docker container. In order to install the `km3buu` python module the repository has to be retreived from the KM3NeT Git server first:
 
-::
+.. code-block:: console
 
    git clone https://git.km3net.de/simulation/km3buu
    cd km3buu
 
 After downloading the repository the package can be installed via:
 
-::
+.. code-block:: console
 
-   pip install -e . 
+   pip install -e
 
-GiBUU Only Usage
-~~~~~~~~~~~~~~~~
-The repository design also allows the usage without python environment.
-In this scenario the singularity container containing the GiBUU environment 
-has to be built first. This can be done locally if root privileges are available:
+(Up to now `KM3BUU` is not provided via python package manager.)
 
-::
+If working inside a docker environment is requested, the KM3BUU image can be copied&run directly from the KM3NeT docker server:
 
-   make build
+.. code-block:: console
 
-If root privileges are not available, e.g. running the `KM3BUU` on a compute cluster, 
-it also can be done remote via the KM3NeT docker server:
+   docker run -it --rm docker.km3net.de/simulation/km3buu:latest /bin/bash
 
-::
+or built locally:
 
-   make buildremote
+.. code-block:: console
 
-If the python environment is used afterwards, the file path of the container can
-be written to the configuration file and is not required to be built again.
+   cd km3buu
+   docker build .
 
-For running GiBUU the used jobcards have to be moved to a sub-folder within the 
-jobcards folder of the project. Each sub-folder represents a set of jobcards, 
-which can be passed to GiBUU by:
 
-::
 
-   make run CARDSET=examples
-
-This specific command runs all jobcards within the ``jobcards/examples`` folder
-and stores the output inside the folder ``output``. The folder structure
-is applied from the ``jobcards``\ folder.
-
-Theory
-------
-
-In order to retrieve correct results and provide correct KM3NeT weights (w2)
-the treatment of the GiBUU weights is an important step. A brief description 
-of the GiBUU weights and how to calculate actual cross sections is given on the
-`GiBUU Homepage <https://gibuu.hepforge.org/trac/wiki/perWeight>`__ and
-a more detailed description of the calculation can be found in the `PhD Thesis
-of Tina Leitner <https://inspirehep.net/literature/849921>`__ in Chapter 8.3.
-As it is mentioned in the description of the output flux file in the
-`documentation <https://gibuu.hepforge.org/Documentation/code/init/neutrino/initNeutrino_f90.html#robo1685>`__ this is not taken somehow into account inside the weights.
-Following the description the GiBUU event weight can be converted to a binned
-cross section via
-
-.. math::
-    \frac{d\sigma}{E} = \frac{\sum_{i\in I_\text{bin}} w_i}{\Delta E}\cdot\frac{1}{E\Phi},
-
-where :math:`\Phi`__ is the simulated flux
-As the weights are given for each run individually the weight also has to be divided
-by the number of runs.
-
-Tutorial
---------
-The python framework is build around the GiBUU workflow, i.e. a jobcard is 
-processed and the output files are written out. The jobcards are technically 
-FORTRAN namelists and can be created using a `Jobcard` object. In the example
-this is done via loading an existing jobcard:
+Getting started
+---------------
+The GiBUU workflow starts from a jobcard which contains the configuration which should be simulated. The jobcards are technically FORTRAN namelists and can be created using a `Jobcard` object. In the example this is done via loading an existing jobcard:
 
 .. code-block:: python3
 
@@ -98,7 +58,7 @@ this is done via loading an existing jobcard:
 
     >>> jc = read_jobcard("jobcards/examples/example.job")
 
-In the next step the jobcard is processed:
+This jobcard is subsequently forwarded to GiBUU via the `run_jobcard` function. The second argument takes a directory which should be used to write out all the output files generated by GiBUU.
 
 .. code-block:: python3
 
@@ -114,3 +74,15 @@ Finally, the output can be parsed using a `GiBUUOutput` object:
     >>> from km3buu.output import GiBUUOutput
 
     >>> data = GiBUUOutput("./output")
+
+The event data can further be converted to a pandas dataframe
+
+.. code-block:: python3
+
+    >>> df = data.df
+
+or an awkward array
+
+.. code-block:: python3
+
+    >>> arr = data.arrays
