@@ -308,7 +308,7 @@ class CANVolume(DetectorVolume):
             evts = self._propagator.propagate(charged_lepton_type,
                                               evt.lepOut_E, vtx_pos,
                                               R.apply(lepout_dir))
-        targets_per_volume, _ = get_targets_per_volume(targetZ=evts.nucleus_Z,
+        targets_per_volume, _ = get_targets_per_volume(targetZ=evt.nucleus_Z,
                                                        medium=self._medium)
 
         return vtx_pos, vtx_angles, weight, evts, targets_per_volume
