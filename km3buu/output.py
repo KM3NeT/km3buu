@@ -570,8 +570,7 @@ def write_detector_file(gibuu_output,
                         run_number=1,
                         geometry=CylindricalVolume(),
                         livetime=3.156e7,
-                        free_particle_cuts=True,
-                        propagate_tau=True):  # pragma: no cover
+                        free_particle_cuts=True):  # pragma: no cover
     """
     Convert the GiBUU output to a KM3NeT MC (OfflineFormat) file
 

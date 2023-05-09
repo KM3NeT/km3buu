@@ -32,8 +32,6 @@ options:
                         Run number to use
   --gibuuparams GIBUUPARAMS, -p GIBUUPARAMS
                         JSON file for modified GiBUU namelist params
-  --taupropagation, --no-taupropagation
-                        Do tau propagation (default: False)
   --decay, --no-decay   Decay final state particles (according to the decays done in gSeaGen) (default: True)
   --zenith cosZmin cosZmax, -z cosZmin cosZmax
                         Zenith range of the direction if a geometry is used
@@ -161,18 +159,12 @@ ARGPARSE_GENERAL_PARAMS = [{
     "help":
     "JSON file for modified GiBUU namelist params"
 }, {
-    "option_strings": ["--taupropagation"],
-    "dest": "tauprop",
-    "action": argparse.BooleanOptionalAction,
-    "help": "Do tau propagation",
-    "default": False
-}, {
     "option_strings": ["--decay"],
     "dest": "decay",
     "action": argparse.BooleanOptionalAction,
     "help":
     "Decay final state particles (according to the decays done in gSeaGen)",
-    "default": True
+    "default": False
 }, {
     "option_strings": ["--zenith", "-z"],
     "dest": "zenith",
@@ -311,8 +303,7 @@ def main():
                         geometry=volume,
                         ofile=outfilename,
                         run_number=args.runnumber,
-                        no_files=args.multifile,
-                        propagate_tau=args.tauprop)
+                        no_files=args.multifile)
 
 
 if __name__ == '__main__':
