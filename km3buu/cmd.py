@@ -139,7 +139,7 @@ ARGPARSE_GENERAL_PARAMS = [{
     "nargs":
     "*",
     "help":
-    "Dimensions of the geometry; sphere -> -d <radius> / can -> -d <radius> <zmin> <zmax> / cylindrical -> -d <seawaterheight> <rockheight> <radius> <canradius> <canzmin> <canzmax>"
+    "Dimensions of the geometry; sphere -> -d <radius> / can -> -d <radius> <zmin> <zmax> / cylindrical -> -d <seawaterheight> <rockheight> <radius> <canzmin> <canzmax> <canradius>"
 }, {
     "option_strings": ["--output-dir", "-o"],
     "dest": "output",
@@ -296,9 +296,9 @@ def main():
         kwargs["sw_height"] = args.dimensions[0]
         kwargs["sr_height"] = args.dimensions[1]
         kwargs["radius"] = args.dimensions[2]
-        kwargs["can_radius"] = args.dimensions[3]
-        kwargs["can_zmin"] = args.dimensions[4]
-        kwargs["can_zmax"] = args.dimensions[5]
+        kwargs["can_zmin"] = args.dimensions[3]
+        kwargs["can_zmax"] = args.dimensions[4]
+        kwargs["can_radius"] = args.dimensions[5]
         volume = CylindricalVolume(**kwargs)
     run_descriptor = ""
     if args.runnumber:
