@@ -206,9 +206,7 @@ class CANVolume(DetectorVolume):
         self._solid_angle = 2 * np.pi * (self._cosZmax - self._cosZmin)
         self._propagator = None
         self._medium = "SeaWater"
-        if taupropagation:
-            self._pp_geometry = self.make_proposal_geometries()
-            self._propagator = Propagator([15, -15], self._pp_geometry)
+        self._taupropagation_flag = taupropagation
 
     def make_proposal_geometries(self):
         """
@@ -299,7 +297,10 @@ class CANVolume(DetectorVolume):
         weight = 1
         evts = None
 
-        if evt.flavor_ID == 3 and abs(evt.process_ID) == 2:
+        if evt.flavor_ID == 3 and abs(evt.process_ID) == 2 and self._taupropagation_flag:
+            if not self._propagator:
+                self._pp_geometry = self.make_proposal_geometries()
+                self._propagator = Propagator([15, -15], self._pp_geometry)
             charged_lepton_type = np.sign(
                 evt.process_ID) * (2 * evt.flavor_ID + 9)
             lepout_dir = np.array(
