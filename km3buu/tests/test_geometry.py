@@ -32,6 +32,10 @@ class TestNoVolume(unittest.TestCase):
         volume = self.detector_geometry.volume
         self.assertAlmostEqual(volume, 1.0)
 
+    def test_in_can(self):
+        in_can = self.detector_geometry.in_can((0, 0, 0))
+        assert ~in_can
+
     def test_random_pos(self):
         pos = self.detector_geometry.random_pos()
         np.testing.assert_array_almost_equal(pos, 0.0)
@@ -50,6 +54,16 @@ class TestSphere(unittest.TestCase):
     def test_volume(self):
         volume = self.detector_geometry.volume
         self.assertAlmostEqual(volume, 33510.32, 2)
+
+    def test_in_can(self):
+        in_can = self.detector_geometry.in_can((0, 0, 0))
+        assert in_can
+        in_can = self.detector_geometry.in_can((30, 0, 0))
+        assert ~in_can
+        in_can = self.detector_geometry.in_can((21.9, 2, 2))
+        assert in_can
+        in_can = self.detector_geometry.in_can((21.9, 5, 0))
+        assert ~in_can
 
     def test_random_pos(self):
         for i in range(50):

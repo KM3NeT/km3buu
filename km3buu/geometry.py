@@ -67,6 +67,22 @@ class DetectorVolume(ABC):
         """
         pass
 
+    @abstractmethod
+    def in_can(self, pos):
+        """
+        Check if position is inside the CAN
+
+        Parameters
+        ----------
+        pos: np.array
+            The positions which should be checked
+
+        Return
+        ------
+        boolean / np.array
+        """
+        pass
+
     def distribute_event(self, *pargs, **kwargs):
         """
         Integrated event distribution method which also handles propagation
@@ -147,6 +163,12 @@ class NoVolume(DetectorVolume):
         value = "0 0 0 0 {}".format(nevents)
         retdct[key] = value
         return retdct
+
+    def in_can(self, pos):
+        if type(pos) is tuple or pos.ndim == 1:
+            return False
+        else:
+            return np.full(pos.shape[0], False)
 
     def random_pos(self, n=1):
         if n == 1:
@@ -245,18 +267,6 @@ class CANVolume(DetectorVolume):
             return pos
 
     def in_can(self, pos):
-        """
-        Check if position is inside the CAN
-
-        Parameters
-        ----------
-        pos: np.array
-            The positions which should be checked
-
-        Return
-        ------
-        boolean / np.array
-        """
         if type(pos) is tuple or pos.ndim == 1:
             pos = np.reshape(pos, (-1, 3))
         zmask = (pos[:, 2] >= self._zmin) & (pos[:, 2] <= self._zmax)
@@ -386,18 +396,6 @@ class CylindricalVolume(DetectorVolume):
             return pos
 
     def in_can(self, pos):
-        """
-        Check if position is inside the CAN
-
-        Parameters
-        ----------
-        pos: np.array
-            The positions which should be checked
-
-        Return
-        ------
-        boolean / np.array
-        """
         if type(pos) is tuple or pos.ndim == 1:
             pos = np.reshape(pos, (-1, 3))
         zmask = (pos[:, 2] >= self._canzmin) & (pos[:, 2] <= self._canzmax)
@@ -589,6 +587,18 @@ class SphericalVolume(DetectorVolume):
             return direction[0, :]
         else:
             return direction
+
+    def in_can(self, pos):
+        if type(pos) is tuple or pos.ndim == 1:
+            pos = np.reshape(pos, (-1, 3))
+        r2 = (pos[:, 0] - self._coord_origin[0])**2 + \
+            (pos[:, 1] - self._coord_origin[1])**2 + \
+            (pos[:, 2] - self._coord_origin[2])**2
+        mask = r2 < (self._radius**2)
+        if len(mask) == 1:
+            return mask[0]
+        else:
+            return mask
 
     def header_entries(self, nevents=0):
         retdct = dict()
