@@ -65,7 +65,7 @@ class TestSphere(unittest.TestCase):
 
     def test_limited_zenith(self):
         np.random.seed(1234)
-        geometry = SphericalVolume(radius=100,zenith=(-0.4, 0.5))
+        geometry = SphericalVolume(radius=100, zenith=(-0.4, 0.5))
         self.assertAlmostEqual(geometry.solid_angle, 5.654866776461628)
         direction = geometry.random_dir()
         self.assertAlmostEqual(direction[1], 0.15989789393584863)
