@@ -719,10 +719,11 @@ def write_detector_file(gibuu_output,
             evt.w2list[km3io.definitions.w2list_km3buu[
                 "W2LIST_KM3BUU_ICHAN"]] = SCATTERING_TYPE_TO_GENIE[
                     event.evType]
-            evt.w2list[
-                km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_VERINCAN"]] = 1
-            evt.w2list[
-                km3io.definitions.w2list_km3buu["W2LIST_KM3BUU_LEPINCAN"]] = 1
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_VERINCAN"]] = 1 if geometry.in_can(
+                    vtx_pos) else 0
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_LEPINCAN"]] = 1  #Only LepInCan events are written out currently
             evt.w2list[km3io.definitions.w2list_km3buu[
                 "W2LIST_KM3BUU_GIBUU_WEIGHT"]] = event.weight
             evt.w2list[km3io.definitions.w2list_km3buu[
