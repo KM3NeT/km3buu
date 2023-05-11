@@ -705,8 +705,11 @@ def write_detector_file(gibuu_output,
             nano_seconds = int((t % 1) * 1e9)
             evt.mc_event_time = ROOT.TTimeStamp(seconds, nano_seconds)
             # Vertex Positioning & Propagation
-            vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
+            try:
+                vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
                 event)
+            except:
+                continue
             # Weights
             evt.w.push_back(geometry.volume)  # w1 (can volume)
             evt.w.push_back(w2[total_id] * targets_per_volume / samples)  # w2

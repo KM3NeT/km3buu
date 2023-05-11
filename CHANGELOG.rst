@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Limit the number of resamples in order to speed sampling
 
 * Use unix time interval for distributing events
 

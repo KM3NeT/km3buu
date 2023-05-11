@@ -496,7 +496,7 @@ class CylindricalVolume(DetectorVolume):
             dct['Pz'].append(prtcl.direction.z * prtcl.momentum / 1e3)
             dct['deltaT'].append(prtcl.time)
 
-    def distribute_event(self, evt):
+    def distribute_event(self, evt, max_resamples=250):
         # NC -> doesn't require any propagation
         if abs(evt.process_ID) == 3 or evt.flavor_ID == 1:
             vtx_pos = self.random_pos()
@@ -522,6 +522,8 @@ class CylindricalVolume(DetectorVolume):
 
         while True:
             samples += 1
+            if samples > max_resamples:
+                raise Exception("Max number of vertex resamples reached.")
             vtx_pos = self.random_pos()
             vtx_angles = self.random_dir()
             medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
