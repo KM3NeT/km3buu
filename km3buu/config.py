@@ -25,7 +25,10 @@ __maintainer__ = "Johannes Schumann"
 __email__ = "jschumann@km3net.de"
 __status__ = "Development"
 
-CONFIG_PATH = os.path.expanduser("~/.km3buu/config")
+try:
+    CONFIG_PATH = join(os.environ["KM3BUU_CONFIG"],"config")
+except KeyError:
+    CONFIG_PATH = os.path.expanduser("~/.km3buu/config")
 
 log = get_logger(__name__)
 
