@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from scipy.spatial.transform import Rotation
 from particle import Particle
+import km3io
 
 import proposal as pp
 from .propagation import *
@@ -187,7 +188,8 @@ class NoVolume(DetectorVolume):
         vtx_dir = self.random_dir()
         weight = 1
         evts = None
-        return vtx_pos, vtx_dir, weight, None, 1
+        status = km3io.definitions.trkmembers["TRK_ST_FINALSTATE"]
+        return vtx_pos, vtx_dir, weight, None, 1, status
 
 
 class CANVolume(DetectorVolume):
@@ -306,9 +308,11 @@ class CANVolume(DetectorVolume):
         vtx_angles = self.random_dir()
         weight = 1
         evts = None
+        lep_status = km3io.definition.trkmembers["TRK_ST_FINALSTATE"]
 
         if evt.flavor_ID == 3 and abs(
                 evt.process_ID) == 2 and self._taupropagation_flag:
+            lep_status = km3io.definition.trkmembers["TRK_ST_PROPDECLEPTON"]
             if not self._propagator:
                 self._pp_geometry = self.make_proposal_geometries()
                 self._propagator = Propagator([15, -15], self._pp_geometry)
@@ -323,7 +327,7 @@ class CANVolume(DetectorVolume):
         targets_per_volume, _ = get_targets_per_volume(targetZ=evt.nucleus_Z,
                                                        medium=self._medium)
 
-        return vtx_pos, vtx_angles, weight, evts, targets_per_volume
+        return vtx_pos, vtx_angles, weight, evts, targets_per_volume, lep_status
 
 
 class CylindricalVolume(DetectorVolume):
@@ -503,6 +507,7 @@ class CylindricalVolume(DetectorVolume):
             vtx_dir = self.random_dir()
             weight = 1
             evts = None
+            status = km3io.definitions.trkmembers["TRK_ST_FINALSTATE"]
             medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
             targets_per_volume, _ = get_targets_per_volume(
                 targetZ=evt.nucleus_Z, medium=medium)
@@ -514,6 +519,10 @@ class CylindricalVolume(DetectorVolume):
         if not self._propagator:
             self._propagator = Propagator([13, -13, 15, -15],
                                           self._pp_geometry)
+
+        status = km3io.definitions.trkmembers[
+            "TRK_ST_PROPLEPTON"] if evt.flavor_ID == 2 else km3io.definitions.trkmembers[
+                "TRK_ST_PROPDECLEPTON"]
 
         charged_lepton_type = np.sign(evt.process_ID) * (2 * evt.flavor_ID + 9)
 
@@ -534,7 +543,7 @@ class CylindricalVolume(DetectorVolume):
                                                    evt.lepOut_E, vtx_pos,
                                                    R.apply(lepout_dir))
             if not particles is None:
-                return vtx_pos, vtx_angles, samples, particles, targets_per_volume
+                return vtx_pos, vtx_angles, samples, particles, targets_per_volume, status
 
 
 class SphericalVolume(DetectorVolume):
