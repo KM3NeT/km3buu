@@ -31,8 +31,8 @@ try:
     libpath = environ.get("KM3NET_LIB")
     if libpath is None:
         libpath = Config().km3net_lib_path
-    KM3NET_LIB_AVAILABLE = (ROOT.gSystem.Load(join(libpath,
-                                                   "libKM3NeTROOT.so")) >= 0)
+    KM3NET_LIB_AVAILABLE = libpath is not None and (ROOT.gSystem.Load(
+        join(libpath, "libKM3NeTROOT.so")) >= 0)
 except (ImportError, ModuleNotFoundError):
     KM3NET_LIB_AVAILABLE = False
 

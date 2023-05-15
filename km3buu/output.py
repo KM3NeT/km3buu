@@ -37,7 +37,8 @@ try:
     libpath = environ.get("KM3NET_LIB")
     if libpath is None:
         libpath = Config().km3net_lib_path
-    if ROOT.gSystem.Load(join(libpath, "libKM3NeTROOT.so")) < 0:
+    if libpath is None or ROOT.gSystem.Load(join(libpath,
+                                                 "libKM3NeTROOT.so")) < 0:
         raise ModuleNotFoundError("KM3NeT dataformat library not found!")
 except (ImportError, ModuleNotFoundError):
     import warnings
@@ -723,7 +724,7 @@ def write_detector_file(gibuu_output,
                 "W2LIST_KM3BUU_VERINCAN"]] = 1 if geometry.in_can(
                     vtx_pos) else 0
             evt.w2list[km3io.definitions.w2list_km3buu[
-                "W2LIST_KM3BUU_LEPINCAN"]] = 1  #Only LepInCan events are written out currently
+                "W2LIST_KM3BUU_LEPINCAN"]] = 1  # Only LepInCan events are written out currently
             evt.w2list[km3io.definitions.w2list_km3buu[
                 "W2LIST_KM3BUU_GIBUU_WEIGHT"]] = event.weight
             evt.w2list[km3io.definitions.w2list_km3buu[
