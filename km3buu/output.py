@@ -707,7 +707,7 @@ def write_detector_file(gibuu_output,
             # Vertex Positioning & Propagation
             try:
                 vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
-                    event)
+                event)
             except:
                 continue
             # Weights
@@ -794,16 +794,20 @@ def write_detector_file(gibuu_output,
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
 
-            if geometry.in_can(vtx_pos):
-                lep_out_trk.status = km3io.definitions.trkmembers[
-                    "TRK_ST_FINALSTATE"]
-                generator_particle_state = km3io.definitions.trkmembers[
-                    "TRK_ST_FINALSTATE"]
-            else:
+            if prop_particles is not None:
                 lep_out_trk.status = km3io.definitions.trkmembers[
                     "TRK_ST_PROPLEPTON"]
+                if geometry.in_can(vtx_pos):
+                    generator_particle_state = km3io.definitions.trkmembers[
+                        "TRK_ST_FINALSTATE"]
+                else:
+                    generator_particle_state = km3io.definitions.trkmembers[
+                        "TRK_ST_UNDEFINED"]
+            else:
+                lep_out_trk.status = km3io.definitions.trkmembers[
+                    "TRK_ST_FINALSTATE"]
                 generator_particle_state = km3io.definitions.trkmembers[
-                    "TRK_ST_UNDEFINED"]
+                    "TRK_ST_FINALSTATE"]
 
             evt.mc_trks.push_back(lep_out_trk)
 
