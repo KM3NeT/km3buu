@@ -570,7 +570,7 @@ def write_detector_file(gibuu_output,
                         no_files=1,
                         run_number=1,
                         geometry=CylindricalVolume(),
-                        timeinterval=(0.0, 1684345837000.0),
+                        timeinterval=(0.0, 1684345837.0),
                         free_particle_cuts=True):  # pragma: no cover
     """
     Convert the GiBUU output to a KM3NeT MC (OfflineFormat) file
@@ -587,8 +587,8 @@ def write_detector_file(gibuu_output,
         Run number which is written to the file header(s)
     geometry: DetectorVolume
         The detector geometry which should be used
-    timeinterval: float
-        The unix time (ms) time interval where the events are distributed in
+    timeinterval: float [s]
+        The unix time time interval where the events are distributed in
     free_particle_cuts: boolean (default: True)
         Apply cuts in order to select particles which exit the nucleus
     """
@@ -669,7 +669,7 @@ def write_detector_file(gibuu_output,
     header_dct["primary"] = "{:d}".format(nu_type)
     header_dct["start_run"] = str(run_number)
 
-    event_times = np.sort(np.random.uniform(timeinterval[0]*1e6, timeinterval[1]*1e6, len(event_data)))
+    event_times = np.sort(np.random.uniform(timeinterval[0]*1e9, timeinterval[1]*1e9, len(event_data)))
 
     for i in range(no_files):
         start_id = 0

@@ -157,7 +157,7 @@ ARGPARSE_GENERAL_PARAMS = [{
     "dest": "timeinterval",
     "nargs": 2,
     "type": float,
-    "help": "Unix time interval the events are distributed in [ms]",
+    "help": "Unix time interval the events are distributed in [s]",
     "metavar": ("begin", "end"),
     "required": True
 }, {
