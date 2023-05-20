@@ -660,7 +660,7 @@ def write_detector_file(gibuu_output,
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
     header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
                                                        gibuu_output.energy_max)
-    livetime = (timeinterval[1] - timeinterval[0]) * 1e-3
+    livetime = (timeinterval[1] - timeinterval[0])
     header_dct["tgen"] = "{:.1f}".format(livetime)
     header_dct["norma"] = "0 {}".format(gibuu_output.generated_events)
     timestamp = datetime.now()
