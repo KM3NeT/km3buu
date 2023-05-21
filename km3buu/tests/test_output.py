@@ -144,7 +144,7 @@ class TestOfflineFile(unittest.TestCase):
             -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 6044353.853958)
+        np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
         np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
         np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
@@ -174,17 +174,23 @@ class TestFreeParticleCuts(unittest.TestCase):
         write_detector_file(output,
                             datafile.name,
                             run_number=1235,
-                            free_particle_cuts=True)
+                            free_particle_cuts=True,
+                            timeinterval=(10.0,100.0))
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
         np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4755)
         np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj.header.start_run.run_id, 1235)
+        np.testing.assert_equal(self.fobj.header.tgen, 90.0)
 
     def test_numbering(self):
         evts = self.fobj.events
         np.testing.assert_array_equal(evts.id, range(4755))
+
+    def test_timestamp(self):
+        assert self.fobj.mc_event_time_sec[0] == 10
+        assert self.fobj.mc_event_time_ns[0] == 2331931
 
     def test_firstevent(self):
         evt = self.fobj.events[0]
@@ -205,7 +211,7 @@ class TestFreeParticleCuts(unittest.TestCase):
             evt.mc_tracks.dir_z,
             [-0.344705, -0.64217, -0.473008, -0.143242, -0.307089, -0.320199])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 6044353.853958)
+        np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
         np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
         np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
@@ -222,6 +228,7 @@ class TestFreeParticleCuts(unittest.TestCase):
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
         np.testing.assert_almost_equal(evt.w2list[23], 0.0008055736278936948)
+
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
@@ -300,7 +307,7 @@ class TestMultiFileOutput(unittest.TestCase):
             -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 6044353.853958)
+        np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
         np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
         np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
         np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
@@ -331,7 +338,7 @@ class TestMultiFileOutput(unittest.TestCase):
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z,
                                              [-0.259137, -0.613174, -0.123386])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
-        np.testing.assert_allclose(evt.mc_tracks.t, 3209014.341685)
+        np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
         np.testing.assert_allclose(evt.mc_tracks.pos_x, -349.987102)
         np.testing.assert_allclose(evt.mc_tracks.pos_y, 33.284445)
         np.testing.assert_allclose(evt.mc_tracks.pos_z, -41.963346)
