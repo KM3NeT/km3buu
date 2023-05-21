@@ -313,7 +313,8 @@ def main():
                         geometry=volume,
                         ofile=outfilename,
                         run_number=args.runnumber,
-                        timeinterval=(args.timeinterval[0], args.timeinterval[1]),
+                        timeinterval=(args.timeinterval[0],
+                                      args.timeinterval[1]),
                         no_files=args.multifile)
 
 

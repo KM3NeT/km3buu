@@ -175,7 +175,7 @@ class TestFreeParticleCuts(unittest.TestCase):
                             datafile.name,
                             run_number=1235,
                             free_particle_cuts=True,
-                            timeinterval=(10.0,100.0))
+                            timeinterval=(10.0, 100.0))
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
@@ -228,7 +228,6 @@ class TestFreeParticleCuts(unittest.TestCase):
         np.testing.assert_equal(evt.w2list[10], 2)
         # GiBUU weight
         np.testing.assert_almost_equal(evt.w2list[23], 0.0008055736278936948)
-
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,

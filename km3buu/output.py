@@ -669,7 +669,8 @@ def write_detector_file(gibuu_output,
     header_dct["primary"] = "{:d}".format(nu_type)
     header_dct["start_run"] = str(run_number)
 
-    event_times = np.sort(np.random.uniform(timeinterval[0], timeinterval[1], len(event_data)))
+    event_times = np.sort(
+        np.random.uniform(timeinterval[0], timeinterval[1], len(event_data)))
 
     for i in range(no_files):
         start_id = 0
@@ -693,7 +694,7 @@ def write_detector_file(gibuu_output,
             evt.mc_run_id = mc_event_id
             t = event_times[total_id]
             seconds = int(t)
-            nano_seconds = int( (t%1)*1e9 )
+            nano_seconds = int((t % 1) * 1e9)
             evt.mc_event_time = ROOT.TTimeStamp(seconds, nano_seconds)
             # Vertex Positioning & Propagation
             vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
