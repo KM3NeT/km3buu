@@ -1,6 +1,8 @@
 Unreleased changes
 ------------------
 
+* Use unix time interval for distributing events
+
 v1.0.0 - Release Candidate 1
 ----------------------------
 * Dockerfile with full GiBUU2021r4 installation (including RootTuple writeout)

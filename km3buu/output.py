@@ -570,7 +570,7 @@ def write_detector_file(gibuu_output,
                         no_files=1,
                         run_number=1,
                         geometry=CylindricalVolume(),
-                        livetime=3.156e7,
+                        timeinterval=(0.0, 1684345837.0),
                         free_particle_cuts=True):  # pragma: no cover
     """
     Convert the GiBUU output to a KM3NeT MC (OfflineFormat) file
@@ -587,8 +587,8 @@ def write_detector_file(gibuu_output,
         Run number which is written to the file header(s)
     geometry: DetectorVolume
         The detector geometry which should be used
-    livetime: float
-        The data livetime
+    timeinterval: float [s]
+        The unix time time interval where the events are distributed in
     free_particle_cuts: boolean (default: True)
         Apply cuts in order to select particles which exit the nucleus
     """
@@ -660,6 +660,7 @@ def write_detector_file(gibuu_output,
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
     header_dct["cut_nu"] = "{:.2f} {:.2f} -1 1".format(gibuu_output.energy_min,
                                                        gibuu_output.energy_max)
+    livetime = (timeinterval[1] - timeinterval[0])
     header_dct["tgen"] = "{:.1f}".format(livetime)
     header_dct["norma"] = "0 {}".format(gibuu_output.generated_events)
     timestamp = datetime.now()
@@ -668,7 +669,8 @@ def write_detector_file(gibuu_output,
     header_dct["primary"] = "{:d}".format(nu_type)
     header_dct["start_run"] = str(run_number)
 
-    event_times = np.random.uniform(0, livetime, len(event_data))
+    event_times = np.sort(
+        np.random.uniform(timeinterval[0], timeinterval[1], len(event_data)))
 
     for i in range(no_files):
         start_id = 0
@@ -690,6 +692,10 @@ def write_detector_file(gibuu_output,
             evt.clear()
             evt.id = mc_event_id
             evt.mc_run_id = mc_event_id
+            t = event_times[total_id]
+            seconds = int(t)
+            nano_seconds = int((t % 1) * 1e9)
+            evt.mc_event_time = ROOT.TTimeStamp(seconds, nano_seconds)
             # Vertex Positioning & Propagation
             vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
                 event)
@@ -739,7 +745,7 @@ def write_detector_file(gibuu_output,
             evt.w2list[km3io.definitions.
                        w2list_km3buu["W2LIST_KM3BUU_WATER_INT_LEN"]] = np.nan
 
-            timestamp = event_times[total_id]
+            timestamp = 0.0
             # Direction
             phi, cos_theta = vtx_angles
             sin_theta = np.sqrt(1 - cos_theta**2)

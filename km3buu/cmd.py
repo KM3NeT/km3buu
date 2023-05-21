@@ -16,7 +16,7 @@ options:
                         Simulated neutrino flavor
   --interaction {nc,cc,antinc,anticc}, -i {nc,cc,antinc,anticc}
                         The current type of the weak interaction
-  --target A Z, -t A Z  The number of nucleons/protons in the target nucleus
+  --target A Z, -a A Z  The number of nucleons/protons in the target nucleus
   --timesteps TIMESTEPS, -x TIMESTEPS
                         The number of timesteps performed by GiBUU
   --geometry {no,can,sphere,cylindrical}, -g {no,can,sphere,cylindrical}
@@ -30,6 +30,8 @@ options:
                         Output directory
   --run RUNNUMBER, -r RUNNUMBER
                         Run number to use
+  --timeinterval begin end, -t begin end
+                        Unix time interval the events are distributed in [ms]
   --gibuuparams GIBUUPARAMS, -p GIBUUPARAMS
                         JSON file for modified GiBUU namelist params
   --decay, --no-decay   Decay final state particles (according to the decays done in gSeaGen) (default: True)
@@ -93,7 +95,7 @@ ARGPARSE_GENERAL_PARAMS = [{
     "help": "The current type of the weak interaction",
     "required": True
 }, {
-    "option_strings": ["--target", "-t"],
+    "option_strings": ["--target", "-a"],
     "dest": "target",
     "nargs": 2,
     "type": int,
@@ -150,6 +152,14 @@ ARGPARSE_GENERAL_PARAMS = [{
     "type": int,
     "default": 1,
     "help": "Run number to use"
+}, {
+    "option_strings": ["--timeinterval", "-t"],
+    "dest": "timeinterval",
+    "nargs": 2,
+    "type": float,
+    "help": "Unix time interval the events are distributed in [s]",
+    "metavar": ("begin", "end"),
+    "required": True
 }, {
     "option_strings": ["--gibuuparams", "-p"],
     "dest":
@@ -303,6 +313,8 @@ def main():
                         geometry=volume,
                         ofile=outfilename,
                         run_number=args.runnumber,
+                        timeinterval=(args.timeinterval[0],
+                                      args.timeinterval[1]),
                         no_files=args.multifile)
 
 
