@@ -506,6 +506,8 @@ class CylindricalVolume(DetectorVolume):
             medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
             targets_per_volume, _ = get_targets_per_volume(
                 targetZ=evt.nucleus_Z, medium=medium)
+            if not self.in_can(vtx_pos):
+                raise Exception("Electron and/or NC event not in CAN")
             return vtx_pos, vtx_dir, weight, evts, targets_per_volume
 
         if not self._pp_geometry:
