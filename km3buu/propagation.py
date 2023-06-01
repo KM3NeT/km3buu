@@ -116,9 +116,9 @@ class Propagator(object):
             dct['x'].append(prtcl.position.x / M_TO_CM)
             dct['y'].append(prtcl.position.y / M_TO_CM)
             dct['z'].append(prtcl.position.z / M_TO_CM)
-            dct['Px'].append(prtcl.direction.x * prtcl.momentum / 1e3)
-            dct['Py'].append(prtcl.direction.y * prtcl.momentum / 1e3)
-            dct['Pz'].append(prtcl.direction.z * prtcl.momentum / 1e3)
+            dct['Dx'].append(prtcl.direction.x)
+            dct['Dy'].append(prtcl.direction.y)
+            dct['Dz'].append(prtcl.direction.z)
             dct['deltaT'].append(prtcl.time * 1e-9)
 
     def propagate_particle(self, prtcl_state):

@@ -601,10 +601,18 @@ def write_detector_file(gibuu_output,
         for i in range(len(particle_data.E)):
             trk = ROOT.Trk()
             trk.id = start_mc_trk_id + i
-            mom = np.array([
-                particle_data.Px[i], particle_data.Py[i], particle_data.Pz[i]
-            ])
-            p_dir = mom / np.linalg.norm(mom)
+            p_dir = None
+            if "Px" in particle_data.fields:
+                mom = np.array([
+                    particle_data.Px[i], particle_data.Py[i],
+                    particle_data.Pz[i]
+                ])
+                p_dir = mom / np.linalg.norm(mom)
+            else:
+                p_dir = np.array([
+                    particle_data.Dx[i], particle_data.Dy[i],
+                    particle_data.Dz[i]
+                ])
             trk.dir.set(*p_dir)
             prtcl_pos = np.array(
                 [particle_data.x[i], particle_data.y[i], particle_data.z[i]])
