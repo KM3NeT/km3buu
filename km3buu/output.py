@@ -795,7 +795,7 @@ def write_detector_file(gibuu_output,
             lep_out_trk.t = timestamp
 
             generator_particle_state = km3io.definitions.trkmembers[
-                "TRK_ST_UNKNOWN"]
+                "TRK_ST_UNDEFINED"]
             if geometry.in_can(vtx_pos):
                 generator_particle_state = km3io.definitions.trkmembers[
                     "TRK_ST_FINALSTATE"]
