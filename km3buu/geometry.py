@@ -270,8 +270,8 @@ class CANVolume(DetectorVolume):
         if type(pos) is tuple or pos.ndim == 1:
             pos = np.reshape(pos, (-1, 3))
         zmask = (pos[:, 2] >= self._zmin) & (pos[:, 2] <= self._zmax)
-        r2 = (pos[:, 0] - self._coord_origin[0])**2 + \
-            (pos[:, 1] - self._coord_origin[1])**2
+        r2 = (pos[:, 0] - self._detector_center[0])**2 + \
+            (pos[:, 1] - self._detector_center[1])**2
         rmask = r2 < (self._radius**2)
         mask = zmask & rmask
         if len(mask) == 1:
@@ -399,8 +399,8 @@ class CylindricalVolume(DetectorVolume):
         if type(pos) is tuple or pos.ndim == 1:
             pos = np.reshape(pos, (-1, 3))
         zmask = (pos[:, 2] >= self._canzmin) & (pos[:, 2] <= self._canzmax)
-        r2 = (pos[:, 0] - self._coord_origin[0])**2 + \
-            (pos[:, 1] - self._coord_origin[1])**2
+        r2 = (pos[:, 0] - self._detector_center[0])**2 + \
+            (pos[:, 1] - self._detector_center[1])**2
         rmask = r2 < (self._canradius**2)
         mask = zmask & rmask
         if len(mask) == 1:
