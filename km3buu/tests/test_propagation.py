@@ -44,13 +44,13 @@ class TestTauPropagation(unittest.TestCase):
                                              [4.141, 5.761, 0.098],
                                              decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec.Dx),
-                                             [ 0.79 ,  0.642, -0.089],
+                                             [0.79, 0.642, -0.089],
                                              decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec.Dy),
                                              [0.599, 0.761, 0.984],
                                              decimal=3)
         np.testing.assert_array_almost_equal(np.array(self.sec.Dz),
-                                             [-0.133,  0.098, -0.152],
+                                             [-0.133, 0.098, -0.152],
                                              decimal=3)
 
     def test_secondary_types(self):
