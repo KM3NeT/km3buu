@@ -43,14 +43,14 @@ class TestTauPropagation(unittest.TestCase):
         np.testing.assert_array_almost_equal(np.array(self.sec.E),
                                              [4.141, 5.761, 0.098],
                                              decimal=3)
-        np.testing.assert_array_almost_equal(np.array(self.sec.Px),
-                                             [3.271, 3.696, -0.009],
+        np.testing.assert_array_almost_equal(np.array(self.sec.Dx),
+                                             [ 0.79 ,  0.642, -0.089],
                                              decimal=3)
-        np.testing.assert_array_almost_equal(np.array(self.sec.Py),
-                                             [2.48, 4.382, 0.097],
+        np.testing.assert_array_almost_equal(np.array(self.sec.Dy),
+                                             [0.599, 0.761, 0.984],
                                              decimal=3)
-        np.testing.assert_array_almost_equal(np.array(self.sec.Pz),
-                                             [-0.549, 0.564, -0.015],
+        np.testing.assert_array_almost_equal(np.array(self.sec.Dz),
+                                             [-0.133,  0.098, -0.152],
                                              decimal=3)
 
     def test_secondary_types(self):
@@ -83,11 +83,11 @@ class TestMuonPropagation(unittest.TestCase):
     def test_secondary_momenta(self):
         np.testing.assert_array_almost_equal(np.array(self.sec.E), [77.102],
                                              decimal=3)
-        np.testing.assert_array_almost_equal(np.array(self.sec.Px), [-54.519],
+        np.testing.assert_array_almost_equal(np.array(self.sec.Dx), [-0.707],
                                              decimal=3)
-        np.testing.assert_array_almost_equal(np.array(self.sec.Py), [-54.519],
+        np.testing.assert_array_almost_equal(np.array(self.sec.Dy), [-0.707],
                                              decimal=3)
-        np.testing.assert_array_almost_equal(np.array(self.sec.Pz), [-0.],
+        np.testing.assert_array_almost_equal(np.array(self.sec.Dz), [-0.],
                                              decimal=3)
 
     def test_secondary_types(self):
