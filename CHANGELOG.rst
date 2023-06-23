@@ -2,6 +2,7 @@ Unreleased changes
 ------------------
 
 * Use unix time interval for distributing events
+* Add functions to export crosssections for SWIM software directly
 
 v1.0.0 - Release Candidate 1
 ----------------------------
