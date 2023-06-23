@@ -496,7 +496,7 @@ class CylindricalVolume(DetectorVolume):
             dct['Pz'].append(prtcl.direction.z * prtcl.momentum / 1e3)
             dct['deltaT'].append(prtcl.time)
 
-    def distribute_event(self, evt):
+    def distribute_event(self, evt, max_resamples=250):
         # NC -> doesn't require any propagation
         if abs(evt.process_ID) == 3 or evt.flavor_ID == 1:
             vtx_pos = self.random_pos()
@@ -506,6 +506,8 @@ class CylindricalVolume(DetectorVolume):
             medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"
             targets_per_volume, _ = get_targets_per_volume(
                 targetZ=evt.nucleus_Z, medium=medium)
+            if not self.in_can(vtx_pos):
+                raise Exception("Electron and/or NC event not in CAN")
             return vtx_pos, vtx_dir, weight, evts, targets_per_volume
 
         if not self._pp_geometry:
@@ -522,6 +524,8 @@ class CylindricalVolume(DetectorVolume):
 
         while True:
             samples += 1
+            if samples > max_resamples:
+                raise Exception("Max number of vertex resamples reached.")
             vtx_pos = self.random_pos()
             vtx_angles = self.random_dir()
             medium = "SeaWater" if vtx_pos[2] >= 0 else "Rock"

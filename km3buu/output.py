@@ -705,8 +705,11 @@ def write_detector_file(gibuu_output,
             nano_seconds = int((t % 1) * 1e9)
             evt.mc_event_time = ROOT.TTimeStamp(seconds, nano_seconds)
             # Vertex Positioning & Propagation
-            vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
-                event)
+            try:
+                vtx_pos, vtx_angles, samples, prop_particles, targets_per_volume = geometry.distribute_event(
+                    event)
+            except:
+                continue
             # Weights
             evt.w.push_back(geometry.volume)  # w1 (can volume)
             evt.w.push_back(w2[total_id] * targets_per_volume / samples)  # w2
@@ -791,20 +794,21 @@ def write_detector_file(gibuu_output,
             lep_out_trk.E = event.lepOut_E
             lep_out_trk.t = timestamp
 
-            if prop_particles is not None:
-                lep_out_trk.status = km3io.definitions.trkmembers[
-                    "TRK_ST_PROPLEPTON"]
-                if geometry.in_can(vtx_pos):
-                    generator_particle_state = km3io.definitions.trkmembers[
-                        "TRK_ST_FINALSTATE"]
-                else:
-                    generator_particle_state = km3io.definitions.trkmembers[
-                        "TRK_ST_UNDEFINED"]
-            else:
-                lep_out_trk.status = km3io.definitions.trkmembers[
-                    "TRK_ST_FINALSTATE"]
+            generator_particle_state = km3io.definitions.trkmembers[
+                "TRK_ST_UNDEFINED"]
+            if geometry.in_can(vtx_pos):
                 generator_particle_state = km3io.definitions.trkmembers[
                     "TRK_ST_FINALSTATE"]
+                lep_out_trk.status = km3io.definitions.trkmembers[
+                    "TRK_ST_FINALSTATE"]
+
+            if prop_particles is not None:
+                if abs(sec_lep_type) == 15:
+                    lep_out_trk.status = km3io.definitions.trkmembers[
+                        "TRK_ST_PROPDECLEPTON"]
+                else:
+                    lep_out_trk.status = km3io.definitions.trkmembers[
+                        "TRK_ST_PROPLEPTON"]
 
             evt.mc_trks.push_back(lep_out_trk)
 
