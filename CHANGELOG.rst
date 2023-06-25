@@ -1,8 +1,10 @@
 Unreleased changes
 ------------------
-* Limit the number of resamples in order to speed sampling
 
-* Use unix time interval for distributing events
+v1.0.0 - Release Candidate 2
+----------------------------
+* Limit the number of resamples in order to speed sampling
+* Use unix time interval for distributing events and fix time fields
 * Add functions to export crosssections for SWIM software directly
 
 v1.0.0 - Release Candidate 1
