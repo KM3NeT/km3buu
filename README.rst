@@ -70,7 +70,7 @@ The GiBUU workflow starts from a jobcard which contains the configuration which 
 
 Alternatively a neutrino jobcard can be generated from scratch via
 
-... code-block:: python3
+.. code-block:: python3
 
     >>> from km3buu.jobcard import Jobcard, generate_neutrino_jobcard
 
