@@ -1,5 +1,5 @@
 .. image:: https://git.km3net.de/simulation/km3buu/-/raw/master/doc/_static/km3buu_logo.svg
-    :width: 10em
+    :width: 300em
     :alt: KM3BUU Logo
 
 KM3BUU
