@@ -5,6 +5,9 @@
 KM3BUU
 ======
 
+.. image:: https://img.shields.io/badge/docs-stable-blue.svg
+    :target: https://simulation.pages.km3net.de/km3buu
+
 .. image:: https://git.km3net.de/simulation/km3buu/badges/master/pipeline.svg
     :target: https://git.km3net.de/simulation/km3buu/pipelines
 
