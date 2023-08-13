@@ -1,6 +1,11 @@
 Unreleased changes
 ------------------
 
+v1.0.0
+----------------------------
+* Implementation status from rc2 applied
+* New logo and updated details in readme
+
 v1.0.0 - Release Candidate 2
 ----------------------------
 * Limit the number of resamples in order to speed sampling
