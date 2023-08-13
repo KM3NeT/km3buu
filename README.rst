@@ -10,6 +10,9 @@ KM3BUU
 
 .. image:: https://git.km3net.de/simulation/km3buu/badges/master/coverage.svg
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8243040.svg
+    :target: https://doi.org/10.5281/zenodo.8243040
+
 **This is NOT an official KM3NeT software package.**
 
 The KM3BUU project is an integrated python framework for wrapping the GiBUU particle interaction simulation https://gibuu.hepforge.org/trac/wiki . It is specifically designed for studies within the KM3NeT experiment and focuses on the neutrino simulation functionality of GiBUU.
