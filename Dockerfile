@@ -6,15 +6,15 @@ RUN  apt-get -qq update && \
 
 RUN   cd /opt && \
       mkdir GiBUU && cd GiBUU && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2021_04/release2021.tar.gz&& \
-      tar -xzvf release2021.tar.gz && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2021_04/buuinput2021.tar.gz && \
-      tar -xzvf buuinput2021.tar.gz && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2021_04/libraries2021_RootTuple.tar.gz && \
-      tar -xzvf libraries2021_RootTuple.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_LATEST/release2023.tar.gz&& \
+      tar -xzvf release2023.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_LATEST/buuinput2023.tar.gz && \
+      tar -xzvf buuinput2023.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_LATEST/libraries2023_RootTuple.tar.gz && \
+      tar -xzvf libraries2023_RootTuple.tar.gz && \
       rm -rf ./*.tar.gz && \ 
-      sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2021/RootTuple/RootTuple-master/CMakeLists.txt && \ 
-      cd release2021 && make -j buildRootTuple_POS && \
+      sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2023/RootTuple/RootTuple-master/CMakeLists.txt && \ 
+      cd release2023 && make -j buildRootTuple_POS && \
       make -j FORT=gfortran MODE=lto ARGS="-march=x86-64-v3" withROOT=1 
 
 ADD . /km3buu
