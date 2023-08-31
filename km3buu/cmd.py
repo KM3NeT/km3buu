@@ -264,9 +264,9 @@ def main():
                                    fluxfile=fluxfile,
                                    do_decay=args.decay,
                                    timesteps=args.timesteps)
-    
+
     # FinalEvents.dat develop option
-    jc["neutrinoanalysis"]["outputEvents"] = False 
+    jc["neutrinoanalysis"]["outputEvents"] = False
     jc["neutrinoanalysis"]["applyCuts"] = 2
 
     if args.gibuuparams:
