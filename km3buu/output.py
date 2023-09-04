@@ -746,6 +746,8 @@ def write_detector_file(gibuu_output,
                 "W2LIST_KM3BUU_GIBUU_WEIGHT"]] = event.weight
             evt.w2list[km3io.definitions.w2list_km3buu[
                 "W2LIST_KM3BUU_GIBUU_SCAT_TYPE"]] = event.evType
+            evt.w2list[km3io.definitions.w2list_km3buu[
+                "W2LIST_KM3BUU_LEPPROP_SAMPLES"]] = samples
             # TODO
             evt.w2list[km3io.definitions.
                        w2list_km3buu["W2LIST_KM3BUU_DXSEC"]] = np.nan
