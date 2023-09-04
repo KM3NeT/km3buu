@@ -1,6 +1,7 @@
 Unreleased changes
 ------------------
 * GiBUU2023 update
+* Write out the number of necessary samples until propagated lepton reaches CAN (W2LIST_KM3BUU_LEPPROP_SAMPLES)
 
 v1.0.0
 ----------------------------
