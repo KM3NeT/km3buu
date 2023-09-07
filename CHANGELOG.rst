@@ -1,5 +1,8 @@
 Unreleased changes
 ------------------
+
+v1.1.0
+----------------------------
 * GiBUU2023 update
 * Fix spherical volume by adding the distibute_events method
 
