@@ -615,3 +615,10 @@ class SphericalVolume(DetectorVolume):
         value = "0 0 {} {} {}".format(self._radius, self._volume, nevents)
         retdct[key] = value
         return retdct
+
+    def distribute_event(self, evt):
+        vtx_pos = self.random_pos()
+        vtx_dir = self.random_dir()
+        weight = 1
+        evts = None
+        return vtx_pos, vtx_dir, weight, None, 1
