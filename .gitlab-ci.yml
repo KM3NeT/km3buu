@@ -139,5 +139,7 @@ release-singularity:
         - du -sh $SINGULARITY_RELEASE_IMAGE
         - mkdir -p ~/.ssh && ssh-keyscan -H -t rsa $KM3NET_SFTP_HOST  >> ~/.ssh/known_hosts
         - lftp -u $KM3NET_SFTP_USER,$KM3NET_SFTP_PASSWORD sftp://$KM3NET_SFTP_HOST -e "set ssl:verify-certificate no; cd singularity/; put $SINGULARITY_RELEASE_IMAGE; bye"
+    dependencies:
+        - release-docker
     only:
         - tags
