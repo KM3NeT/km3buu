@@ -1,6 +1,8 @@
 Unreleased changes
 ------------------
 
+* Limit minimal number of ensembles to 100 in estimate helper function
+
 v1.1.0
 ----------------------------
 * GiBUU2023 update
