@@ -54,6 +54,7 @@ XSECTIONMODE_LOOKUP = {
 
 DECAYED_HADRONS = [56, 57, 114, 115, 118, 119]
 MAX_OVERALL_ENSEMBLES = 100000
+MIN_OVERALL_ENSEMBLES = 100
 
 
 class Jobcard(f90nml.Namelist):
@@ -122,6 +123,9 @@ def estimate_number_of_ensembles(events, target):
 
     if required_ensembles < run_ensembles:
         ensembles = required_ensembles
+        runs = 1
+    elif required_ensembles < MIN_OVERALL_ENSEMBLES:
+        ensembles = MIN_OVERALL_ENSEMBLES
         runs = 1
     else:
         ensembles = run_ensembles

@@ -38,6 +38,11 @@ class TestUtils(unittest.TestCase):
         assert e == 6250
         assert r == 2
 
+    def test_minimal_ensembles(self):
+        e, r = estimate_number_of_ensembles(1000, (56, 26))
+        assert e == 100
+        assert r == 1
+
 
 class TestJobcard(unittest.TestCase):
 
