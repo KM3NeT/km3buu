@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Fix setup files
 
 v1.1.0
 ----------------------------
