@@ -54,7 +54,7 @@ XSECTIONMODE_LOOKUP = {
 
 DECAYED_HADRONS = [56, 57, 114, 115, 118, 119]
 MAX_OVERALL_ENSEMBLES = 100000
-MIN_OVERALL_ENSEMBLES = 100
+MIN_RUN_ENSEMBLES = 100
 
 
 class Jobcard(f90nml.Namelist):
@@ -119,17 +119,19 @@ def estimate_number_of_ensembles(events, target):
     """
 
     run_ensembles = int(np.ceil(MAX_OVERALL_ENSEMBLES / target[0]))
-    required_ensembles = int(np.ceil(events / target[0])) * BLOCKING_FACTOR
+    if run_ensembles < MIN_RUN_ENSEMBLES:
+        run_ensembles = MIN_RUN_ENSEMBLES
 
-    if required_ensembles < run_ensembles:
-        ensembles = required_ensembles
-        runs = 1
-    elif required_ensembles < MIN_OVERALL_ENSEMBLES:
-        ensembles = MIN_OVERALL_ENSEMBLES
+    required_total_ensembles = int(np.ceil(events / target[0])) * BLOCKING_FACTOR
+    if required_total_ensembles < MIN_RUN_ENSEMBLES:
+        required_total_ensembles = MIN_RUN_ENSEMBLES
+
+    if required_total_ensembles <= run_ensembles:
+        ensembles = run_ensembles
         runs = 1
     else:
-        ensembles = run_ensembles
-        runs = int(np.ceil(required_ensembles / run_ensembles))
+        ensembles = run_total_ensembles
+        runs = int(np.ceil(required_total_ensembles / run_ensembles))
     return (ensembles, runs)
 
 
