@@ -130,7 +130,7 @@ def estimate_number_of_ensembles(events, target):
         ensembles = required_total_ensembles
         runs = 1
     else:
-        ensembles = run_total_ensembles
+        ensembles = run_ensembles
         runs = int(np.ceil(required_total_ensembles / run_ensembles))
     return (ensembles, runs)
 
