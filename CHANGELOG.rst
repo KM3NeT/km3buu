@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Limit minimal number of ensembles to 100 in estimate helper function
 * Fix setup files
 
 v1.1.0
