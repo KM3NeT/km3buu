@@ -122,7 +122,8 @@ def estimate_number_of_ensembles(events, target):
     if run_ensembles < MIN_RUN_ENSEMBLES:
         run_ensembles = MIN_RUN_ENSEMBLES
 
-    required_total_ensembles = int(np.ceil(events / target[0])) * BLOCKING_FACTOR
+    required_total_ensembles = int(np.ceil(
+        events / target[0])) * BLOCKING_FACTOR
     if required_total_ensembles < MIN_RUN_ENSEMBLES:
         required_total_ensembles = MIN_RUN_ENSEMBLES
 
