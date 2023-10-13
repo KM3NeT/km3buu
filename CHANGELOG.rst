@@ -1,5 +1,8 @@
 Unreleased changes
 ------------------
+
+v1.1.2
+----------------------------
 * Change input flux convention (for input value gamma from E^gamma to E^-gamma)
 
 v1.1.1
