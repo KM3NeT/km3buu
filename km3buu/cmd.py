@@ -248,7 +248,7 @@ def main():
 
     if not single_energy_run and not np.isclose(args.flux, 0.):
         energies = np.linspace(energy[0], energy[1], 1000)
-        flux = 1e3 * energies**args.flux
+        flux = 1e3 * energies**-args.flux
         fluxfile = join(args.output, "flux.dat")
         np.savetxt(fluxfile, np.c_[energies, flux])
 
