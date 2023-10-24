@@ -550,10 +550,11 @@ class GiBUUOutput:
         def fluxfunc(x, a, b):
             return a * x**b
 
-        lower_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.2)
-        upper_limit = np.exp(np.log(np.max(self.flux_data["flux"])) * 0.8)
-        mask = (self.flux_data["flux"] > lower_limit) & (self.flux_data["flux"]
-                                                         < upper_limit)
+        energy_mask = self.flux_data["flux"] > 0
+        lower_limit = np.min(self.flux_data["energy"][energy_mask]) * 1.2
+        upper_limit = np.max(self.flux_data["energy"][energy_mask]) * 0.8
+        mask = (self.flux_data["energy"]
+                > lower_limit) & (self.flux_data["energy"] < upper_limit)
         popt, pcov = curve_fit(fluxfunc,
                                self.flux_data["energy"][mask],
                                self.flux_data["flux"][mask],
