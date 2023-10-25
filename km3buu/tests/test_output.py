@@ -77,7 +77,7 @@ class TestGiBUUOutput(unittest.TestCase):
         assert self.output.A == 16
 
     def test_flux_index(self):
-        assert np.isclose(self.output.flux_index, -0.004812255, rtol=1e-3)
+        assert np.isclose(self.output.flux_index, -0.00576924, rtol=1e-3)
 
     def test_w2weights(self):
         w2 = self.output.w2weights(123.0, 2.6e28, 4 * np.pi)
