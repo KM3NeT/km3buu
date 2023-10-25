@@ -16,7 +16,7 @@ import re
 import numpy as np
 from io import StringIO
 from os import listdir, environ
-from os.path import isfile, join, abspath
+from os.path import isfile, join, abspath, exists
 from tempfile import TemporaryDirectory
 import awkward as ak
 import uproot
@@ -237,10 +237,9 @@ class GiBUUOutput:
         self._generated_events = -1
         self._flux_index = np.nan
 
-        try:
-            self._read_flux_file()
+        if self._read_flux_file():
             self._determine_flux_index()
-        except OSError:
+        else:
             self._read_single_energy()
 
     def _read_root_output(self):
@@ -285,6 +284,8 @@ class GiBUUOutput:
 
     def _read_flux_file(self):
         fpath = join(self._data_path, FLUXDESCR_FILENAME)
+        if not exists(fpath):
+            return False
         self.flux_data = np.loadtxt(fpath,
                                     dtype=FLUX_INFORMATION_DTYPE,
                                     usecols=(
@@ -297,6 +298,7 @@ class GiBUUOutput:
         self._energy_min = np.min(self.flux_data["energy"])
         self._energy_max = np.max(self.flux_data["energy"])
         self._generated_events = int(np.sum(self.flux_data["events"]))
+        return True
 
     def _event_xsec(self, root_tupledata):
         weights = np.array(root_tupledata.weight)
@@ -555,11 +557,14 @@ class GiBUUOutput:
         upper_limit = np.max(self.flux_data["energy"][energy_mask]) * 0.8
         mask = (self.flux_data["energy"]
                 > lower_limit) & (self.flux_data["energy"] < upper_limit)
-        popt, pcov = curve_fit(fluxfunc,
-                               self.flux_data["energy"][mask],
-                               self.flux_data["flux"][mask],
-                               p0=[1, -1])
-        self._flux_index = popt[1]
+        try:
+            popt, pcov = curve_fit(fluxfunc,
+                                   self.flux_data["energy"][mask],
+                                   self.flux_data["flux"][mask],
+                                   p0=[1, -1])
+            self._flux_index = popt[1]
+        except:
+            self._flux_index = np.nan
 
     @property
     def flux_index(self):
