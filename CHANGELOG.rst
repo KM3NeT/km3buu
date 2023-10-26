@@ -1,6 +1,9 @@
 Unreleased changes
 ------------------
-* Improved curve for flux index
+
+v1.1.3
+----------------------------
+* Improved curve fit for flux index
 
 v1.1.2
 ----------------------------
