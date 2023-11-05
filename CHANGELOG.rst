@@ -1,6 +1,10 @@
 Unreleased changes
 ------------------
 
+v1.0.5
+----------------------------
+* Fix/Remove applyCuts (only available in GiBUU2023)
+
 v1.0.4
 ----------------------------
 * Temporary version with GiBUU2021 (waiting for GiBUU2023patch1)
