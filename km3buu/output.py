@@ -294,7 +294,8 @@ class GiBUUOutput:
                                         2,
                                     ))
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
-                                                   self.flux_data["events"])
+                                                   self.flux_data["events"],
+                                                   s=0)
         self._energy_min = np.min(self.flux_data["energy"])
         self._energy_max = np.max(self.flux_data["energy"])
         self._generated_events = int(np.sum(self.flux_data["events"]))
