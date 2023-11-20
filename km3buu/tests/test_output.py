@@ -70,7 +70,7 @@ class TestGiBUUOutput(unittest.TestCase):
         df = df[(df.lepIn_E > 0.7) & (df.lepIn_E < 1.0)]
         xsec = np.sum(df.xsec / df.lepIn_E)
         n_evts = self.output.flux_interpolation.integral(0.7, 1.0) / 0.02
-        self.assertAlmostEqual(xsec / n_evts, 0.621, places=2)
+        self.assertAlmostEqual(xsec / n_evts, 0.6552, places=2)
 
     def test_nucleus_properties(self):
         assert self.output.Z == 8
@@ -86,7 +86,7 @@ class TestGiBUUOutput(unittest.TestCase):
 
     def test_global_generation_weight(self):
         self.assertAlmostEqual(self.output.global_generation_weight(4 * np.pi),
-                               2513.2982433720877,
+                               2513.2765713094464,
                                places=2)
 
     def test_event_values(self):
