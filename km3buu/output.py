@@ -377,7 +377,7 @@ class GiBUUOutput:
             energy_factor = 1
         env_factor = volume * SECONDS_WEIGHT_TIMESPAN
         retval = env_factor * solid_angle * \
-            energy_factor * xsec * 10**-42 * target_density
+            energy_factor * xsec * 1e-42 * target_density
         return retval
 
     @staticmethod
