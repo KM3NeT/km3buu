@@ -234,6 +234,7 @@ class GiBUUOutput:
         self.flux_data = None
         self._min_energy = np.nan
         self._max_energy = np.nan
+        self._written_events = len(self._get_raw_arrays())
         self._generated_events = -1
         self._flux_index = np.nan
 
@@ -303,7 +304,7 @@ class GiBUUOutput:
 
     def _event_xsec(self, root_tupledata):
         weights = np.array(root_tupledata.weight)
-        total_events = self._generated_events
+        total_events = self._written_events
         n_files = len(self.root_pert_files)
         xsec = np.divide(total_events * weights, n_files)
         return xsec
@@ -500,13 +501,16 @@ class GiBUUOutput:
         df = pd.concat([df, sec_df])
         return df
 
+    def _get_raw_arrays(self):
+        path_descr = join(self.data_path, ROOT_PERT_FILENAME) + ":RootTuple"
+        return uproot.concatenate(path_descr)
+
     @property
     def arrays(self):
         """
         GiBUU output data in awkward format
         """
-        path_descr = join(self.data_path, ROOT_PERT_FILENAME) + ":RootTuple"
-        retval = uproot.concatenate(path_descr)
+        retval = self._get_raw_arrays()
         # Calculate additional information
         counts = ak.num(retval.E)
         retval["xsec"] = self._event_xsec(retval)
