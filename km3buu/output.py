@@ -846,7 +846,7 @@ def write_detector_file(gibuu_output,
 
             tree.Fill()
 
-        for k, v in geometry.header_entries(mc_event_id + 1).items():
+        for k, v in geometry.header_entries(gibuu_output._generated_events).items():
             header_dct[k] = v
 
         head = ROOT.Head()
