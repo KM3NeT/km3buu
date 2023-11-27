@@ -304,7 +304,7 @@ class GiBUUOutput:
 
     def _event_xsec(self, root_tupledata):
         weights = np.array(root_tupledata.weight)
-        total_events = self._generated_events / 2 # half due to sampling of x in [0,2]
+        total_events = self._generated_events
         n_files = len(self.root_pert_files)
         xsec = np.divide(total_events * weights, n_files)
         return xsec
