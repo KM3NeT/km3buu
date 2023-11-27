@@ -9,6 +9,7 @@ v1.0.4
 ----------------------------
 * Temporary version with GiBUU2021 (waiting for GiBUU2023patch1)
 * Improved curve for flux index
+* Disable smoothening for flux interpolation (of data points from GiBUU)
 
 
 v1.1.2
