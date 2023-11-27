@@ -1,6 +1,7 @@
 Unreleased changes
 ------------------
 * Improved curve for flux index
+* Disable smoothening for flux interpolation (of data points from GiBUU)
 
 v1.1.2
 ----------------------------

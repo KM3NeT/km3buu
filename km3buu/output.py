@@ -234,6 +234,7 @@ class GiBUUOutput:
         self.flux_data = None
         self._min_energy = np.nan
         self._max_energy = np.nan
+        self._written_events = len(self._get_raw_arrays())
         self._generated_events = -1
         self._flux_index = np.nan
 
@@ -294,7 +295,8 @@ class GiBUUOutput:
                                         2,
                                     ))
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
-                                                   self.flux_data["events"])
+                                                   self.flux_data["events"],
+                                                   s=0)
         self._energy_min = np.min(self.flux_data["energy"])
         self._energy_max = np.max(self.flux_data["energy"])
         self._generated_events = int(np.sum(self.flux_data["events"]))
@@ -375,7 +377,7 @@ class GiBUUOutput:
             energy_factor = 1
         env_factor = volume * SECONDS_WEIGHT_TIMESPAN
         retval = env_factor * solid_angle * \
-            energy_factor * xsec * 10**-42 * target_density
+            energy_factor * xsec * 1e-42 * target_density
         return retval
 
     @staticmethod
@@ -499,13 +501,16 @@ class GiBUUOutput:
         df = pd.concat([df, sec_df])
         return df
 
+    def _get_raw_arrays(self):
+        path_descr = join(self.data_path, ROOT_PERT_FILENAME) + ":RootTuple"
+        return uproot.concatenate(path_descr)
+
     @property
     def arrays(self):
         """
         GiBUU output data in awkward format
         """
-        path_descr = join(self.data_path, ROOT_PERT_FILENAME) + ":RootTuple"
-        retval = uproot.concatenate(path_descr)
+        retval = self._get_raw_arrays()
         # Calculate additional information
         counts = ak.num(retval.E)
         retval["xsec"] = self._event_xsec(retval)
@@ -841,7 +846,8 @@ def write_detector_file(gibuu_output,
 
             tree.Fill()
 
-        for k, v in geometry.header_entries(mc_event_id + 1).items():
+        for k, v in geometry.header_entries(
+                gibuu_output._generated_events).items():
             header_dct[k] = v
 
         head = ROOT.Head()
