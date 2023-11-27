@@ -1,6 +1,11 @@
 Unreleased changes
 ------------------
 
+v1.0.6
+----------------------------
+* Improved curve for flux index
+* Disable smoothening for flux interpolation (of data points from GiBUU)
+
 v1.0.5
 ----------------------------
 * Fix/Remove applyCuts (only available in GiBUU2023)
