@@ -177,6 +177,7 @@ EMPTY_KM3NET_HEADER_DICT = {
     "tgen": "0",
     "simul": "",
     "primary": "0",
+    "target": "None"
 }
 
 W2LIST_LENGTH = max(km3io.definitions.w2list_km3buu.values()) + 1
@@ -687,6 +688,7 @@ def write_detector_file(gibuu_output,
         version, timestamp.strftime("%Y%m%d %H%M%S"))
     header_dct["primary"] = "{:d}".format(nu_type)
     header_dct["start_run"] = str(run_number)
+    header_dct["target"] = "A{}Z{}".format(gibuu_output.A, gibuu_output.Z)
 
     event_times = np.sort(
         np.random.uniform(timeinterval[0], timeinterval[1], len(event_data)))
