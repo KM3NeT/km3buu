@@ -1,6 +1,10 @@
 Unreleased changes
 ------------------
 
+v1.0.7
+----------------------------
+* Add target to KM3NeT dataformat file header 
+
 v1.0.6
 ----------------------------
 * Improved curve for flux index
