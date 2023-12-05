@@ -1,5 +1,8 @@
 Unreleased changes
 ------------------
+
+v1.1.5
+----------------------------
 * Add target to KM3NeT dataformat file header
 
 v1.1.4
