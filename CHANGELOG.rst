@@ -1,5 +1,8 @@
 Unreleased changes
 ------------------
+
+v1.2.0
+----------------------------
 * Update to GiBUU2023-Patch1
 
 v1.1.6
