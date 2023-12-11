@@ -4,6 +4,8 @@
     localensemble = .true.
     freezerealparticles = .true.
     lrf_equals_calc_frame = .true.
+    fullensemble = .true.
+    localensemble = .true.
 /
 
 &neutrino_induced
@@ -47,4 +49,9 @@
 
 &initPauli
     pauliSwitch = 2
+/
+
+&width_baryon
+    mediumswitch = .true.
+    mediumswitch_delta = .true.
 /
