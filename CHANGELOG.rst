@@ -1,6 +1,10 @@
 Unreleased changes
 ------------------
 
+v1.0.8
+----------------------------
+* Jobcard updates
+
 v1.0.7
 ----------------------------
 * Add target to KM3NeT dataformat file header 
