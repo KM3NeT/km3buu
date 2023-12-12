@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Update xsec settings in default jobcard (e.g. transition width to DIS and Bosted Christy for single pi)
 
 v1.2.0
 ----------------------------

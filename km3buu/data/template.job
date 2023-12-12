@@ -56,3 +56,10 @@
     mediumswitch = .true.
     mediumswitch_delta = .true.
 /
+
+&nl_neutrinoxsection
+      singlePiModel = 2
+      invariantMasscut = 100.
+      DIScutW = 3.0
+      DIScutwidth = 0.1
+/
