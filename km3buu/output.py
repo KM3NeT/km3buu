@@ -506,6 +506,17 @@ class GiBUUOutput:
         path_descr = join(self.data_path, ROOT_PERT_FILENAME) + ":RootTuple"
         return uproot.concatenate(path_descr)
 
+    @staticmethod
+    def _invariant_target_mass(roottuple_data):
+        d = roottuple_data
+        q = GiBUUOutput._q(d)
+        q2 = GiBUUOutput.Qsquared(d)
+        pq = q[0, :] * d.nuc_E - q[1, :] * d.nuc_Px - q[2, :] * d.nuc_Py - q[
+            3, :] * d.nuc_Pz
+        M2 = d.nuc_E**2 - d.nuc_Px**2 - d.nuc_Py**2 - d.nuc_Pz**2
+        W2 = M2 + 2*pq - q2
+        return W2
+
     @property
     def arrays(self):
         """
@@ -520,6 +531,7 @@ class GiBUUOutput:
         retval["Q2"] = GiBUUOutput.Qsquared(retval)
         retval["M2"] = retval["E"]**2 - retval["Px"]**2 - retval[
             "Py"]**2 - retval["Pz"]**2
+        retval["W2"] = GiBUU._invariant_target_mass(retval)
         if "x" in retval.fields:
             retval["R"] = retval["x"]**2 + retval["y"]**2 + retval["z"]**2
         visEfrac = visible_energy_fraction(ak.flatten(retval.E),
