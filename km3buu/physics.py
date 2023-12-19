@@ -223,10 +223,11 @@ def get_kinetic_energy(energy, pdgid, warning=True):
     mass = np.array(_get_particle_rest_mass(pdgid))
     import warnings
     with warnings.catch_warnings():
-        if not warning:
-            warnings.filterwarnings('ignore',
+        # Catch warnings -> information not lost as it is set to nan
+        warnings.filterwarnings('ignore',
                                     r'invalid value encountered in sqrt')
-        retval = np.sqrt(ak.to_numpy(energy)**2 - mass**2)
+        diffsq = ak.to_numpy(energy)**2 - mass**2
+        retval = np.sqrt(diffsq)
     return retval
 
 
