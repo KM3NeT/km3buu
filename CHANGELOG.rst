@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Suppress warnings of negative sqrt at kin energy calculation (NaN values remain)
 * Update xsec settings in default jobcard (e.g. transition width to DIS and Bosted Christy for single pi)
 
 v1.2.0
