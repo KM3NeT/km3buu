@@ -28,7 +28,7 @@ DENSITY_SEA_WATER = MEDIA_COMPOSITION["SeaWater"]["density"]
 ELEMENTS = dict()
 
 MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7  # dx/dE [m/GeV]
-MUON_MASS = Particle.from_string("mu").mass / 1e3
+MUON_MASS = next(Particle.finditer(lambda p: "mu-" in p.name)).mass / 1e3
 
 ELEC_PARAMS = {
     "ELECa": 1.33356e5,
