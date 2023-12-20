@@ -16,10 +16,15 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from scipy.spatial.transform import Rotation
 from particle import Particle
-
-import proposal as pp
-from .propagation import *
 from .physics import get_targets_per_volume
+
+try:
+    from .propagation import *
+except:
+    import warnings
+    warnings.warn(
+        "Import of propagation function was skipped (likely due to missing PROPOSAL installation)."
+    )
 
 M_TO_CM = 1e2
 
