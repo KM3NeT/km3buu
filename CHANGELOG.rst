@@ -1,6 +1,7 @@
 Unreleased changes
 ------------------
 * Add invariant target mass (W2) to calculated features in GiBUUOutput
+* Compatibility for particle module v0.23.0
 * Update xsec settings in default jobcard (e.g. transition width to DIS and Bosted Christy for single pi)
 
 v1.2.0
