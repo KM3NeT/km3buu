@@ -18,17 +18,25 @@ import pytest
 from os.path import abspath, join, dirname
 from thepipe.logger import get_logger
 
-import proposal as pp
-
 import awkward as ak
 
-from km3buu.geometry import *
-from km3buu.propagation import *
+try:
+    import proposal as pp
+    pp.RandomGenerator.get().set_seed(1234)
+    PROPOSAL_AVAILABLE = True
+except ModuleNotFoundError as e:
+    print(e)
+    PROPOSAL_AVAILABLE = False
 
-pp.RandomGenerator.get().set_seed(1234)
+from km3buu.geometry import *
+if PROPOSAL_AVAILABLE:
+    from km3buu.propagation import *
+
 np.random.seed(1234)
 
 
+@pytest.mark.skipif(not PROPOSAL_AVAILABLE,
+                    reason="PROPOSAL installation required")
 class TestTauPropagation(unittest.TestCase):
 
     def setUp(self):
@@ -69,6 +77,8 @@ class TestTauPropagation(unittest.TestCase):
                                              decimal=1)
 
 
+@pytest.mark.skipif(not PROPOSAL_AVAILABLE,
+                    reason="PROPOSAL installation required")
 class TestMuonPropagation(unittest.TestCase):
 
     def setUp(self):

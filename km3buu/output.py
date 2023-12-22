@@ -28,7 +28,7 @@ import km3io
 
 from .physics import visible_energy_fraction, get_targets_per_volume
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
-from .geometry import *
+from .geometry import NoVolume
 from .config import Config, read_default_media_compositions
 from .__version__ import version
 
@@ -590,7 +590,7 @@ def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
                         no_files=1,
                         run_number=1,
-                        geometry=CylindricalVolume(),
+                        geometry=NoVolume(),
                         timeinterval=(0.0, 1684345837.0),
                         free_particle_cuts=True):  # pragma: no cover
     """
