@@ -32,7 +32,6 @@ from km3buu.geometry import *
 if PROPOSAL_AVAILABLE:
     from km3buu.propagation import *
 
-
 np.random.seed(1234)
 
 
@@ -76,6 +75,7 @@ class TestTauPropagation(unittest.TestCase):
         np.testing.assert_array_almost_equal(np.array(self.sec.z),
                                              [100., 100., 100.],
                                              decimal=1)
+
 
 @pytest.mark.skipif(not PROPOSAL_AVAILABLE,
                     reason="PROPOSAL installation required")
