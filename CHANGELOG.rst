@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Possibility to skip km3net dataformat writeout in `km3buu` runner script
 * Fix setuptools (python) dependency
 
 v1.3.0
