@@ -21,6 +21,7 @@ ADD . /km3buu
 
 RUN cd /km3buu && \
     pip3 install --upgrade pip && \
+    pip3 install --upgrade setuptools && \
     pip3 install setuptools-scm && \
     pip3 install pytest-runner && \
     pip3 install conan && \
