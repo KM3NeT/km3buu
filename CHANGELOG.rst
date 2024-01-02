@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Fix setuptools (python) dependency
 
 v1.3.0
 ----------------------------
