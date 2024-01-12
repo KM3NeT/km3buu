@@ -814,7 +814,7 @@ def write_detector_file(gibuu_output,
             nuc_trk.mother_id = -1
             nuc_trk.type = target_pdgid
             nuc_trk.pos.set(*vtx_pos)
-            nuc_trk.dir.set(np.array([0.0, 0.0, 0.0]))
+            nuc_trk.dir.set(0.0, 0.0, 0.0)
             nuc_trk.E = target_mass
             nuc_trk.t = timestamp
             nuc_trk.status = km3io.definitions.trkmembers["TRK_ST_ININUCLEI"]
