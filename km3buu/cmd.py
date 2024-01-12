@@ -180,8 +180,7 @@ ARGPARSE_GENERAL_PARAMS = [{
     "option_strings": ["--km3net"],
     "dest": "km3net",
     "action": argparse.BooleanOptionalAction,
-    "help":
-    "Write km3net dataformat file (default: true)",
+    "help": "Write km3net dataformat file (default: true)",
     "default": True
 }, {
     "option_strings": ["--zenith", "-z"],
