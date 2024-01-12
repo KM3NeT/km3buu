@@ -34,9 +34,10 @@ options:
                         Unix time interval the events are distributed in [ms]
   --gibuuparams GIBUUPARAMS, -p GIBUUPARAMS
                         JSON file for modified GiBUU namelist params
-  --decay, --no-decay   Decay final state particles (according to the decays done in gSeaGen) (default: True)
+  --decay, --no-decay   Decay final state particles (according to the decays done in gSeaGen) (default: False)
   --zenith cosZmin cosZmax, -z cosZmin cosZmax
                         Zenith range of the direction if a geometry is used
+  --km3net, --no-km3net Write a km3net dataformat file (default: True)
 
 modes:
   {single,range}        Modes
@@ -176,6 +177,12 @@ ARGPARSE_GENERAL_PARAMS = [{
     "Decay final state particles (according to the decays done in gSeaGen)",
     "default": False
 }, {
+    "option_strings": ["--km3net"],
+    "dest": "km3net",
+    "action": argparse.BooleanOptionalAction,
+    "help": "Write km3net dataformat file (default: true)",
+    "default": True
+}, {
     "option_strings": ["--zenith", "-z"],
     "dest": "zenith",
     "type": float,
@@ -278,6 +285,9 @@ def main():
                 jc[k1][k2] = v
 
     run_jobcard(jc, gibuu_dir)
+
+    if not args.km3net:
+        return
 
     fobj = GiBUUOutput(gibuu_dir)
 
