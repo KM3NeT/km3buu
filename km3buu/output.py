@@ -28,7 +28,7 @@ import km3io
 
 from .physics import visible_energy_fraction, get_targets_per_volume
 from .jobcard import Jobcard, read_jobcard, PDGID_LOOKUP
-from .geometry import NoVolume
+from .geometry import DetectorVolume, NoVolume
 from .config import Config, read_default_media_compositions
 from .__version__ import version
 
