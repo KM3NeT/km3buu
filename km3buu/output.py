@@ -702,8 +702,8 @@ def write_detector_file(gibuu_output,
     event_times = np.sort(
         np.random.uniform(timeinterval[0], timeinterval[1], len(event_data)))
 
-    target_pdgid = int(1000000000 + gibuu_output.A * 1e4 +
-                       gibuu_output.Z * 1e1)
+    target_pdgid = int(1000000000 + gibuu_output.Z * 1e4 +
+                       gibuu_output.A * 1e1)
     target_mass = Particle.from_pdgid(target_pdgid).mass * 1e-3
 
     for i in range(no_files):
