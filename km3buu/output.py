@@ -24,6 +24,7 @@ from scipy.interpolate import UnivariateSpline, interp1d
 from scipy.spatial.transform import Rotation
 from scipy.optimize import curve_fit
 from datetime import datetime
+from particle import Particle
 import km3io
 
 from .physics import visible_energy_fraction, get_targets_per_volume
@@ -538,7 +539,6 @@ class GiBUUOutput:
 
     @property
     def free_particle_mask(self):
-        from particle import Particle
         arr = self.arrays
         nums = ak.num(arr.barcode)
         pdgid = ak.flatten(arr.barcode)
@@ -702,6 +702,9 @@ def write_detector_file(gibuu_output,
     event_times = np.sort(
         np.random.uniform(timeinterval[0], timeinterval[1], len(event_data)))
 
+    target_pdgid = int(1000000000 + gibuu_output.A * 1e4 + gibuu_output.Z * 1e1)
+    target_mass = Partigle.from_pdgid(target_pdgid).mass * 1e-3
+
     for i in range(no_files):
         start_id = 0
         stop_id = len(event_data)
@@ -790,7 +793,7 @@ def write_detector_file(gibuu_output,
             direction = np.array([dir_x, dir_y, dir_z])
             theta = np.arccos(cos_theta)
             R = Rotation.from_euler("yz", [theta, phi])
-
+            # Initial Neutrino
             nu_in_trk = ROOT.Trk()
             nu_in_trk.id = mc_trk_id
             mc_trk_id += 1
@@ -803,7 +806,20 @@ def write_detector_file(gibuu_output,
             nu_in_trk.status = km3io.definitions.trkmembers[
                 "TRK_ST_PRIMARYNEUTRINO"]
             evt.mc_trks.push_back(nu_in_trk)
-
+            # Initial Nucleus
+            nuc_trk = ROOT.Trk()
+            nuc_trk.id = mc_trk_id
+            mc_trk_id += 1
+            nuc_trk.mother_id = -1
+            nuc_trk.type = target_pdgid
+            nuc_trk.pos.set(*vtx_pos)
+            nuc_trk.dir.set(np.array([0.0,0.0,0.0]))
+            nuc_trk.E = target_mass
+            nuc_trk.t = timestamp
+            nuc_trk.status = km3io.definitions.trkmembers[
+                "TRK_ST_ININUCLEI"]
+            evt.mc_trks.push_back(nuc_trk)
+            # Secondary Lepton
             lep_out_trk = ROOT.Trk()
             lep_out_trk.id = mc_trk_id
             mc_trk_id += 1
