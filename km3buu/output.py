@@ -704,7 +704,7 @@ def write_detector_file(gibuu_output,
 
     target_pdgid = int(1000000000 + gibuu_output.A * 1e4 +
                        gibuu_output.Z * 1e1)
-    target_mass = Partigle.from_pdgid(target_pdgid).mass * 1e-3
+    target_mass = Particle.from_pdgid(target_pdgid).mass * 1e-3
 
     for i in range(no_files):
         start_id = 0
