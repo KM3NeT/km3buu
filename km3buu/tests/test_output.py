@@ -21,7 +21,7 @@ from km3net_testdata import data_path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 from km3buu.output import *
-from km3buu.geometry import NoVolume
+from km3buu.geometry import NoVolume, CANVolume
 from km3buu.config import Config
 
 TESTDATA_DIR = data_path("gibuu")
@@ -107,14 +107,16 @@ class TestOfflineFile(unittest.TestCase):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
         np.random.seed(1234)
+        geometry = CANVolume()
         write_detector_file(output,
                             datafile.name,
                             run_number=1234,
+                            geometry=geometry,
                             free_particle_cuts=False)
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
-        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4755)
+        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 10000)
         np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj.header.start_run.run_id, 1234)
 
@@ -124,30 +126,32 @@ class TestOfflineFile(unittest.TestCase):
 
     def test_firstevent(self):
         evt = self.fobj.events[0]
-        np.testing.assert_array_equal(evt.mc_tracks.pdgid,
-                                      [12, 1000160080, 11, 111, 2212, -211, 111, 211])
+        np.testing.assert_array_equal(
+            evt.mc_tracks.pdgid,
+            [12, 1000080160, 11, 111, 2212, -211, 111, 211])
         np.testing.assert_array_equal(evt.mc_tracks.status,
                                       [100, 5, 1, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
-            24.777316, 14.899169, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
-            3.124241
+            24.777316, 14.899169, 5.654808, 1.808523, 11.802908, 2.866352,
+            0.222472, 3.124241
         ])
-        np.testing.assert_array_almost_equal(
-            evt.mc_tracks.dir_x,
-            [0.93038, 0.0, 0.761401, 0.818513, 0.964518, 0.984183, 0.39, 0.925828])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
+            0.93038, 0.0, 0.761401, 0.818513, 0.964518, 0.984183, 0.39,
+            0.925828
+        ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.124785, 0.0, 0.088805, -0.326036, -0.15996, -0.104239, -0.868099,
-            -0.200785
+            -0.124785, 0.0, 0.088805, -0.326036, -0.15996, -0.104239,
+            -0.868099, -0.200785
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            -0.344705, 0.0, -0.64217, -0.473008, -0.210043, -0.143242, -0.307089,
-            -0.320199
+            -0.344705, 0.0, -0.64217, -0.473008, -0.210043, -0.143242,
+            -0.307089, -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -105.056045)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -359.273506)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 326.074154)
         usr = evt.mc_tracks.usr[0]
         # XSEC
         np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
@@ -171,15 +175,17 @@ class TestFreeParticleCuts(unittest.TestCase):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
         np.random.seed(1234)
+        geometry = CANVolume()
         write_detector_file(output,
                             datafile.name,
                             run_number=1235,
                             free_particle_cuts=True,
+                            geometry=geometry,
                             timeinterval=(10.0, 100.0))
         self.fobj = km3io.OfflineReader(datafile.name)
 
     def test_header_event_numbers(self):
-        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 4755)
+        np.testing.assert_equal(self.fobj.header.genvol.numberOfEvents, 10000)
         np.testing.assert_equal(self.fobj.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj.header.start_run.run_id, 1235)
         np.testing.assert_equal(self.fobj.header.tgen, 90.0)
@@ -194,30 +200,32 @@ class TestFreeParticleCuts(unittest.TestCase):
 
     def test_firstevent(self):
         evt = self.fobj.events[0]
-        np.testing.assert_array_equal(evt.mc_tracks.pdgid,
-                                      [12, 1000160080, 11, 111, 2212, -211, 111, 211])
+        np.testing.assert_array_equal(
+            evt.mc_tracks.pdgid,
+            [12, 1000080160, 11, 111, -211, 111, 211])
         np.testing.assert_array_equal(evt.mc_tracks.status,
-                                      [100, 5, 1, 1, 1, 1, 1, 1])
+                                      [100, 5, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
-            24.777316, 14.899169, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
-            3.124241
+            24.777316, 14.899169, 5.654808, 1.808523, 2.866352,
+            0.222472, 3.124241
         ])
-        np.testing.assert_array_almost_equal(
-            evt.mc_tracks.dir_x,
-            [0.93038, 0.0, 0.761401, 0.818513, 0.964518, 0.984183, 0.39, 0.925828])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
+            0.93038, 0.0, 0.761401, 0.818513, 0.984183, 0.39,
+            0.925828
+        ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.124785, 0.0, 0.088805, -0.326036, -0.15996, -0.104239, -0.868099,
-            -0.200785
+            -0.124785, 0.0, 0.088805, -0.326036, -0.104239,
+            -0.868099, -0.200785
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            -0.344705, 0.0, -0.64217, -0.473008, -0.210043, -0.143242, -0.307089,
-            -0.320199
+            -0.344705, 0.0, -0.64217, -0.473008, -0.143242,
+            -0.307089, -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -105.056045)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -359.273506)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 326.074154)
         usr = evt.mc_tracks.usr[0]
         # XSEC
         np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
@@ -266,9 +274,11 @@ class TestMultiFileOutput(unittest.TestCase):
         output = GiBUUOutput(TESTDATA_DIR)
         datafile = NamedTemporaryFile(suffix=".root")
         np.random.seed(1234)
+        geometry = CANVolume()
         write_detector_file(output,
                             datafile.name,
                             no_files=2,
+                            geometry=geometry,
                             free_particle_cuts=False)
         self.fobj1 = km3io.OfflineReader(
             datafile.name.replace(".root", ".1.root"))
@@ -276,8 +286,8 @@ class TestMultiFileOutput(unittest.TestCase):
             datafile.name.replace(".root", ".2.root"))
 
     def test_header_event_numbers(self):
-        np.testing.assert_equal(self.fobj1.header.genvol.numberOfEvents, 2377)
-        np.testing.assert_equal(self.fobj2.header.genvol.numberOfEvents, 2378)
+        np.testing.assert_equal(self.fobj1.header.genvol.numberOfEvents, 10000)
+        np.testing.assert_equal(self.fobj2.header.genvol.numberOfEvents, 10000)
         np.testing.assert_equal(self.fobj1.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj2.header.gibuu_Nevents, 10000)
         np.testing.assert_equal(self.fobj1.header.n_split_files, 2)
@@ -290,29 +300,29 @@ class TestMultiFileOutput(unittest.TestCase):
     def test_firstevent_first_file(self):
         evt = self.fobj1.events[0]
         np.testing.assert_array_equal(evt.mc_tracks.pdgid,
-                                      [12, 11, 111, 2212, -211, 111, 211])
+                                      [12, 1000080160, 11, 111, 2212, -211, 111, 211])
         np.testing.assert_array_equal(evt.mc_tracks.status,
-                                      [100, 1, 1, 1, 1, 1, 1])
+                                      [100, 5, 1, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
-            24.777316, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
+            24.777316, 14.899169, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
             3.124241
         ])
         np.testing.assert_array_almost_equal(
             evt.mc_tracks.dir_x,
-            [0.93038, 0.761401, 0.818513, 0.964518, 0.984183, 0.39, 0.925828])
+            [0.93038, 0.0, 0.761401, 0.818513, 0.964518, 0.984183, 0.39, 0.925828])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.124785, 0.088805, -0.326036, -0.15996, -0.104239, -0.868099,
+            -0.124785, 0.0, 0.088805, -0.326036, -0.15996, -0.104239, -0.868099,
             -0.200785
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            -0.344705, -0.64217, -0.473008, -0.210043, -0.143242, -0.307089,
+            -0.344705, 0.0, -0.64217, -0.473008, -0.210043, -0.143242, -0.307089,
             -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -130.213244)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, -445.306775)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, 413.233192)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -105.056045)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, -359.273506)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 326.074154)
         usr = evt.mc_tracks.usr[0]
         # XSEC
         np.testing.assert_almost_equal(evt.w2list[13], 8.055736278936948)
@@ -329,21 +339,21 @@ class TestMultiFileOutput(unittest.TestCase):
 
     def test_firstevent_second_file(self):
         evt = self.fobj2.events[0]
-        np.testing.assert_array_equal(evt.mc_tracks.pdgid, [12, 11, 2212])
-        np.testing.assert_array_equal(evt.mc_tracks.status, [100, 1, 1])
+        np.testing.assert_array_equal(evt.mc_tracks.pdgid, [12, 1000080160, 11, 2212])
+        np.testing.assert_array_equal(evt.mc_tracks.status, [100, 5, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E,
-                                             [5.010154, 1.041807, 4.87277])
+                                             [5.010154, 14.899169, 1.041807, 4.87277])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x,
-                                             [0.659808, -0.546414, 0.79964])
+                                             [0.659808, 0.0, -0.546414, 0.79964])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y,
-                                             [-0.705338, -0.570482, -0.587667])
+                                             [-0.705338, 0.0, -0.570482, -0.587667])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z,
-                                             [-0.259137, -0.613174, -0.123386])
+                                             [-0.259137, 0.0, -0.613174, -0.123386])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
-        np.testing.assert_allclose(evt.mc_tracks.pos_x, -349.987102)
-        np.testing.assert_allclose(evt.mc_tracks.pos_y, 33.284445)
-        np.testing.assert_allclose(evt.mc_tracks.pos_z, -41.963346)
+        np.testing.assert_allclose(evt.mc_tracks.pos_x, -282.369594)
+        np.testing.assert_allclose(evt.mc_tracks.pos_y, 26.85389)
+        np.testing.assert_allclose(evt.mc_tracks.pos_z, 36.872621)
         usr = evt.mc_tracks.usr[0]
         # XSEC
         np.testing.assert_almost_equal(evt.w2list[13], 0.0021272535302635045)
