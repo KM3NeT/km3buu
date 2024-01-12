@@ -201,25 +201,23 @@ class TestFreeParticleCuts(unittest.TestCase):
     def test_firstevent(self):
         evt = self.fobj.events[0]
         np.testing.assert_array_equal(
-            evt.mc_tracks.pdgid,
-            [12, 1000080160, 11, 111, -211, 111, 211])
+            evt.mc_tracks.pdgid, [12, 1000080160, 11, 111, -211, 111, 211])
         np.testing.assert_array_equal(evt.mc_tracks.status,
                                       [100, 5, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
-            24.777316, 14.899169, 5.654808, 1.808523, 2.866352,
-            0.222472, 3.124241
+            24.777316, 14.899169, 5.654808, 1.808523, 2.866352, 0.222472,
+            3.124241
         ])
-        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
-            0.93038, 0.0, 0.761401, 0.818513, 0.984183, 0.39,
-            0.925828
-        ])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_x,
+            [0.93038, 0.0, 0.761401, 0.818513, 0.984183, 0.39, 0.925828])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.124785, 0.0, 0.088805, -0.326036, -0.104239,
-            -0.868099, -0.200785
+            -0.124785, 0.0, 0.088805, -0.326036, -0.104239, -0.868099,
+            -0.200785
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            -0.344705, 0.0, -0.64217, -0.473008, -0.143242,
-            -0.307089, -0.320199
+            -0.344705, 0.0, -0.64217, -0.473008, -0.143242, -0.307089,
+            -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
@@ -299,24 +297,26 @@ class TestMultiFileOutput(unittest.TestCase):
 
     def test_firstevent_first_file(self):
         evt = self.fobj1.events[0]
-        np.testing.assert_array_equal(evt.mc_tracks.pdgid,
-                                      [12, 1000080160, 11, 111, 2212, -211, 111, 211])
+        np.testing.assert_array_equal(
+            evt.mc_tracks.pdgid,
+            [12, 1000080160, 11, 111, 2212, -211, 111, 211])
         np.testing.assert_array_equal(evt.mc_tracks.status,
                                       [100, 5, 1, 1, 1, 1, 1, 1])
         np.testing.assert_array_almost_equal(evt.mc_tracks.E, [
-            24.777316, 14.899169, 5.654808, 1.808523, 11.802908, 2.866352, 0.222472,
-            3.124241
+            24.777316, 14.899169, 5.654808, 1.808523, 11.802908, 2.866352,
+            0.222472, 3.124241
         ])
-        np.testing.assert_array_almost_equal(
-            evt.mc_tracks.dir_x,
-            [0.93038, 0.0, 0.761401, 0.818513, 0.964518, 0.984183, 0.39, 0.925828])
+        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x, [
+            0.93038, 0.0, 0.761401, 0.818513, 0.964518, 0.984183, 0.39,
+            0.925828
+        ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y, [
-            -0.124785, 0.0, 0.088805, -0.326036, -0.15996, -0.104239, -0.868099,
-            -0.200785
+            -0.124785, 0.0, 0.088805, -0.326036, -0.15996, -0.104239,
+            -0.868099, -0.200785
         ])
         np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z, [
-            -0.344705, 0.0, -0.64217, -0.473008, -0.210043, -0.143242, -0.307089,
-            -0.320199
+            -0.344705, 0.0, -0.64217, -0.473008, -0.210043, -0.143242,
+            -0.307089, -0.320199
         ])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
@@ -339,16 +339,17 @@ class TestMultiFileOutput(unittest.TestCase):
 
     def test_firstevent_second_file(self):
         evt = self.fobj2.events[0]
-        np.testing.assert_array_equal(evt.mc_tracks.pdgid, [12, 1000080160, 11, 2212])
+        np.testing.assert_array_equal(evt.mc_tracks.pdgid,
+                                      [12, 1000080160, 11, 2212])
         np.testing.assert_array_equal(evt.mc_tracks.status, [100, 5, 1, 1])
-        np.testing.assert_array_almost_equal(evt.mc_tracks.E,
-                                             [5.010154, 14.899169, 1.041807, 4.87277])
-        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_x,
-                                             [0.659808, 0.0, -0.546414, 0.79964])
-        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_y,
-                                             [-0.705338, 0.0, -0.570482, -0.587667])
-        np.testing.assert_array_almost_equal(evt.mc_tracks.dir_z,
-                                             [-0.259137, 0.0, -0.613174, -0.123386])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.E, [5.010154, 14.899169, 1.041807, 4.87277])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_x, [0.659808, 0.0, -0.546414, 0.79964])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_y, [-0.705338, 0.0, -0.570482, -0.587667])
+        np.testing.assert_array_almost_equal(
+            evt.mc_tracks.dir_z, [-0.259137, 0.0, -0.613174, -0.123386])
         # Test dataset is elec CC -> outgoing particles are placed at vertex pos
         np.testing.assert_allclose(evt.mc_tracks.t, 0.0)
         np.testing.assert_allclose(evt.mc_tracks.pos_x, -282.369594)
