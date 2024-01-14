@@ -1,5 +1,8 @@
 Unreleased changes
 ------------------
+
+v1.4.1
+----------------------------
 * Fix anti-nu problem in GiBUU2023-Patch2
 
 v1.4.0
