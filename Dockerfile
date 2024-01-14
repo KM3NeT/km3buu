@@ -12,7 +12,11 @@ RUN   cd /opt && \
       tar -xzvf buuinput2023.tar.gz && \
       wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_02/libraries2023_RootTuple.tar.gz && \
       tar -xzvf libraries2023_RootTuple.tar.gz && \
-      rm -rf ./*.tar.gz && \ 
+      rm -rf ./*.tar.gz && \
+      #########################################
+      # Temporary fix for GiBUU23p2
+      sed -i 's/select case(process_ID)/select case(abs(process_ID))/g' release2023/code/init/lowElectron/ParamEP_BC.f90 && \
+      #########################################
       sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2023/RootTuple/RootTuple-master/CMakeLists.txt && \ 
       cd release2023 && make -j buildRootTuple_POS && \
       make -j FORT=gfortran MODE=lto ARGS="-march=x86-64-v3" withROOT=1 
