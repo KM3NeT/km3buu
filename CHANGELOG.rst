@@ -1,6 +1,10 @@
 Unreleased changes
 ------------------
 
+v1.4.2
+----------------------------
+* Remove the fix as it was applied now in the GiBUU source
+
 v1.4.1
 ----------------------------
 * Fix anti-nu problem in GiBUU2023-Patch2
