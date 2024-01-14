@@ -1,5 +1,9 @@
 Unreleased changes
 ------------------
+* Fix anti-nu problem in GiBUU2023-Patch2
+
+v1.4.0
+----------------------------
 * Update to GiBUU2023-Patch2
 * Possibility to skip km3net dataformat writeout in `km3buu` runner script
 * Write out nucleus information to km3net dataformat track list
