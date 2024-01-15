@@ -239,6 +239,7 @@ class GiBUUOutput:
         self._written_events = len(self._get_raw_arrays())
         self._generated_events = -1
         self._flux_index = np.nan
+        self._flux_factor = np.nan
 
         if self._read_flux_file():
             self._determine_flux_index()
@@ -567,19 +568,17 @@ class GiBUUOutput:
         def fluxfunc(x, a, b):
             return a * x**b
 
-        energy_mask = self.flux_data["flux"] > 0
+        energy_mask = self.flux_data["flux"] > 5
         lower_limit = np.min(self.flux_data["energy"][energy_mask]) * 1.2
         upper_limit = np.max(self.flux_data["energy"][energy_mask]) * 0.8
         mask = (self.flux_data["energy"]
                 > lower_limit) & (self.flux_data["energy"] < upper_limit)
-        try:
-            popt, pcov = curve_fit(fluxfunc,
-                                   self.flux_data["energy"][mask],
-                                   self.flux_data["flux"][mask],
-                                   p0=[1, -1])
-            self._flux_index = popt[1]
-        except:
-            self._flux_index = np.nan
+        popt, pcov = curve_fit(fluxfunc,
+                               self.flux_data["energy"][mask],
+                               self.flux_data["events"][mask],
+                               p0=[1, -1])
+        self._flux_index = popt[1]
+        self._flux_factor = popt[0]
 
     @property
     def flux_index(self):
