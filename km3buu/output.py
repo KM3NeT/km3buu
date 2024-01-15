@@ -588,6 +588,7 @@ class GiBUUOutput:
     def flux_norm(self):
         return self._flux_norm
 
+
 def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
                         no_files=1,
