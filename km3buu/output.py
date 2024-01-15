@@ -239,6 +239,8 @@ class GiBUUOutput:
         self._written_events = len(self._get_raw_arrays())
         self._generated_events = -1
         self._flux_index = np.nan
+        self._fix_flux_index = False
+        self._flux_norm = np.nan
 
         if self._read_flux_file():
             self._determine_flux_index()
@@ -371,7 +373,7 @@ class GiBUUOutput:
         ) * self.A  # xsec_per_nucleon * no_nucleons in the core
         if self.flux_data is not None:
             inv_gen_flux = np.power(
-                self.flux_interpolation(root_tupledata.lepIn_E), -1)
+                self._flux_norm * root_tupledata.lepIn_E**self._flux_index, -1)
             energy_phase_space = self.flux_interpolation.integral(
                 self._energy_min, self._energy_max)
             energy_factor = energy_phase_space * inv_gen_flux
@@ -567,23 +569,37 @@ class GiBUUOutput:
         def fluxfunc(x, a, b):
             return a * x**b
 
-        energy_mask = self.flux_data["flux"] > 0
+        p0 = [1, -1]
+
+        if self._fix_flux_index:
+            fluxfunc = lambda x, b: fluxfunc(x, self._flux_index, b)
+            p0 = [1]
+
+        energy_mask = self.flux_data["flux"] > 10
         lower_limit = np.min(self.flux_data["energy"][energy_mask]) * 1.2
         upper_limit = np.max(self.flux_data["energy"][energy_mask]) * 0.8
         mask = (self.flux_data["energy"]
                 > lower_limit) & (self.flux_data["energy"] < upper_limit)
-        try:
-            popt, pcov = curve_fit(fluxfunc,
-                                   self.flux_data["energy"][mask],
-                                   self.flux_data["flux"][mask],
-                                   p0=[1, -1])
-            self._flux_index = popt[1]
-        except:
-            self._flux_index = np.nan
+        popt, pcov = curve_fit(fluxfunc,
+                               self.flux_data["energy"][mask],
+                               self.flux_data["events"][mask],
+                               p0=[1, -1])
+        self._flux_index = popt[1]
+        self._flux_norm = popt[0]
 
     @property
     def flux_index(self):
         return self._flux_index
+
+    @flux_index.setter
+    def flux_index(self, value):
+        self._flux_index = value
+        self._fix_flux_index = True
+        self._determine_flux_index
+
+    @property
+    def flux_norm(self):
+        return self._flux_norm
 
 
 def write_detector_file(gibuu_output,

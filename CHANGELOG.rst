@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Use static flux model (no interpolation as previously)
 
 v1.4.2
 ----------------------------

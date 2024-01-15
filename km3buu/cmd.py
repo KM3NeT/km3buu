@@ -290,6 +290,8 @@ def main():
         return
 
     fobj = GiBUUOutput(gibuu_dir)
+    # set initial flux index to use
+    fobj.flux_index = -args.flux
 
     if args.geometry == 'no':
         volume = NoVolume()
