@@ -79,6 +79,14 @@ class TestGiBUUOutput(unittest.TestCase):
     def test_flux_index(self):
         assert np.isclose(self.output.flux_index, -0.00576924, rtol=1e-3)
 
+    def test_flux_norm(self):
+        assert np.isclose(self.output.flux_norm, 4.08791, rtol=1e-3)
+
+    def test_fixed_flux_index(self):
+        output = GiBUUOutput(TESTDATA_DIR)
+        output.flux_index = -1.0
+        assert np.isclose(output.flux_index, -1.0, rtol=1e-3)
+
     def test_w2weights(self):
         w2 = self.output.w2weights(123.0, 2.6e28, 4 * np.pi)
         np.testing.assert_array_almost_equal(
