@@ -157,10 +157,12 @@ class NoVolume(DetectorVolume):
     Dummy volume to write out data w/o geometry
     """
 
-    def __init__(self):
+    def __init__(self, decay_tau=False):
         self._solid_angle = 1
         self._volume = 1
         self._coord_origin = (.0, .0, .0)
+        self._do_decay_tau = decay_tau
+        self._propagator = None
 
     def header_entries(self, nevents=0):
         retdct = dict()
@@ -187,12 +189,39 @@ class NoVolume(DetectorVolume):
         else:
             return np.concatenate([np.zeros(n), np.ones(n)]).reshape((2, -1)).T
 
+    def _setup_propagator(self):
+        if not self._propagator:
+            geometry = {"can": pp.geometry.Sphere(pp.Cartesian3D(), 1000)}
+            self._propagator = Propagator([15, -15], geometry)
+
+    def _decay_tau(self, evt):
+        charged_lepton_type = np.sign(evt.process_ID) * (2 * evt.flavor_ID + 9)
+        final_state_has_tau = 15 in abs(evt.barcode)
+        lepout_dir = np.array([evt.lepOut_Px, evt.lepOut_Py, evt.lepOut_Pz])
+        evts = None
+        if abs(charged_lepton_type) == 15:
+            self._setup_propagator()
+            evts = self._propagator.propagate(charged_lepton_type,
+                                              evt.lepOut_E, np.zeros(3),
+                                              lepout_dir)
+        for i, pdgid in enumerate(evt.barcode):
+            if abs(pdgid) == 15:
+                prtcl_pos = np.array([evt.x[i], evt.y[i], evt.z[i]])
+                prtcl_dir = np.array([evt.Px[i], evt.Py[i], evt.Pz[i]])
+                tmp = self._propagator.propagate(pdgid, evt.E[i], prtcl_pos, prtcl_dir)
+                evts = ak.concatenate([ak.Array(evts), ak.Array(tmp)])
+        return evts
+
     def distribute_event(self, evt):
         vtx_pos = self.random_pos()
         vtx_dir = self.random_dir()
         weight = 1
         evts = None
-        return vtx_pos, vtx_dir, weight, None, 1
+        if self._do_decay_tau:
+            decayed_particles = self._decay_tau(evt)
+        else:
+            decayed_particles = None
+        return vtx_pos, vtx_dir, weight, decayed_particles, 1
 
 
 class CANVolume(DetectorVolume):
