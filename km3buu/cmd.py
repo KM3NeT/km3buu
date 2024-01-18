@@ -294,7 +294,7 @@ def main():
     fobj.flux_index = -args.flux
 
     if args.geometry == 'no':
-        volume = NoVolume()
+        volume = NoVolume(args.decay)
     elif args.geometry == 'sphere':
         volume = SphericalVolume(args.dimensions[0],
                                  tuple(args.center),
