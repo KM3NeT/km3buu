@@ -1,6 +1,6 @@
 Unreleased changes
 ------------------
-* Refine free particle cuts (no general exclusion of nuclei and tolerance for restmass)
+* Refine free particle cuts (tolerance for restmass of nucleons)
 * Increase particle vector for PYTHIA decays
 
 v1.5.0
