@@ -551,6 +551,7 @@ class GiBUUOutput:
             masses,
             ak.from_iter(
                 map(lambda x: ( (Particle.from_pdgid(x).mass - FREE_PARTICLE_TOLERANCE) * 1e-3)**2, pdgid)))
+        mask = mask | ~np.isin(np.array(np.abs(pdgid)), [2112, 2212])
         return ak.unflatten(mask, nums)
 
     @property
