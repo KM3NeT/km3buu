@@ -214,7 +214,8 @@ def generate_neutrino_jobcard(ensembles,
         for i in DECAYED_HADRONS:
             key = "stabilityFlag({:d})".format(i)
             jc["ModifyParticles"][key] = 4
-        jc["pythia"]["MDCY(102,1)"] = 1
+        jc["pythia"]["MDCY(102,1)"] = 1 # PDGID 113 -> rho0
+        jc["pythia"]["MDCY(15,1)"] = 1  # PDGID 15 -> tau (in final states)
     # FLUX
     if fluxfile is not None and isinstance(energy, tuple):
         if not isfile(fluxfile):
