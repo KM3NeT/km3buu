@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Add tau decays to raw km3net-dataformat output
 * Fixed visible energy for muons
 * Refine free particle cuts (tolerance for restmass of nucleons)
 * Increase particle vector for PYTHIA decays
