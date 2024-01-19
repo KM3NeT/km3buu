@@ -54,6 +54,8 @@ XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
 SECONDS_WEIGHT_TIMESPAN = 1
 
+FREE_PARTICLE_TOLERANCE = 1  # tolerance of the particle restmass for free particle cuts [keV]
+
 PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "x", "y", "z", "barcode"]
 EVENTINFO_COLUMNS = [
     "weight", "evType", "lepIn_E", "lepIn_Px", "lepIn_Py", "lepIn_Pz",
@@ -548,7 +550,9 @@ class GiBUUOutput:
         mask = np.greater_equal(
             masses,
             ak.from_iter(
-                map(lambda x: (Particle.from_pdgid(x).mass * 1e-3)**2, pdgid)))
+                map(
+                    lambda x: ((Particle.from_pdgid(x).mass -
+                                FREE_PARTICLE_TOLERANCE) * 1e-3)**2, pdgid)))
         mask = mask | ~np.isin(np.array(np.abs(pdgid)), [2112, 2212])
         return ak.unflatten(mask, nums)
 
