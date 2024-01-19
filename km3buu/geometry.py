@@ -208,7 +208,8 @@ class NoVolume(DetectorVolume):
             if abs(pdgid) == 15:
                 prtcl_pos = np.array([evt.x[i], evt.y[i], evt.z[i]])
                 prtcl_dir = np.array([evt.Px[i], evt.Py[i], evt.Pz[i]])
-                tmp = self._propagator.propagate(pdgid, evt.E[i], prtcl_pos, prtcl_dir)
+                tmp = self._propagator.propagate(pdgid, evt.E[i], prtcl_pos,
+                                                 prtcl_dir)
                 evts = ak.concatenate([ak.Array(evts), ak.Array(tmp)])
         return evts
 
