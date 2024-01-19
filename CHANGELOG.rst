@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Increase particle vector for PYTHIA decays
 
 v1.5.0
 ----------------------------
