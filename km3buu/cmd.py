@@ -52,6 +52,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from os.path import join
 
+import proposal as pp
+
 from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
 from km3buu.geometry import *
@@ -231,6 +233,8 @@ def main():
         help="The power law index of the simulated neutrino flux",
         default=0.0)
     args = parser.parse_args()
+
+    pp.RandomGenerator.get().set_seed(args.seed)
 
     single_energy_run = type(args.energy) is float
     energy = args.energy if single_energy_run else tuple(args.energy)
