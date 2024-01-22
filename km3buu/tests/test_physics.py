@@ -60,9 +60,13 @@ class TestMuonRangeSeaWater(unittest.TestCase):
 class TestMuonVisibleEnergy(unittest.TestCase):
 
     def test_muon_energies(self):
-        np.testing.assert_almost_equal(visible_energy_fraction(10.0, 13), 0.8516107)
-        np.testing.assert_almost_equal(visible_energy_fraction(100.0, 13), 0.7379085)
-        np.testing.assert_almost_equal(visible_energy_fraction(1000.0, 13), 0.4959454)
+        np.testing.assert_almost_equal(visible_energy_fraction(10.0, 13),
+                                       0.8516107)
+        np.testing.assert_almost_equal(visible_energy_fraction(100.0, 13),
+                                       0.7379085)
+        np.testing.assert_almost_equal(visible_energy_fraction(1000.0, 13),
+                                       0.4959454)
+
 
 class TestVisEnergyParticle(unittest.TestCase):
 

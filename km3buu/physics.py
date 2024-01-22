@@ -269,7 +269,8 @@ def visible_energy_fraction(energy, pdgid):
     mask = np.isin(pdgid, [13])
     if np.any(mask):
         ekin = np.sqrt(ak.to_numpy(energy)[mask]**2 - MUON_MASS**2)
-        retval[mask] = muon_range_seawater(ekin, MUON_MASS) / MUON_SHOWER_PER_E_TRACK_LENGTH / ekin
+        retval[mask] = muon_range_seawater(
+            ekin, MUON_MASS) / MUON_SHOWER_PER_E_TRACK_LENGTH / ekin
     return retval
 
 
