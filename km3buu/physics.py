@@ -25,10 +25,21 @@ from .config import read_default_media_compositions
 
 MEDIA_COMPOSITION = read_default_media_compositions()
 DENSITY_SEA_WATER = MEDIA_COMPOSITION["SeaWater"]["density"]
+INDEX_OF_REFRACTION_WATER = 1.3800851282
+
 ELEMENTS = dict()
+
+TAN_THETA_C_WATER = np.sqrt(
+    (INDEX_OF_REFRACTION_WATER - 1.0) * (INDEX_OF_REFRACTION_WATER + 1.0))
+COS_THETA_C_WATER = INDEX_OF_REFRACTION_WATER**-1
+SIN_THETA_C_WATER = TAN_THETA_C_WATER * COS_THETA_C_WATER
+
+DELTARAYS_TMIN = 9.15499e-4
+DELTARAYS_TMAX = 1e10
 
 MUON_SHOWER_E_PER_TRACK_LENGTH = 4.7319  # dx/dE [m/GeV]
 MUON_MASS = next(Particle.finditer(lambda p: "mu-" in p.name)).mass / 1e3
+ELEC_MASS = next(Particle.finditer(lambda p: "e-" in p.name)).mass / 1e3
 
 ELEC_PARAMS = {
     "ELECa": 1.33356e5,
@@ -473,6 +484,36 @@ def muon_range_seawater(start_energy, stop_energy):
     return dx
 
 
+def muon_energy_after_distance(energy, distance):
+    """
+    Get the muon energy after a certain distance propagated after pair production and bremsstrahlung
+
+    Parameters
+    ----------
+    energy: float[Gev]
+        Initial energy of the muon
+    distance: float[m]
+        Distance the muon traveled
+
+    Return
+    ------
+    remaining energy: float[GeV]
+    """
+    a = DENSITY_SEA_WATER
+    b = DENSITY_SEA_WATER
+    if energy < 30:
+        a *= 2.3e-1
+        b *= 15.5e-4
+    elif energy < 35.3e3:
+        a *= 2.67e-1
+        b *= 3.4e-4
+    else:
+        a *= -6.5e-1
+        b *= 3.66e-4
+    y = (a / b + energy) * np.exp(-b * distance) - a / b
+    return np.where(y < 0, 0, y)
+
+
 def muon_range(start_energy, stop_energy, a, b):
     """
     Get distance muon propagates
@@ -493,3 +534,94 @@ def muon_range(start_energy, stop_energy, a, b):
     track_length: float[m]
     """
     return -np.log((a + b * stop_energy) / (a + b * start_energy)) / b
+
+
+def get_delta_rays_factor_muon(energy, Z, A):
+    tmin = get_delta_rays_tmin()
+    tmax = get_delta_rays_tmax(energy, MUON_MASS)
+    return get_delta_rays_factor(energy, MUON_MASS, tmin, tmax, Z, A)
+
+
+def get_delta_rays_factor(energy, mass, tmin, tmax, Z, A):
+    """
+    Get equivalent EM-shower energy due to delta-rays per unit track length
+    for an ionising particle with given energy and given mass.
+    (taken from JPP)
+
+    Parameters
+    ----------
+    energy: float [GeV]
+        particle energy
+    mass: float [GeV]
+        particle mass
+    tmin: float [GeV]
+        minimum delta-ray kinetic energy
+    tmax: float [GeV]
+        maximum delta-ray kinetic energy
+    Z: float [unit]
+        atomic number
+    A: float [unit]
+        atomic mass
+
+    Return
+    ------
+    equivalent energy loss           [GeV/m]
+    """
+    if tmin < tmax:
+        k = 0.307075
+        gamma = energy / mass
+        beta = np.sqrt((1 + 1 / gamma) * (1 - 1 / gamma))
+        a = 0.25 / (energy * energy)
+        b = beta**2 / tmax
+        c = 1.0
+        w = 0.5 * k * (Z / A) / (beta * beta)
+        sT = tmin + tmax
+        dT = tmax - tmin
+        rT = tmax / tmin
+        wgt = w * (a * sT * dT - b * dT + c * np.log(rT))
+        return wgt * DENSITY_SEA_WATER * 0.1
+    else:
+        return 0.0
+
+
+def get_delta_rays_tmin():
+    """
+    Get minimum delta-ray kinetic energy.
+    """
+    emin = ELEC_MASS / SIN_THETA_C_WATER
+    tmin = np.sqrt(emin * emin - ELEC_MASS * ELEC_MASS)
+    if tmin > DELTARAYS_TMIN:
+        return tmin
+    else:
+        return DELTARAYS_TMIN
+
+
+def get_delta_rays_tmax(energy, mass):
+    """
+    Get maximum delta-ray kinetic energy for given lepton energy and mass.\n
+    This formula is taken from reference
+    https://pdg.lbl.gov/2020/reviews/rpp2020-rev-passage-particles-matter.pdf
+    N.B.: This function should not be used for electrons.\n
+         For electrons use `0.5 * getKineticEnergy(E, MASS_ELECTRON)` instead.
+
+    Parameters
+    ----------
+    energy: float [GeV]
+        particle energy
+    mass: float [GeV]
+        particle mass
+
+    Return
+    ------
+    maximum delta-ray kinetic energy [GeV]
+    """
+    ratio = ELEC_MASS / mass
+    gamma = energy / mass
+    beta = np.sqrt((1 + 1 / gamma) * (1 - 1 / gamma))
+
+    tmax = (2.0 * ELEC_MASS * np.power(beta, 2) * np.power(gamma, 2)) / (
+        1.0 + 2.0 * gamma * ratio + np.power(ratio, 2))
+    if tmax < DELTARAYS_TMAX:
+        return tmax
+    else:
+        return DELTARAYS_TMAX
