@@ -263,8 +263,9 @@ def visible_energy_fraction(energy, pdgid):
     mask = np.isin(pdgid, [11, -11, 22, 111, 221])
     retval[mask] = 1.0
     mask = np.isin(pdgid, [-211, 211])
-    ekin = get_kinetic_energy(energy[mask], pdgid[mask])
-    retval[mask] = high_energy_weight(ekin)
+    if np.any(mask):
+        ekin = get_kinetic_energy(energy[mask], pdgid[mask])
+        retval[mask] = high_energy_weight(ekin)
     mask = np.isin(pdgid, [13])
     if np.any(mask):
         ekin = np.sqrt(ak.to_numpy(energy)[mask]**2 - MUON_MASS**2)
