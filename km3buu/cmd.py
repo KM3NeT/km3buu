@@ -52,6 +52,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from os.path import join
 
+import proposal as pp
+
 from km3buu.jobcard import *
 from km3buu.ctrl import run_jobcard
 from km3buu.geometry import *
@@ -232,6 +234,8 @@ def main():
         default=0.0)
     args = parser.parse_args()
 
+    pp.RandomGenerator.get().set_seed(args.seed)
+
     single_energy_run = type(args.energy) is float
     energy = args.energy if single_energy_run else tuple(args.energy)
 
@@ -294,7 +298,7 @@ def main():
     fobj.flux_index = -args.flux
 
     if args.geometry == 'no':
-        volume = NoVolume()
+        volume = NoVolume(args.decay)
     elif args.geometry == 'sphere':
         volume = SphericalVolume(args.dimensions[0],
                                  tuple(args.center),

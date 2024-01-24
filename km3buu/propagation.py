@@ -19,6 +19,7 @@ from particle import Particle
 import awkward as ak
 from collections import defaultdict
 import pathlib
+import time
 
 from .config import Config
 
@@ -27,6 +28,7 @@ M_TO_CM = 1e2
 itp_table_path = Config().proposal_itp_tables
 pathlib.Path(itp_table_path).mkdir(parents=True, exist_ok=True)
 pp.InterpolationSettings.tables_path = itp_table_path
+pp.RandomGenerator.get().set_seed(time.time_ns() % 2**16)
 
 PROPOSAL_LEPTON_DEFINITIONS = {
     11: pp.particle.EMinusDef,
