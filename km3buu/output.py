@@ -157,12 +157,12 @@ SCATTERING_TYPE_TO_GENIE = {
     29: 4,  # F35(1750) -> kScResonant
     30: 4,  # F35(1905) -> kScResonant
     31: 4,  # F37(1950) -> kScResonant
-    32: 0,  # pi neutron-background -> kScNull
-    33: 0,  # pi proton-background -> kScNull
+    32: 0,  # pi neutron-background -> kScCoherentProduction
+    33: 0,  # pi proton-background -> kScCoherentProduction
     34: 3,  # DIS -> kScDeepInelastic
-    35: 0,  # 2p2h QE -> kScNull
-    36: 0,  # 2p2h Delta -> kScNull
-    37: 0,  # 2pi background -> kScNull
+    35: 1,  # 2p2h QE -> kScQuasiElastic
+    36: 4,  # 2p2h Delta -> kScResonant
+    37: 5,  # 2pi background -> kScCoherentProduction
 }
 
 ROOTTUPLE_KEY = "RootTuple"
