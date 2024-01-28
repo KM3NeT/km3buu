@@ -1,5 +1,8 @@
 Unreleased changes
 ------------------
+
+v1.6.1
+----------------------------
 * Update process id mapping (i.e. 2p2h QE and Delta)
 
 v1.6.0
