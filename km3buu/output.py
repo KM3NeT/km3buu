@@ -160,8 +160,8 @@ SCATTERING_TYPE_TO_GENIE = {
     32: 0,  # pi neutron-background -> kScNull
     33: 0,  # pi proton-background -> kScNull
     34: 3,  # DIS -> kScDeepInelastic
-    35: 0,  # 2p2h QE -> kScNull
-    36: 0,  # 2p2h Delta -> kScNull
+    35: 1,  # 2p2h QE -> kScQuasiElastic
+    36: 4,  # 2p2h Delta -> kScResonant
     37: 0,  # 2pi background -> kScNull
 }
 
