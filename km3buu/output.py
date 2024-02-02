@@ -476,12 +476,17 @@ class GiBUUOutput:
         ----------
             roottuple_data: awkward.highlevel.Array
         """
-        sec_lepton_pdgid = np.sign(roottuple_data.process_ID) * (7+2*roottuple_data.flavor_ID + np.abs(roottuple_data.process_ID))
-        sec_lepton_mass = np.array([Particle.from_pdgid(p).mass * 1e-3 for p in sec_lepton_pdgid])
-        total_lepton_P = np.sqrt(roottuple_data.lepOut_Px**2 + roottuple_data.lepOut_Py**2 + roottuple_data.lepOut_Pz**2)
-        rh_probability = 0.5*(1-total_lepton_P / (roottuple_data.lepOut_E + sec_lepton_mass ))
+        sec_lepton_pdgid = np.sign(
+            roottuple_data.process_ID) * (7 + 2 * roottuple_data.flavor_ID +
+                                          np.abs(roottuple_data.process_ID))
+        sec_lepton_mass = np.array(
+            [Particle.from_pdgid(p).mass * 1e-3 for p in sec_lepton_pdgid])
+        total_lepton_P = np.sqrt(roottuple_data.lepOut_Px**2 +
+                                 roottuple_data.lepOut_Py**2 +
+                                 roottuple_data.lepOut_Pz**2)
+        rh_probability = 0.5 * (1 - total_lepton_P /
+                                (roottuple_data.lepOut_E + sec_lepton_mass))
         return rh_probability
-        
 
     @property
     def A(self):

@@ -108,7 +108,8 @@ class TestGiBUUOutput(unittest.TestCase):
 
     def test_right_handed_helicity(self):
         arr = self.output.arrays
-        np.testing.assert_array_almost_equal(arr.rh_prob[:3], [4.518065e-05, 9.428467e-06, 3.488926e-05])
+        np.testing.assert_array_almost_equal(
+            arr.rh_prob[:3], [4.518065e-05, 9.428467e-06, 3.488926e-05])
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
