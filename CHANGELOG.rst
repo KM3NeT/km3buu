@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Add field for right handed helicity probability for outgoing lepton in GiBUUOutput
 
 v1.6.1
 ----------------------------
