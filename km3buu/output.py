@@ -470,7 +470,7 @@ class GiBUUOutput:
         Calculate the probability for the outgoing lepton from the neutrino vertex
         to have a right handed helicity
 
-        Definition: p = (1-beta*cosTheta)/2
+        Definition: p = ( 1-|p|/(E+m) )/2
 
         Parameters
         ----------
