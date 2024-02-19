@@ -24,7 +24,7 @@ except ImportError:
 
 INPUT_PATH = environ.get("CONTAINER_GIBUU_INPUT")
 if INPUT_PATH is None:
-    INPUT_PATH = "/opt/buuinput2021/"
+    INPUT_PATH = "/opt/buuinput2023/"
 
 BLOCKING_FACTOR = 2
 
