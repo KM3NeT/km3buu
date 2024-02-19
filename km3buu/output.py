@@ -888,7 +888,7 @@ def write_detector_file(gibuu_output,
             if prop_particles is not None:
                 add_particles(
                     prop_particles, mc_trk_id, timestamp,
-                    km3io.definitions.trkmembers["TRK_ST_FINALSTATE"], 1)
+                    km3io.definitions.trkmembers["TRK_ST_FINALSTATE"], 2)
                 mc_trk_id += len(prop_particles.E)
 
             tree.Fill()
