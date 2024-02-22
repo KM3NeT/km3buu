@@ -921,7 +921,7 @@ def write_detector_file(gibuu_output,
             event.deltaT = np.zeros(len(event.E))
 
             add_particles(event, mc_trk_id, timestamp,
-                          generator_particle_state, 0)
+                          generator_particle_state, 2)
             mc_trk_id += len(event.E)
 
             if prop_particles is not None:
