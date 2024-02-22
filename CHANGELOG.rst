@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Add additinal info about target nuclei in mc_trks field and fix particle states
 * Update to GiBUU2023patch3
 * Add field for right handed helicity probability for outgoing lepton in GiBUUOutput
 
