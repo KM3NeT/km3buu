@@ -6,15 +6,14 @@ RUN  apt-get -qq update && \
 
 RUN   cd /opt && \
       mkdir GiBUU && cd GiBUU && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_02/release2023.tar.gz&& \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_03/release2023.tar.gz&& \
       tar -xzvf release2023.tar.gz && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_02/buuinput2023.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_03/buuinput2023.tar.gz && \
       tar -xzvf buuinput2023.tar.gz && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_02/libraries2023_RootTuple.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_03/libraries2023_RootTuple.tar.gz && \
       tar -xzvf libraries2023_RootTuple.tar.gz && \
       rm -rf ./*.tar.gz && \
       ## Increase vector for decayed particles to be on the safe side
-      sed -i "s/dimension(10) :: outPart/dimension(20) :: outPart/g" ./release2023/code/collisions/oneBodyReactions/AddDecay.f90 && \
       sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2023/RootTuple/RootTuple-master/CMakeLists.txt && \
       cd release2023 && make -j buildRootTuple_POS && \
       make -j FORT=gfortran MODE=lto ARGS="-march=x86-64-v3" withROOT=1 
