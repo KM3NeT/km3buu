@@ -852,17 +852,31 @@ def write_detector_file(gibuu_output,
             nu_in_trk.status = km3io.definitions.trkmembers[
                 "TRK_ST_PRIMARYNEUTRINO"]
             evt.mc_trks.push_back(nu_in_trk)
-            # Initial Nucleus
+            # Target Nucleus
+            tgt_trk = ROOT.Trk()
+            tgt_trk.id = mc_trk_id
+            mc_trk_id += 1
+            tgt_trk.mother_id = -1
+            tgt_trk.type = target_pdgid
+            tgt_trk.pos.set(*vtx_pos)
+            tgt_trk.dir.set(0.0, 0.0, 0.0)
+            tgt_trk.E = target_mass
+            tgt_trk.t = timestamp
+            tgt_trk.status = km3io.definitions.trkmembers["TRK_ST_ININUCLEI"]
+            evt.mc_trks.push_back(tgt_trk)
+            # Initial Nuceon
             nuc_trk = ROOT.Trk()
             nuc_trk.id = mc_trk_id
             mc_trk_id += 1
-            nuc_trk.mother_id = -1
-            nuc_trk.type = target_pdgid
+            nuc_trk.mother_id = 1
+            nuc_trk.type = 2112 + 100 * event.nuc_charge
             nuc_trk.pos.set(*vtx_pos)
-            nuc_trk.dir.set(0.0, 0.0, 0.0)
-            nuc_trk.E = target_mass
+            mom = np.array([event.nuc_Px, event.nuc_Py, event.nuc_Pz])
+            p_dir = R.apply(mom / np.linalg.norm(mom))
+            nuc_trk.dir.set(*p_dir)
+            nuc_trk.E = event.nuc_E
             nuc_trk.t = timestamp
-            nuc_trk.status = km3io.definitions.trkmembers["TRK_ST_ININUCLEI"]
+            nuc_trk.status = km3io.definitions.trkmembers["TRK_ST_NUCTGT"]
             evt.mc_trks.push_back(nuc_trk)
             # Secondary Lepton
             lep_out_trk = ROOT.Trk()
@@ -888,7 +902,7 @@ def write_detector_file(gibuu_output,
             if prop_particles is not None:
                 if abs(sec_lep_type) == 15:
                     lep_out_trk.status = km3io.definitions.trkmembers[
-                        "TRK_ST_PROPDECLEPTON"]
+                        "TRK_ST_DECSTATE"]
                 else:
                     lep_out_trk.status = km3io.definitions.trkmembers[
                         "TRK_ST_PROPLEPTON"]
@@ -913,7 +927,7 @@ def write_detector_file(gibuu_output,
             if prop_particles is not None:
                 add_particles(
                     prop_particles, mc_trk_id, timestamp,
-                    km3io.definitions.trkmembers["TRK_ST_FINALSTATE"], 2)
+                    km3io.definitions.trkmembers["TRK_ST_FINALSTATE"], 3)
                 mc_trk_id += len(prop_particles.E)
 
             tree.Fill()
