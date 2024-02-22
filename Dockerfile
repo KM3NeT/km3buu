@@ -14,7 +14,6 @@ RUN   cd /opt && \
       tar -xzvf libraries2023_RootTuple.tar.gz && \
       rm -rf ./*.tar.gz && \
       ## Increase vector for decayed particles to be on the safe side
-      sed -i "s/dimension(10) :: outPart/dimension(20) :: outPart/g" ./release2023/code/collisions/oneBodyReactions/AddDecay.f90 && \
       sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2023/RootTuple/RootTuple-master/CMakeLists.txt && \
       cd release2023 && make -j buildRootTuple_POS && \
       make -j FORT=gfortran MODE=lto ARGS="-march=x86-64-v3" withROOT=1 
