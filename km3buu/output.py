@@ -464,6 +464,30 @@ class GiBUUOutput:
         y = pq / pk
         return y
 
+    @staticmethod
+    def right_helicity_probability(roottuple_data):
+        """
+        Calculate the probability for the outgoing lepton from the neutrino vertex
+        to have a right handed helicity
+
+        Definition: p = ( 1-|p|/(E+m) )/2
+
+        Parameters
+        ----------
+            roottuple_data: awkward.highlevel.Array
+        """
+        sec_lepton_pdgid = np.sign(
+            roottuple_data.process_ID) * (7 + 2 * roottuple_data.flavor_ID +
+                                          np.abs(roottuple_data.process_ID))
+        sec_lepton_mass = np.array(
+            [Particle.from_pdgid(p).mass * 1e-3 for p in sec_lepton_pdgid])
+        total_lepton_P = np.sqrt(roottuple_data.lepOut_Px**2 +
+                                 roottuple_data.lepOut_Py**2 +
+                                 roottuple_data.lepOut_Pz**2)
+        rh_probability = 0.5 * (1 - total_lepton_P /
+                                (roottuple_data.lepOut_E + sec_lepton_mass))
+        return rh_probability
+
     @property
     def A(self):
         grp = self.jobcard["target"]
@@ -539,6 +563,7 @@ class GiBUUOutput:
         visEfrac = visible_energy_fraction(ak.flatten(retval.E),
                                            ak.flatten(retval.barcode))
         retval["visEfrac"] = ak.unflatten(visEfrac, counts)
+        retval["rh_prob"] = GiBUUOutput.right_helicity_probability(retval)
         return retval
 
     @property
