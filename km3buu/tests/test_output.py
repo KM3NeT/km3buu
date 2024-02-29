@@ -112,10 +112,11 @@ class TestGiBUUOutput(unittest.TestCase):
             arr.rh_prob[:3], [4.518065e-05, 9.428467e-06, 3.488926e-05])
 
     def test_right_handed_helicity_nc(self):
-        self.output.jobcard["neutrino_induced"]["process_id"] = 3
-        arr = self.output.arrays
+        arr = self.output._get_raw_arrays()
+        arr["process_ID"] = arr.process_ID + 1
+        rh_prob = GiBUUOutput.right_helicity_probability(arr)
         np.testing.assert_array_almost_equal(
-            arr.rh_prob[:3], [0.0, 0.0, 0.0])
+            rh_prob[:3], [0.0, 0.0, 0.0])
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
