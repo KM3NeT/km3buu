@@ -476,6 +476,10 @@ class GiBUUOutput:
         ----------
             roottuple_data: awkward.highlevel.Array
         """
+        ichan = abs(roottuple_data.process_ID[0])
+        if ichan == 3:
+            return np.zeros(len(roottuple_data))
+
         sec_lepton_pdgid = np.sign(
             roottuple_data.process_ID) * (7 + 2 * roottuple_data.flavor_ID +
                                           np.abs(roottuple_data.process_ID))

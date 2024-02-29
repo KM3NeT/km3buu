@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Fix right handed probability calculation for NC
 
 v1.7.0
 ----------------------------
