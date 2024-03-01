@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Enabled photon propagation in GiBUU in std. configuration
 * Fix right handed probability calculation for NC
 
 v1.7.0

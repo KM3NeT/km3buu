@@ -63,3 +63,7 @@
       DIScutW = 3.0
       DIScutwidth = 0.1
 /
+
+&insertion
+      propagateNoPhoton = .false.
+/
