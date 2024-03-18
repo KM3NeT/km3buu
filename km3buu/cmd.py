@@ -9,6 +9,8 @@ options:
   -h, --help            show this help message and exit
   --events EVENTS, -n EVENTS
                         Number of events which are simulated
+  --total TOTAL
+                        Number of events simulated over all targets
   --multifile MULTIFILE, -m MULTIFILE
                         How many km3net files to write from the dataset
   --seed SEED, -s SEED  Seed which should be used for the (pseudo) random number gen.
@@ -71,6 +73,13 @@ ARGPARSE_GENERAL_PARAMS = [{
     "type": int,
     "help": "Number of events which are simulated",
     "required": True
+}, {
+    "option_strings": ["--total"],
+    "dest": "total",
+    "type": int,
+    "help": "Total number of events simulated over all targets",
+    "required": False,
+    "default": None
 }, {
     "option_strings": ["--multifile", "-m"],
     "dest": "multifile",
@@ -326,12 +335,17 @@ def main():
     outfilename = join(args.output,
                        "km3buu_" + run_descriptor + descriptor + ".root")
 
+    target_merge_weight = 1.0
+    if args.total:
+        target_merge_weight = args.total / args.events
+
     write_detector_file(fobj,
                         geometry=volume,
                         ofile=outfilename,
                         run_number=args.runnumber,
                         timeinterval=(args.timeinterval[0],
                                       args.timeinterval[1]),
+                        target_merge_weight=target_merge_weight,
                         no_files=args.multifile)
 
 

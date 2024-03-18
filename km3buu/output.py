@@ -641,6 +641,7 @@ def write_detector_file(gibuu_output,
                         run_number=1,
                         geometry=NoVolume(),
                         timeinterval=(0.0, 1684345837.0),
+                        target_merge_weight=1.0,
                         free_particle_cuts=True):  # pragma: no cover
     """
     Convert the GiBUU output to a KM3NeT MC (OfflineFormat) file
@@ -659,6 +660,8 @@ def write_detector_file(gibuu_output,
         The detector geometry which should be used
     timeinterval: float [s]
         The unix time time interval where the events are distributed in
+    target_merge_weight: float [1]
+        Additional weight factor Ntotal/Ntarget
     free_particle_cuts: boolean (default: True)
         Apply cuts in order to select particles which exit the nucleus
     """
@@ -789,6 +792,7 @@ def write_detector_file(gibuu_output,
             evt.w.push_back(geometry.volume)  # w1 (can volume)
             evt.w.push_back(w2[total_id] * targets_per_volume / samples)  # w2
             evt.w.push_back(-1.0)  # w3 (= w2*flux)
+            evt.w.push_back(target_merge_weight) # target merge weight
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
             evt.w2list[km3io.definitions.w2list_km3buu[
