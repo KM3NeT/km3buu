@@ -790,9 +790,8 @@ def write_detector_file(gibuu_output,
                 continue
             # Weights
             evt.w.push_back(geometry.volume)  # w1 (can volume)
-            evt.w.push_back(w2[total_id] * targets_per_volume / samples)  # w2
+            evt.w.push_back(w2[total_id] * target_merge_weight * targets_per_volume / samples)  # w2
             evt.w.push_back(-1.0)  # w3 (= w2*flux)
-            evt.w.push_back(target_merge_weight) # target merge weight
             # Event Information (w2list)
             evt.w2list.resize(W2LIST_LENGTH)
             evt.w2list[km3io.definitions.w2list_km3buu[
