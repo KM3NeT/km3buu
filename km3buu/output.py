@@ -634,6 +634,10 @@ class GiBUUOutput:
     def flux_norm(self):
         return self._flux_norm
 
+    @property
+    def flux_binwidth(self):
+        return np.mean(self.flux_data["energy"][1:] - self.flux_data["energy"][:-1])
+
 
 def write_detector_file(gibuu_output,
                         ofile="gibuu.offline.root",
@@ -733,6 +737,8 @@ def write_detector_file(gibuu_output,
 
     header_dct["target"] = "A{:d}Z{:d}".format(gibuu_output.A, gibuu_output.Z)
     header_dct["gibuu_Nevents"] = str(gibuu_output._generated_events)
+    header_dct["gibuu_flux_binwidth"] = "{:.8f}".format(gibuu_output.flux_binwidth)
+    header_dct["gibuu_flux_norm"] = "{:.2f}".format(gibuu_output.flux_norm)
     header_dct["n_split_files"] = str(no_files)
     header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
     header_dct["flux"] = "{:d} 0 0".format(nu_type)
