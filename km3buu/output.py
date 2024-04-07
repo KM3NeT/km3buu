@@ -598,15 +598,12 @@ class GiBUUOutput:
         return self._generated_events
 
     def _determine_flux_index(self):
-
-        def fluxfunc(x, a, b):
-            return a * x**b
-
-        p0 = [1, -1]
-
         if self._fix_flux_index:
-            fluxfunc = lambda x, b: fluxfunc(x, self._flux_index, b)
+            fluxfunc = lambda x, a: a * x ** self._flux_index
             p0 = [1]
+        else:
+            fluxfunc = lambda x, a, b: a * x ** b
+            p0 = [1, -1]
 
         energy_mask = self.flux_data["flux"] > 10
         lower_limit = np.min(self.flux_data["energy"][energy_mask]) * 1.2
@@ -616,9 +613,10 @@ class GiBUUOutput:
         popt, pcov = curve_fit(fluxfunc,
                                self.flux_data["energy"][mask],
                                self.flux_data["events"][mask],
-                               p0=[1, -1])
-        self._flux_index = popt[1]
+                               p0=p0)
         self._flux_norm = popt[0]
+        if not self._fix_flux_index:
+            self._flux_index = popt[1]
 
     @property
     def flux_index(self):
@@ -628,7 +626,7 @@ class GiBUUOutput:
     def flux_index(self, value):
         self._flux_index = value
         self._fix_flux_index = True
-        self._determine_flux_index
+        self._determine_flux_index()
 
     @property
     def flux_norm(self):
@@ -740,6 +738,7 @@ def write_detector_file(gibuu_output,
     header_dct["gibuu_Nevents"] = str(gibuu_output._generated_events)
     header_dct["gibuu_flux_binwidth"] = "{:.8f}".format(
         gibuu_output.flux_binwidth)
+    header_dct["gibuu_flux_index"] = "{:.2f}".format(gibuu_output.flux_index)
     header_dct["gibuu_flux_norm"] = "{:.2f}".format(gibuu_output.flux_norm)
     header_dct["n_split_files"] = str(no_files)
     header_dct["coord_origin"] = "{} {} {}".format(*geometry.coord_origin)
