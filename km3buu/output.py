@@ -599,10 +599,10 @@ class GiBUUOutput:
 
     def _determine_flux_index(self):
         if self._fix_flux_index:
-            fluxfunc = lambda x, a: a * x ** self._flux_index
+            fluxfunc = lambda x, a: a * x**self._flux_index
             p0 = [1]
         else:
-            fluxfunc = lambda x, a, b: a * x ** b
+            fluxfunc = lambda x, a, b: a * x**b
             p0 = [1, -1]
 
         energy_mask = self.flux_data["flux"] > 10
