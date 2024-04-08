@@ -1,5 +1,8 @@
 Unreleased changes
 ------------------
+
+v1.8.0
+----------------------------
 * Fix flux fit function
 * Add fitted flux norm and GiBUU flux bin width to header
 
