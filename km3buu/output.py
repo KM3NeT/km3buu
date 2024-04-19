@@ -885,7 +885,7 @@ def write_detector_file(gibuu_output,
             mom = np.array([event.nuc_Px, event.nuc_Py, event.nuc_Pz])
             momnorm = np.linalg.norm(mom)
             if momnorm > 0.0:
-                p_dir = R.apply(mom / np.linalg.norm(mom))
+                p_dir = R.apply(mom / momnorm)
             else:
                 p_dir = mom
             nuc_trk.dir.set(*p_dir)
