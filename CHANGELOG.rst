@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Fix nan direction of nucleon momentum for hydrogen
 
 v1.8.0
 ----------------------------
