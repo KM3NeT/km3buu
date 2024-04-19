@@ -883,7 +883,11 @@ def write_detector_file(gibuu_output,
             nuc_trk.type = 2112 + 100 * event.nuc_charge
             nuc_trk.pos.set(*vtx_pos)
             mom = np.array([event.nuc_Px, event.nuc_Py, event.nuc_Pz])
-            p_dir = R.apply(mom / np.linalg.norm(mom))
+            momnorm = np.linalg.norm(mom)
+            if momnorm > 0.0:
+                p_dir = R.apply(mom / np.linalg.norm(mom))
+            else:
+                p_dir = mom
             nuc_trk.dir.set(*p_dir)
             nuc_trk.E = event.nuc_E
             nuc_trk.t = timestamp
