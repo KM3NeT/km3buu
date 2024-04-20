@@ -863,36 +863,42 @@ def write_detector_file(gibuu_output,
             nu_in_trk.status = km3io.definitions.trkmembers[
                 "TRK_ST_PRIMARYNEUTRINO"]
             evt.mc_trks.push_back(nu_in_trk)
-            # Target Nucleus
+            ####################
+            # Target
+            ####################
+            nucleonpdgid = 2112 + 100 * event.nuc_charge
+            # Nucleus
             tgt_trk = ROOT.Trk()
             tgt_trk.id = mc_trk_id
             mc_trk_id += 1
             tgt_trk.mother_id = -1
-            tgt_trk.type = target_pdgid
             tgt_trk.pos.set(*vtx_pos)
-            tgt_trk.dir.set(0.0, 0.0, 0.0)
-            tgt_trk.E = target_mass
             tgt_trk.t = timestamp
             tgt_trk.status = km3io.definitions.trkmembers["TRK_ST_ININUCLEI"]
-            evt.mc_trks.push_back(tgt_trk)
-            # Initial Nuceon
-            nuc_trk = ROOT.Trk()
-            nuc_trk.id = mc_trk_id
-            mc_trk_id += 1
-            nuc_trk.mother_id = 1
-            nuc_trk.type = 2112 + 100 * event.nuc_charge
-            nuc_trk.pos.set(*vtx_pos)
-            mom = np.array([event.nuc_Px, event.nuc_Py, event.nuc_Pz])
-            momnorm = np.linalg.norm(mom)
-            if momnorm > 0.0:
-                p_dir = R.apply(mom / momnorm)
+            tgt_trk.dir.set(0.0, 0.0, 0.0)
+            if gibuu_output.A == 1:
+                tgt_trk.type = nucleonpdgid
+                tgt_trk.E = event.nuc_E
             else:
-                p_dir = mom
-            nuc_trk.dir.set(*p_dir)
-            nuc_trk.E = event.nuc_E
-            nuc_trk.t = timestamp
-            nuc_trk.status = km3io.definitions.trkmembers["TRK_ST_NUCTGT"]
-            evt.mc_trks.push_back(nuc_trk)
+                tgt_trk.type = target_pdgid
+                tgt_trk.E = target_mass
+            evt.mc_trks.push_back(tgt_trk)
+            # Initial Nuceon (only if nucleus has more than one nucleon)
+            if gibuu_output.A > 1:
+                nuc_trk = ROOT.Trk()
+                nuc_trk.id = mc_trk_id
+                mc_trk_id += 1
+                nuc_trk.mother_id = 1
+                nuc_trk.type = nucleonpdgid
+                nuc_trk.pos.set(*vtx_pos)
+                mom = np.array([event.nuc_Px, event.nuc_Py, event.nuc_Pz])
+                momnorm = np.linalg.norm(mom)
+                p_dir = R.apply(mom / momnorm)
+                nuc_trk.dir.set(*p_dir)
+                nuc_trk.E = event.nuc_E
+                nuc_trk.t = timestamp
+                nuc_trk.status = km3io.definitions.trkmembers["TRK_ST_NUCTGT"]
+                evt.mc_trks.push_back(nuc_trk)
             # Secondary Lepton
             lep_out_trk = ROOT.Trk()
             lep_out_trk.id = mc_trk_id
