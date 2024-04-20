@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Write only one target entry in km3net-dataformat for hydrogen
 * Fix nan direction of nucleon momentum for hydrogen
 
 v1.8.0
