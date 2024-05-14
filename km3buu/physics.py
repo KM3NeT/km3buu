@@ -20,6 +20,7 @@ import awkward as ak
 from particle import Particle
 import mendeleev
 import scipy.constants as constants
+from functools import lru_cache
 
 from .config import read_default_media_compositions
 
@@ -196,6 +197,7 @@ def get_targets_per_volume(targetZ,
 def _get_particle_rest_mass(pdgid):
 
     @np.vectorize
+    @lru_cache
     def vfunc(x):
         try:
             return Particle.from_pdgid(x).mass * 1e-3
