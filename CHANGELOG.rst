@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Use LRU in particle mass lookup
 
 v1.8.1
 ----------------------------
