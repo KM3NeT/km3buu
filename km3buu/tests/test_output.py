@@ -117,6 +117,12 @@ class TestGiBUUOutput(unittest.TestCase):
         rh_prob = GiBUUOutput.right_helicity_probability(arr)
         np.testing.assert_array_almost_equal(rh_prob[:3], [0.0, 0.0, 0.0])
 
+    def test_min_max_energy(self):
+        assert np.isnan(self.output.energy_min)
+        assert np.isnan(self.output.energy_max)
+        np.testing.assert_array_almost_equal(self.output.energy_min, 1.0)
+        np.testing.assert_array_almost_equal(self.output.energy_max, 100.0)
+
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
                     reason="KM3NeT dataformat required")
