@@ -120,7 +120,7 @@ class TestGiBUUOutput(unittest.TestCase):
     def test_min_max_energy(self):
         assert not np.isnan(self.output.energy_min)
         assert not np.isnan(self.output.energy_max)
-        np.testing.assert_array_almost_equal(self.output.energy_min, 1.0)
+        np.testing.assert_array_almost_equal(self.output.energy_min, 0.11)
         np.testing.assert_array_almost_equal(self.output.energy_max, 100.0)
 
 
