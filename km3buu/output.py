@@ -54,7 +54,7 @@ XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
 SECONDS_WEIGHT_TIMESPAN = 1
 
-FREE_PARTICLE_TOLERANCE = 1  # tolerance of the particle restmass for free particle cuts [keV]
+FREE_PARTICLE_TOLERANCE = 3  # tolerance of the particle restmass for free particle cuts [MeV]
 
 PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "x", "y", "z", "barcode"]
 EVENTINFO_COLUMNS = [
