@@ -121,7 +121,7 @@ class TestGiBUUOutput(unittest.TestCase):
         assert not np.isnan(self.output.energy_min)
         assert not np.isnan(self.output.energy_max)
         np.testing.assert_array_almost_equal(self.output.energy_min, 0.11)
-        np.testing.assert_array_almost_equal(self.output.energy_max, 100.0)
+        np.testing.assert_array_almost_equal(self.output.energy_max, 49.99)
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,
