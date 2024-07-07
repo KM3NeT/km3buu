@@ -94,7 +94,7 @@ class TestGiBUUOutput(unittest.TestCase):
 
     def test_global_generation_weight(self):
         self.assertAlmostEqual(self.output.global_generation_weight(4 * np.pi),
-                               2513.2765713094464,
+                               2511.9430994057193,
                                places=2)
 
     def test_event_values(self):
@@ -116,6 +116,12 @@ class TestGiBUUOutput(unittest.TestCase):
         arr["process_ID"] = arr.process_ID + 1
         rh_prob = GiBUUOutput.right_helicity_probability(arr)
         np.testing.assert_array_almost_equal(rh_prob[:3], [0.0, 0.0, 0.0])
+
+    def test_min_max_energy(self):
+        assert not np.isnan(self.output.energy_min)
+        assert not np.isnan(self.output.energy_max)
+        np.testing.assert_array_almost_equal(self.output.energy_min, 0.11)
+        np.testing.assert_array_almost_equal(self.output.energy_max, 49.99)
 
 
 @pytest.mark.skipif(not KM3NET_LIB_AVAILABLE,

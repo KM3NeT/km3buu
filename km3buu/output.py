@@ -54,7 +54,7 @@ XSECTION_FILENAMES = {"all": "neutrino_absorption_cross_section_ALL.dat"}
 SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60
 SECONDS_WEIGHT_TIMESPAN = 1
 
-FREE_PARTICLE_TOLERANCE = 1  # tolerance of the particle restmass for free particle cuts [keV]
+FREE_PARTICLE_TOLERANCE = 3  # tolerance of the particle restmass for free particle cuts [MeV]
 
 PARTICLE_COLUMNS = ["E", "Px", "Py", "Pz", "x", "y", "z", "barcode"]
 EVENTINFO_COLUMNS = [
@@ -236,8 +236,8 @@ class GiBUUOutput:
         self._read_jobcard()
 
         self.flux_data = None
-        self._min_energy = np.nan
-        self._max_energy = np.nan
+        self._energy_min = np.nan
+        self._energy_max = np.nan
         self._written_events = len(self._get_raw_arrays())
         self._generated_events = -1
         self._flux_index = np.nan
@@ -283,8 +283,8 @@ class GiBUUOutput:
         if np.std(energies) > 1e-10:
             raise NotImplementedError(
                 "Energy not constant; run data cannot be interpreted")
-        self._min_energy = np.mean(energies)
-        self._max_energy = self._max_energy
+        self._energy_min = np.mean(energies)
+        self._energy_max = self._max_energy
         num_ensembles = int(self.jobcard["input"]["numensembles"])
         num_runs = int(self.jobcard["input"]["num_runs_sameenergy"])
         self._generated_events = num_ensembles * num_runs
@@ -303,8 +303,10 @@ class GiBUUOutput:
         self.flux_interpolation = UnivariateSpline(self.flux_data["energy"],
                                                    self.flux_data["events"],
                                                    s=0)
-        self._energy_min = np.min(self.flux_data["energy"])
-        self._energy_max = np.max(self.flux_data["energy"])
+        self._energy_min = np.min(
+            self.flux_data["energy"][self.flux_data["events"] > 0])
+        self._energy_max = np.max(
+            self.flux_data["energy"][self.flux_data["events"] > 0])
         self._generated_events = int(np.sum(self.flux_data["events"]))
         return True
 
@@ -590,11 +592,11 @@ class GiBUUOutput:
 
     @property
     def energy_min(self):
-        return self._min_energy
+        return self._energy_min
 
     @property
     def energy_max(self):
-        return self._max_energy
+        return self._energy_max
 
     @property
     def generated_events(self):
@@ -869,7 +871,7 @@ def write_detector_file(gibuu_output,
             ####################
             # Target
             ####################
-            nucleonpdgid = 2112 + 100 * event.nuc_charge
+            nucleonpdgid = 2112 + 100 * int(event.nuc_charge)
             # Nucleus
             tgt_trk = ROOT.Trk()
             tgt_trk.id = mc_trk_id

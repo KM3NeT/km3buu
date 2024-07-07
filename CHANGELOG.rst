@@ -1,6 +1,8 @@
 Unreleased changes
 ------------------
 * Use LRU in particle mass lookup
+* Increase tolerance for free particle cut as GiBUU uses 938MeV for proton and neutron
+* Fix energy limit fields of GiBUUOutput
 
 v1.8.1
 ----------------------------
