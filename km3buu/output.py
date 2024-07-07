@@ -518,7 +518,10 @@ class GiBUUOutput:
         GiBUU output data in pandas dataframe format
         """
         import pandas as pd
-        df = ak.to_pandas(self.arrays)
+        try:
+            df = ak.to_dataframe(self.arrays)
+        except:
+            df = ak.to_pandas(self.arrays)
         if len(df) == 0:
             return df
         sec_df = df[df.index.get_level_values(1) == 0].copy()
