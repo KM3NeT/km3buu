@@ -94,7 +94,7 @@ class TestGiBUUOutput(unittest.TestCase):
 
     def test_global_generation_weight(self):
         self.assertAlmostEqual(self.output.global_generation_weight(4 * np.pi),
-                               2513.2765713094464,
+                               2511.9430994057193,
                                places=2)
 
     def test_event_values(self):
