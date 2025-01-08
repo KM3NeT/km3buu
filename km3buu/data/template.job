@@ -1,5 +1,5 @@
 &input
-    version=2023
+    version=2025
     eventtype = 5
     delta_t = 0.2
     localensemble = .true.

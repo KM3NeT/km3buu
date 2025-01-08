@@ -6,12 +6,12 @@ RUN  apt-get -qq update && \
 
 RUN   cd /opt && \
       mkdir GiBUU && cd GiBUU && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_03/release2023.tar.gz&& \
-      tar -xzvf release2023.tar.gz && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_03/buuinput2023.tar.gz && \
-      tar -xzvf buuinput2023.tar.gz && \
-      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2023_03/libraries2023_RootTuple.tar.gz && \
-      tar -xzvf libraries2023_RootTuple.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2025_00/release2025.tar.gz&& \
+      tar -xzvf release2025.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2025_00/buuinput2025.tar.gz && \
+      tar -xzvf buuinput2025.tar.gz && \
+      wget --content-disposition https://gibuu.hepforge.org/downloads?f=archive/r2025_00/libraries2025_RootTuple.tar.gz && \
+      tar -xzvf libraries2025_RootTuple.tar.gz && \
       rm -rf ./*.tar.gz && \
       ## Increase vector for decayed particles to be on the safe side
       sed -i '6 a set(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)' ./libraries2023/RootTuple/RootTuple-master/CMakeLists.txt && \
@@ -35,7 +35,7 @@ RUN init4buu --proposal=/proposal
 RUN cd /km3buu/externals/km3net-dataformat/ && \
     make
 ENV KM3NET_LIB=/km3buu/externals/km3net-dataformat/lib    
-ENV CONTAINER_GIBUU_EXEC=/opt/GiBUU/release2023/objects/GiBUU.x 
+ENV CONTAINER_GIBUU_EXEC=/opt/GiBUU/release2025/objects/GiBUU.x
 ENV CONTAINER_GIBUU_INPUT=/opt/GiBUU/buuinput 
 ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 ENV KM3BUU_CONFIG="/root/.km3buu"
