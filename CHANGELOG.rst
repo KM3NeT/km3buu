@@ -1,5 +1,6 @@
 Unreleased changes
 ------------------
+* Update to GiBUU2025
 
 v1.8.2
 ----------------------------
