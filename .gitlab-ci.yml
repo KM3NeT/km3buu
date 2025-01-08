@@ -93,8 +93,8 @@ docker:
     - docker push $CONTAINER_TEST_IMAGE
   tags:
     - docker
-  only:
-    - tags
+  # only:
+  #   - tags
 
 pages:
     image: docker.km3net.de/base/python:3.10
