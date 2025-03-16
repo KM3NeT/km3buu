@@ -196,17 +196,18 @@ def get_targets_per_volume(targetZ,
 
 def _get_particle_rest_mass(pdgid):
 
-    @np.vectorize
-    @lru_cache
-    def vfunc(x):
+    @lru_cache(maxsize=128)
+    def _func(pdgid):
         try:
-            return Particle.from_pdgid(x).mass * 1e-3
+            tmp = Particle.from_pdgid(pdgid).mass
         except:
             return 0
+        if tmp:
+            return tmp * 1e-3
+        else:
+            return 0
 
-    pdgids, invmap = np.unique(ak.to_numpy(pdgid), return_inverse=True)
-    masses = vfunc(pdgids)
-    return masses[invmap]
+    return np.vectorize(_func, otypes=[float])(pdgid)
 
 
 def get_kinetic_energy(energy, pdgid, warning=True):
