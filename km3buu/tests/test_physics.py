@@ -75,6 +75,7 @@ class TestMuonVisibleEnergy(unittest.TestCase):
         np.testing.assert_almost_equal(visible_energy_fraction(1000.0, -13),
                                        0.492602)
 
+
 class TestVisEnergyParticle(unittest.TestCase):
 
     def setUp(self):
